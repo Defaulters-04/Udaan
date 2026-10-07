@@ -119,6 +119,7 @@ export interface AssessmentSection {
 }
 
 export interface AssessmentQuestionsResponse {
+  version?: string;
   sections: AssessmentSection[];
 }
 
@@ -490,241 +491,613 @@ export async function getStatus(
 }
 
 // ==========================================
-// Mock Assessment Questions Bank
-// (5 sections, at least 2 of every question type)
+// Canonical Career Domains (from engine/domains.py)
+// ==========================================
+export const CANONICAL_CAREER_DOMAIN_OPTIONS: QuestionOption[] = [
+  {
+    id: 'tech_engineering',
+    label: { en: 'Technology & Engineering', hi: 'तकनीक और इंजीनियरिंग' },
+  },
+  {
+    id: 'business_management',
+    label: { en: 'Business & Management', hi: 'बिजनेस और मैनेजमेंट' },
+  },
+  {
+    id: 'healthcare_medicine',
+    label: { en: 'Healthcare & Medicine', hi: 'डॉक्टरी और स्वास्थ्य' },
+  },
+  {
+    id: 'design_creative',
+    label: { en: 'Design & Creative Arts', hi: 'डिजाइन और कला' },
+  },
+  {
+    id: 'media_entertainment',
+    label: { en: 'Media & Content Creation', hi: 'मीडिया और कंटेंट क्रिएशन' },
+  },
+  {
+    id: 'humanities_law',
+    label: { en: 'Humanities, Law & Social Sciences', hi: 'कला, कानून और समाज शास्त्र' },
+  },
+  {
+    id: 'sciences',
+    label: { en: 'Sciences & Research', hi: 'साइंस और रिसर्च' },
+  },
+];
+
+const RELOCATION_OPTIONS: QuestionOption[] = [
+  { id: 'home_city', label: { en: 'Within our home city / town', hi: 'अपने शहर / कस्बे में' } },
+  { id: 'same_state', label: { en: 'Within our state', hi: 'अपने राज्य में' } },
+  { id: 'anywhere_india', label: { en: 'Anywhere in India', hi: 'भारत में कहीं भी' } },
+  { id: 'abroad_ok', label: { en: 'Abroad / International is fine too', hi: 'विदेश जाने में भी कोई आपत्ति नहीं' } },
+];
+
+const TIME_TO_EARN_OPTIONS: QuestionOption[] = [
+  {
+    id: 'within_4y',
+    label: {
+      en: 'Within 3 to 4 years (e.g., direct degree or diploma)',
+      hi: '3 से 4 साल के भीतर (जैसे डिग्री या डिप्लोमा के तुरंत बाद)',
+    },
+  },
+  {
+    id: 'five_six',
+    label: {
+      en: 'In 5 to 6 years (e.g., professional degree like B.Tech / MBBS / Masters)',
+      hi: '5 से 6 साल में (जैसे बी.टेक, एमबीबीएस या मास्टर्स के बाद)',
+    },
+  },
+  {
+    id: 'seven_plus',
+    label: {
+      en: '7+ years is fine (e.g., advanced research or specialization)',
+      hi: '7 साल या उससे अधिक भी चलेगा (जैसे उच्च शोध या विशेषज्ञता)',
+    },
+  },
+];
+
+// ==========================================
+// Mock Assessment Questions Bank (starter-2: 6 sections, 32 questions)
+// Order: background, interests, aptitude, values, preferences, free_text
 // ==========================================
 export const MOCK_ASSESSMENT_SECTIONS: AssessmentSection[] = [
   {
-    id: 'sec_interests',
-    title: { en: 'Interests', hi: 'रुचियाँ' },
-    description: { en: 'What naturally excites you', hi: 'जो काम आपको स्वाभाविक रूप से पसंद हैं' },
+    id: 'background',
+    title: { en: 'Background', hi: 'पृष्ठभूमि' },
+    description: { en: 'Academic stream and context', hi: 'आपकी पढ़ाई और पृष्ठभूमि' },
     questions: [
       {
-        id: 'q_int_activity',
-        section_id: 'sec_interests',
+        id: 'bg_stream',
+        section_id: 'background',
         type: 'single_choice',
         prompt: {
-          en: 'Which of these activities sounds most exciting to you on a weekend?',
-          hi: 'वीकेंड पर इनमें से कौन-सा काम करना आपको सबसे रोमांचक लगेगा?',
+          en: 'Which academic stream are you studying or planning to choose?',
+          hi: 'आप कौन सी पढ़ाई (स्ट्रीम) कर रहे हैं या चुनने की सोच रहे हैं?',
         },
         required: true,
         options: [
-          {
-            id: 'opt_robot',
-            label: {
-              en: 'Building a working mechanical robot or physical gadget',
-              hi: 'एक काम करने वाला रोबोट या गैजेट बनाना',
-            },
-          },
-          {
-            id: 'opt_story',
-            label: {
-              en: 'Writing an interactive story, script, or graphic novel',
-              hi: 'एक कहानी, पटकथा या ग्राफ़िक नॉवेल लिखना',
-            },
-          },
-          {
-            id: 'opt_event',
-            label: {
-              en: 'Organizing a community campaign or volunteer event',
-              hi: 'सामाजिक अभियान या स्वयंसेवा कार्यक्रम आयोजित करना',
-            },
-          },
-          {
-            id: 'opt_data',
-            label: {
-              en: 'Analyzing stocks, sports statistics, or scientific data',
-              hi: 'खेल या विज्ञान के डेटा और आँकड़ों का विश्लेषण करना',
-            },
-          },
+          { id: 'science_maths', label: { en: 'Science (with Maths / PCM)', hi: 'साइंस (गणित के साथ / PCM)' } },
+          { id: 'science_bio', label: { en: 'Science (with Biology / PCB)', hi: 'साइंस (बायोलॉजी के साथ / PCB)' } },
+          { id: 'commerce', label: { en: 'Commerce', hi: 'कॉमर्स' } },
+          { id: 'arts', label: { en: 'Arts / Humanities', hi: 'आर्ट्स / मानविकी' } },
+          { id: 'vocational', label: { en: 'Vocational / Applied Skills', hi: 'व्यावसायिक / कौशल आधारित' } },
+          { id: 'undecided', label: { en: 'Undecided / Not sure yet', hi: 'अभी तय नहीं किया' } },
         ],
       },
       {
-        id: 'q_int_fields',
-        section_id: 'sec_interests',
-        type: 'multi_choice',
-        prompt: {
-          en: 'Select up to 3 subjects or topics you genuinely enjoy exploring:',
-          hi: 'अपनी पसंद के 3 विषय या क्षेत्र चुनें जिन्हें आप पढ़ना चाहते हैं:',
-        },
-        required: true,
-        options: [
-          { id: 'field_math', label: { en: 'Mathematics & Logic', hi: 'गणित और तर्कशास्त्र' } },
-          { id: 'field_bio', label: { en: 'Biology & Healthcare', hi: 'जीव विज्ञान और चिकित्सा' } },
-          { id: 'field_design', label: { en: 'Design & Visual Arts', hi: 'डिजाइन और दृश्य कला' } },
-          { id: 'field_biz', label: { en: 'Economics & Business Strategy', hi: 'अर्थशास्त्र और व्यापार' } },
-          { id: 'field_tech', label: { en: 'Technology & Programming', hi: 'तकनीक और प्रोग्रामिंग' } },
-          { id: 'field_soc', label: { en: 'Law, Politics & Social Sciences', hi: 'कानून और राजनीति' } },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'sec_strengths',
-    title: { en: 'Strengths', hi: 'ताकत व कौशल' },
-    description: { en: 'How you solve challenges', hi: 'चुनौतियों को सुलझाने की आपकी क्षमता' },
-    questions: [
-      {
-        id: 'q_str_math',
-        section_id: 'sec_strengths',
-        type: 'scale',
-        prompt: {
-          en: 'How comfortable are you breaking down complex quantitative puzzles?',
-          hi: 'जटिल गणितीय या तार्किक पहेलियों को सुलझाने में आप कितने सहज हैं?',
-        },
-        min: 1,
-        max: 5,
-        min_label: { en: 'Challenging for me', hi: 'कठिन लगता है' },
-        max_label: { en: 'Very comfortable', hi: 'बहुत आसान लगता है' },
-        required: true,
-      },
-      {
-        id: 'q_str_proud',
-        section_id: 'sec_strengths',
-        type: 'text',
-        prompt: {
-          en: 'Name one achievement or project you are especially proud of:',
-          hi: 'किसी ऐसी उपलब्धि या प्रोजेक्ट का नाम लिखें जिस पर आपको गर्व है:',
-        },
-        required: false,
-        placeholder: { en: 'e.g. Science fair exhibition, debate trophy...', hi: 'उदा. विज्ञान मेला, वाद-विवाद प्रतियोगिता...' },
-      },
-    ],
-  },
-  {
-    id: 'sec_work_style',
-    title: { en: 'Work Style', hi: 'काम करने का तरीका' },
-    description: { en: 'Your ideal day-to-day dynamic', hi: 'रोज़मर्रा के काम का आपका पसंदीदा माहौल' },
-    questions: [
-      {
-        id: 'q_ws_environment',
-        section_id: 'sec_work_style',
+        id: 'bg_marks_band',
+        section_id: 'background',
         type: 'single_choice',
         prompt: {
-          en: 'Where do you do your best thinking and focused work?',
-          hi: 'आप सबसे अच्छा ध्यान लगाकर कहाँ काम कर पाते हैं?',
+          en: 'What is your typical score range in recent exams?',
+          hi: 'हाल की परीक्षाओं में आपके आम तौर पर कितने अंक आते हैं?',
         },
         required: true,
         options: [
-          { id: 'env_quiet', label: { en: 'Quiet, solitary workspace', hi: 'शांत और एकांत जगह में' } },
-          { id: 'env_team', label: { en: 'Collaborative team room with brainstorming', hi: 'टीम के साथ चर्चा और मंथन करते हुए' } },
-          { id: 'env_field', label: { en: 'Moving across outdoors or project sites', hi: 'खुली जगह में या अलग-अलग साइटों पर' } },
-          { id: 'env_fast', label: { en: 'High-energy, fast-paced environment', hi: 'तेज़ गति और ऊर्जा से भरे माहौल में' } },
+          { id: 'below_50', label: { en: 'Below 50%', hi: '50% से कम' } },
+          { id: '50_60', label: { en: '50% to 60%', hi: '50% से 60%' } },
+          { id: '60_75', label: { en: '60% to 75%', hi: '60% से 75%' } },
+          { id: '75_90', label: { en: '75% to 90%', hi: '75% से 90%' } },
+          { id: 'above_90', label: { en: 'Above 90%', hi: '90% से ऊपर' } },
+          { id: 'not_yet', label: { en: 'Results not out yet', hi: 'नतीजे अभी नहीं आए हैं' } },
         ],
       },
       {
-        id: 'q_str_lead',
-        section_id: 'sec_work_style',
-        type: 'scale',
-        prompt: {
-          en: 'How naturally does taking the lead and coordinating people come to you?',
-          hi: 'टीम का नेतृत्व और समन्वय करना आपके लिए कितना स्वाभाविक है?',
-        },
-        min: 1,
-        max: 5,
-        min_label: { en: 'Prefer supporting', hi: 'सहयोग करना पसंद है' },
-        max_label: { en: 'Love leading', hi: 'नेतृत्व करना पसंद है' },
-        required: true,
-      },
-      {
-        id: 'q_ws_habits',
-        section_id: 'sec_work_style',
-        type: 'multi_choice',
-        prompt: {
-          en: 'Which habits help you succeed during complex assignments?',
-          hi: 'जटिल प्रोजेक्ट्स में कौन-सी आदतें आपकी मदद करती हैं?',
-        },
-        required: false,
-        options: [
-          { id: 'hbt_check', label: { en: 'Breaking big tasks into daily checklists', hi: 'बड़े कामों को रोज़ाना की चेकलिस्ट में बाँटना' } },
-          { id: 'hbt_draft', label: { en: 'Discussing early drafts with friends and mentors', hi: 'शुरुआती ड्राफ़्ट पर साथियों से चर्चा करना' } },
-          { id: 'hbt_res', label: { en: 'Deep research before writing or building', hi: 'काम शुरू करने से पहले गहरा शोध करना' } },
-          { id: 'hbt_trial', label: { en: 'Learning by trial, error, and rapid iteration', hi: 'प्रयोग करके और गलतियों से सीखना' } },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'sec_values',
-    title: { en: 'Values', hi: 'प्राथमिकताएँ' },
-    description: { en: 'What matters most in your career', hi: 'करियर में आपके लिए सबसे अहम क्या है' },
-    questions: [
-      {
-        id: 'q_val_risk',
-        section_id: 'sec_values',
-        type: 'slider',
-        prompt: {
-          en: 'What balance of stability versus risk do you prefer in your future?',
-          hi: 'भविष्य के करियर में आप स्थिरता और जोखिम का क्या अनुपात चाहते हैं?',
-        },
-        min: 0,
-        max: 100,
-        step: 5,
-        min_label: { en: 'Predictable & Stable', hi: 'सुरक्षित और स्थिर' },
-        max_label: { en: 'High Growth & Entrepreneurial', hi: 'उच्च विकास व जोखिम' },
-        required: true,
-      },
-      {
-        id: 'q_val_worklife',
-        section_id: 'sec_values',
-        type: 'slider',
-        prompt: {
-          en: 'Your target balance between personal life and intense ambition:',
-          hi: 'निजी समय और करियर की महत्वाकांक्षा के बीच आपका लक्ष्य:',
-        },
-        min: 0,
-        max: 100,
-        step: 5,
-        min_label: { en: 'Protected Personal Time', hi: 'संतुलित जीवन' },
-        max_label: { en: 'All-in Career Focus', hi: 'करियर पर पूरा ध्यान' },
-        required: true,
-      },
-      {
-        id: 'q_val_mentor',
-        section_id: 'sec_values',
+        id: 'bg_district',
+        section_id: 'background',
         type: 'text',
         prompt: {
-          en: 'Who is a role model or professional whose journey inspires you?',
-          hi: 'किस व्यक्ति या पेशेवर के काम से आप सबसे ज़्यादा प्रेरित होते हैं?',
+          en: 'Which district and state do you live in?',
+          hi: 'आप किस जिले और राज्य में रहते हैं?',
         },
-        required: false,
-        placeholder: { en: 'e.g. APJ Abdul Kalam, Marie Curie...', hi: 'उदा. डॉ. एपीजे अब्दुल कलाम, कल्पना चावला...' },
+        required: true,
+        placeholder: { en: 'e.g., Jaipur, Rajasthan', hi: 'जैसे, जयपुर, राजस्थान' },
+      },
+      {
+        id: 'bg_languages',
+        section_id: 'background',
+        type: 'multi_choice',
+        prompt: {
+          en: 'Which languages are you comfortable speaking or writing in?',
+          hi: 'आप किन भाषाओं में बात करने या लिखने में सहज हैं?',
+        },
+        required: true,
+        options: [
+          { id: 'english', label: { en: 'English', hi: 'अंग्रेज़ी' } },
+          { id: 'hindi', label: { en: 'Hindi', hi: 'हिंदी' } },
+          { id: 'tamil', label: { en: 'Tamil', hi: 'तमिल' } },
+          { id: 'telugu', label: { en: 'Telugu', hi: 'तेलुगु' } },
+          { id: 'kannada', label: { en: 'Kannada', hi: 'कन्नड़' } },
+          { id: 'malayalam', label: { en: 'Malayalam', hi: 'मलयालम' } },
+          { id: 'other', label: { en: 'Other', hi: 'अन्य' } },
+        ],
       },
     ],
   },
   {
-    id: 'sec_aspirations',
-    title: { en: 'Aspirations', hi: 'भविष्य की सोच' },
-    description: { en: 'Looking ahead 10 years', hi: 'अगले 10 साल की आपकी दूरदृष्टि' },
+    id: 'interests',
+    title: { en: 'Interests', hi: 'रुचियां' },
+    description: { en: 'What activities naturally excite you', hi: 'जो काम आपको स्वाभाविक रूप से पसंद हैं' },
     questions: [
       {
-        id: 'q_asp_dream',
-        section_id: 'sec_aspirations',
-        type: 'long_text',
+        id: 'int_01',
+        section_id: 'interests',
+        type: 'scale',
         prompt: {
-          en: 'Describe what a deeply fulfilling work day looks like for you 10 years from now:',
-          hi: '10 साल बाद आपके लिए एक सार्थक और संतोषजनक कामकाजी दिन कैसा दिखेगा?',
+          en: 'How much would you enjoy fixing broken devices or building things with tools?',
+          hi: 'टूटे उपकरणों को सुधारना या औजारों से नई चीजें बनाना आपको कितना पसंद आएगा?',
         },
-        max_length: 300,
         required: true,
-        placeholder: {
-          en: 'Describe what you are building, the team around you, or the impact made...',
-          hi: 'वर्णन करें कि आप क्या बना रहे हैं, आपके आसपास कैसी टीम है या क्या प्रभाव पड़ा...',
-        },
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
       },
       {
-        id: 'q_asp_family',
-        section_id: 'sec_aspirations',
+        id: 'int_02',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy researching why things happen in science or nature?',
+          hi: 'विज्ञान या प्रकृति में कोई चीज़ क्यों होती है, यह खोजना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+      {
+        id: 'int_03',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy writing creative stories or sketching illustrations?',
+          hi: 'कहानियां लिखना या चित्र बनाना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+      {
+        id: 'int_04',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy teaching a school subject to a younger student?',
+          hi: 'किसी छोटे बच्चे को कोई विषय पढ़ाना या समझाना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+      {
+        id: 'int_05',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy leading a group project and presenting the final plan?',
+          hi: 'किसी ग्रुप प्रोजेक्ट का नेतृत्व करना और योजना पेश करना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+      {
+        id: 'int_06',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy keeping expense records and monthly budgets neat and organized?',
+          hi: 'खर्चों का हिसाब और रिकॉर्ड व्यवस्थित रखना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+      {
+        id: 'int_07',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy assembling mechanical machinery or working out in the field?',
+          hi: 'मशीनों के पुर्जे जोड़ना या खुले मैदान में काम करना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+      {
+        id: 'int_08',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy setting up experiments to test your own theories?',
+          hi: 'अपनी परिकल्पनाओं को परखने के लिए छोटे प्रयोग करना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+      {
+        id: 'int_09',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy designing layouts, graphics, or poster visuals?',
+          hi: 'पोस्टर, डिज़ाइन या विजुअल्स को सुंदर और आकर्षक बनाना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+      {
+        id: 'int_10',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy listening to a friend and helping them solve a difficult problem?',
+          hi: 'किसी दोस्त की बात सुनकर उसकी परेशानी सुलझाने में मदद करना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+      {
+        id: 'int_11',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy pitching a new product idea and launching a small venture?',
+          hi: 'किसी नए विचार को लोगों के सामने रखना और छोटा काम शुरू करना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+      {
+        id: 'int_12',
+        section_id: 'interests',
+        type: 'scale',
+        prompt: {
+          en: 'How much would you enjoy organizing lists and data neatly in a spreadsheet?',
+          hi: 'स्प्रेडशीट में जानकारी और डेटा को करीने से व्यवस्थित करना आपको कितना पसंद आएगा?',
+        },
+        required: true,
+        min: 1,
+        max: 5,
+        min_label: { en: 'Would not enjoy it', hi: 'बिल्कुल पसंद नहीं आएगा' },
+        max_label: { en: 'Would enjoy it a lot', hi: 'बहुत पसंद आएगा' },
+      },
+    ],
+  },
+  {
+    id: 'aptitude',
+    title: { en: 'Aptitude', hi: 'योग्यता' },
+    description: { en: 'Problem-solving and reasoning puzzles', hi: 'तार्किक व विश्लेषणात्मक पहेलियाँ' },
+    questions: [
+      {
+        id: 'apt_spatial',
+        section_id: 'aptitude',
+        type: 'single_choice',
+        prompt: {
+          en: 'A solid cube is painted on all six outside faces and then sliced into 27 identical smaller cubes (3×3×3). How many of the smaller cubes have paint on exactly one face?',
+          hi: 'एक ठोस घन के सभी छह बाहरी फलकों पर रंग किया जाता है और फिर उसे 27 एकसमान छोटे घनों (3×3×3) में काटा जाता है। इनमें से कितने छोटे घनों के केवल एक फलक पर रंग होगा?',
+        },
+        required: true,
+        options: [
+          { id: 'a', label: { en: '6', hi: '6' } },
+          { id: 'b', label: { en: '8', hi: '8' } },
+          { id: 'c', label: { en: '10', hi: '10' } },
+          { id: 'd', label: { en: '12', hi: '12' } },
+        ],
+      },
+      {
+        id: 'apt_numerical',
+        section_id: 'aptitude',
+        type: 'single_choice',
+        prompt: {
+          en: 'A merchant marks an article at ₹1,200 and offers a 25% discount. If the merchant still earns a 20% profit on the cost price, what is the cost price?',
+          hi: 'एक व्यापारी किसी वस्तु पर ₹1,200 अंकित करता है और 25% की छूट देता है। यदि वह फिर भी लागत मूल्य पर 20% लाभ कमाता है, तो वस्तु का लागत मूल्य क्या है?',
+        },
+        required: true,
+        options: [
+          { id: 'a', label: { en: '₹720', hi: '₹720' } },
+          { id: 'b', label: { en: '₹750', hi: '₹750' } },
+          { id: 'c', label: { en: '₹800', hi: '₹800' } },
+          { id: 'd', label: { en: '₹840', hi: '₹840' } },
+        ],
+      },
+      {
+        id: 'apt_verbal',
+        section_id: 'aptitude',
+        type: 'single_choice',
+        prompt: {
+          en: "Consider the statement: 'All registered schools maintain a library. Some schools with libraries also have a computer lab.' Which conclusion must be true?",
+          hi: "इस कथन पर विचार करें: 'सभी पंजीकृत स्कूलों में लाइब्रेरी होती है। लाइब्रेरी वाले कुछ स्कूलों में कंप्यूटर लैब भी है।' कौन सा निष्कर्ष निश्चित रूप से सत्य है?",
+        },
+        required: true,
+        options: [
+          { id: 'a', label: { en: 'All schools with computer labs are registered.', hi: 'कंप्यूटर लैब वाले सभी स्कूल पंजीकृत हैं।' } },
+          { id: 'b', label: { en: 'Every registered school has a computer lab.', hi: 'प्रत्येक पंजीकृत स्कूल में कंप्यूटर लैब है।' } },
+          { id: 'c', label: { en: 'At least some schools with computer labs have a library.', hi: 'कंप्यूटर लैब वाले कम से कम कुछ स्कूलों में लाइब्रेरी है।' } },
+          { id: 'd', label: { en: 'No registered school lacks a computer lab.', hi: 'किसी भी पंजीकृत स्कूल में कंप्यूटर लैब की कमी नहीं है।' } },
+        ],
+      },
+      {
+        id: 'apt_logical',
+        section_id: 'aptitude',
+        type: 'single_choice',
+        prompt: {
+          en: 'In a 100m race with five runners: Bina finished ahead of Kamal. Chetan finished between Bina and Kamal. Kamal finished ahead of Deepa, and Arun finished behind Deepa. Who finished in last place?',
+          hi: 'पाँच धावकों की दौड़ में: बीना कमल से आगे रही। चेतन बीना और कमल के बीच में रहा। कमल दीपा से आगे रहा, और अरुण दीपा से पीछे रहा। दौड़ में सबसे आखिरी स्थान पर कौन रहा?',
+        },
+        required: true,
+        options: [
+          { id: 'a', label: { en: 'Deepa', hi: 'दीपा' } },
+          { id: 'b', label: { en: 'Kamal', hi: 'कमल' } },
+          { id: 'c', label: { en: 'Chetan', hi: 'चेतन' } },
+          { id: 'd', label: { en: 'Arun', hi: 'अरुण' } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'values',
+    title: { en: 'Values', hi: 'कार्य मूल्य' },
+    description: { en: 'What matters most in your future work', hi: 'करियर में आपके लिए सबसे अहम क्या है' },
+    questions: [
+      {
+        id: 'val_security',
+        section_id: 'values',
+        type: 'slider',
+        prompt: {
+          en: 'How much does job security and steady income matter to you in a career?',
+          hi: 'करियर में नौकरी की सुरक्षा और नियमित आय आपके लिए कितनी महत्वपूर्ण है?',
+        },
+        min: 0,
+        max: 10,
+        step: 1,
+        min_label: { en: 'Not important', hi: 'महत्वपूर्ण नहीं' },
+        max_label: { en: 'Extremely important', hi: 'बेहद महत्वपूर्ण' },
+        required: true,
+      },
+      {
+        id: 'val_independence',
+        section_id: 'values',
+        type: 'slider',
+        prompt: {
+          en: 'How much does having the freedom to work independently matter to you in a career?',
+          hi: 'करियर में अपनी मर्जी और स्वतंत्रता से काम करना आपके लिए कितना महत्वपूर्ण है?',
+        },
+        min: 0,
+        max: 10,
+        step: 1,
+        min_label: { en: 'Not important', hi: 'महत्वपूर्ण नहीं' },
+        max_label: { en: 'Extremely important', hi: 'बेहद महत्वपूर्ण' },
+        required: true,
+      },
+      {
+        id: 'val_helping',
+        section_id: 'values',
+        type: 'slider',
+        prompt: {
+          en: 'How much does making a positive difference to society matter to you in a career?',
+          hi: 'करियर में समाज और लोगों की भलाई के लिए काम करना आपके लिए कितना महत्वपूर्ण है?',
+        },
+        min: 0,
+        max: 10,
+        step: 1,
+        min_label: { en: 'Not important', hi: 'महत्वपूर्ण नहीं' },
+        max_label: { en: 'Extremely important', hi: 'बेहद महत्वपूर्ण' },
+        required: true,
+      },
+      {
+        id: 'val_income',
+        section_id: 'values',
+        type: 'slider',
+        prompt: {
+          en: 'How much does high earning potential and financial growth matter to you in a career?',
+          hi: 'करियर में अधिक कमाई और आर्थिक तरक्की आपके लिए कितनी महत्वपूर्ण है?',
+        },
+        min: 0,
+        max: 10,
+        step: 1,
+        min_label: { en: 'Not important', hi: 'महत्वपूर्ण नहीं' },
+        max_label: { en: 'Extremely important', hi: 'बेहद महत्वपूर्ण' },
+        required: true,
+      },
+      {
+        id: 'val_creativity',
+        section_id: 'values',
+        type: 'slider',
+        prompt: {
+          en: 'How much does the chance to express new ideas and be creative matter to you in a career?',
+          hi: 'करियर में नए विचार आजमाने और रचनात्मक होने का अवसर आपके लिए कितना महत्वपूर्ण है?',
+        },
+        min: 0,
+        max: 10,
+        step: 1,
+        min_label: { en: 'Not important', hi: 'महत्वपूर्ण नहीं' },
+        max_label: { en: 'Extremely important', hi: 'बेहद महत्वपूर्ण' },
+        required: true,
+      },
+    ],
+  },
+  {
+    id: 'preferences',
+    title: { en: 'Preferences', hi: 'प्राथमिकताएँ' },
+    description: { en: 'Work conditions, timelines, and career domains', hi: 'काम का माहौल, समय और करियर क्षेत्र' },
+    questions: [
+      {
+        id: 'pref_risk_1',
+        section_id: 'preferences',
+        type: 'single_choice',
+        prompt: {
+          en: 'Imagine two starting job offers after college. Which would you choose?',
+          hi: 'मान लें कि कॉलेज के बाद आपके सामने नौकरी के दो विकल्प हैं। आप किसे चुनेंगे?',
+        },
+        required: true,
+        options: [
+          {
+            id: 'safe',
+            label: {
+              en: '₹3.5 lakh a year, guaranteed (illustrative)',
+              hi: '₹3.5 लाख प्रति वर्ष, तय और सुरक्षित (अनुमानित)',
+            },
+          },
+          {
+            id: 'gamble',
+            label: {
+              en: '50% chance of ₹10 lakh a year, 50% chance of ₹2 lakh a year (illustrative)',
+              hi: '50% संभावना ₹10 लाख प्रति वर्ष की, 50% संभावना ₹2 लाख प्रति वर्ष की (अनुमानित)',
+            },
+          },
+        ],
+      },
+      {
+        id: 'pref_risk_2',
+        section_id: 'preferences',
+        type: 'single_choice',
+        prompt: {
+          en: 'Imagine a different set of starting job offers. Which would you choose?',
+          hi: 'अब मान लें कि आपके सामने ये दो विकल्प हैं। आप किसे चुनेंगे?',
+        },
+        required: true,
+        options: [
+          {
+            id: 'safe',
+            label: {
+              en: '₹4.5 lakh a year, guaranteed (illustrative)',
+              hi: '₹4.5 लाख प्रति वर्ष, तय और सुरक्षित (अनुमानित)',
+            },
+          },
+          {
+            id: 'gamble',
+            label: {
+              en: '50% chance of ₹10 lakh a year, 50% chance of ₹2 lakh a year (illustrative)',
+              hi: '50% संभावना ₹10 लाख प्रति वर्ष की, 50% संभावना ₹2 लाख प्रति वर्ष की (अनुमानित)',
+            },
+          },
+        ],
+      },
+      {
+        id: 'pref_risk_3',
+        section_id: 'preferences',
+        type: 'single_choice',
+        prompt: {
+          en: 'Imagine a higher guaranteed offer vs the same variable opportunity. Which would you choose?',
+          hi: 'मान लें कि एक अधिक सुरक्षित विकल्प और वही अनिश्चित अवसर सामने है। आप क्या चुनेंगे?',
+        },
+        required: true,
+        options: [
+          {
+            id: 'safe',
+            label: {
+              en: '₹5.5 lakh a year, guaranteed (illustrative)',
+              hi: '₹5.5 लाख प्रति वर्ष, तय और सुरक्षित (अनुमानित)',
+            },
+          },
+          {
+            id: 'gamble',
+            label: {
+              en: '50% chance of ₹10 lakh a year, 50% chance of ₹2 lakh a year (illustrative)',
+              hi: '50% संभावना ₹10 लाख प्रति वर्ष की, 50% संभावना ₹2 लाख प्रति वर्ष की (अनुमानित)',
+            },
+          },
+        ],
+      },
+      {
+        id: 'pref_relocation',
+        section_id: 'preferences',
+        type: 'single_choice',
+        prompt: {
+          en: 'How far are you comfortable moving for higher studies or work?',
+          hi: 'पढ़ाई या नौकरी के लिए आप कितनी दूर जाने में सहज हैं?',
+        },
+        required: true,
+        options: RELOCATION_OPTIONS,
+      },
+      {
+        id: 'pref_time_to_earn',
+        section_id: 'preferences',
+        type: 'single_choice',
+        prompt: {
+          en: 'How soon do you expect to start earning after completing school?',
+          hi: 'स्कूल पूरा करने के बाद आप कब तक कमाई शुरू करने की उम्मीद करते हैं?',
+        },
+        required: true,
+        options: TIME_TO_EARN_OPTIONS,
+      },
+      {
+        id: 'pref_domain_wish',
+        section_id: 'preferences',
+        type: 'multi_choice',
+        max_select: 3,
+        prompt: {
+          en: 'Which career domains are you most interested in exploring? (Select up to 3)',
+          hi: 'आप किन क्षेत्रों में करियर बनाने के लिए सबसे अधिक उत्सुक हैं? (अधिकतम 3 चुनें)',
+        },
+        required: true,
+        options: CANONICAL_CAREER_DOMAIN_OPTIONS,
+      },
+    ],
+  },
+  {
+    id: 'free_text',
+    title: { en: 'Free Text', hi: 'आपकी राय' },
+    description: { en: 'Your passions in your own words', hi: 'अपने शब्दों में आपके शौक व विचार' },
+    questions: [
+      {
+        id: 'free_text_1',
+        section_id: 'free_text',
         type: 'long_text',
         prompt: {
-          en: 'What is one hope or worry you and your family often discuss about college or careers?',
-          hi: 'कॉलेज या करियर को लेकर ऐसी कौन-सी उम्मीद या चिंता है जिस पर आप और परिवार बात करते हैं?',
+          en: 'What do you do for fun? What problem around you would you like to fix?',
+          hi: 'आप खाली समय में क्या करना पसंद करते हैं? अपने आस-पास की कौन सी समस्या को आप हल करना चाहेंगे?',
         },
-        max_length: 300,
         required: false,
+        max_length: 600,
         placeholder: {
-          en: 'Share any financial, location, or course considerations...',
-          hi: 'फीस, शहर, कॉलेज या कोर्स से जुड़ी कोई भी बात साझा करें...',
+          en: 'Share your hobbies or issues you care about (optional)...',
+          hi: 'अपने शौक या ऐसे मुद्दे साझा करें जिनकी आप परवाह करते हैं (वैकल्पिक)...',
         },
       },
     ],
@@ -744,7 +1117,7 @@ export async function getQuestions(
     if (token.includes('parent-token-invalid')) {
       throw new ApiError('wrong_role', 'Parent cannot access student assessment', 403);
     }
-    return { sections: MOCK_ASSESSMENT_SECTIONS };
+    return { version: 'starter-2', sections: MOCK_ASSESSMENT_SECTIONS };
   }
 
   try {
@@ -759,7 +1132,7 @@ export async function getQuestions(
     );
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) {
-      return { sections: MOCK_ASSESSMENT_SECTIONS };
+      return { version: 'starter-2', sections: MOCK_ASSESSMENT_SECTIONS };
     }
     throw err;
   }
@@ -951,266 +1324,312 @@ export async function submitAssessment(
 }
 
 // ==========================================
-// Mock Parent Intake Bank
-// (5 sections: money, risk, plans, hopes, perception)
+// Mock Parent Intake Bank (starter-2: 5 sections, 16 questions)
+// Canonical domains from engine/domains.py
 // ==========================================
 export const MOCK_INTAKE_SECTIONS: AssessmentSection[] = [
   {
     id: 'money',
-    title: { en: 'Financial Planning', hi: 'वित्तीय योजना' },
-    description: { en: 'Budget, funding sources, and financial priorities', hi: 'बजट, साधन और वित्तीय प्राथमिकताएँ' },
+    title: { en: 'Education Budget', hi: 'शिक्षा बजट' },
+    description: { en: 'Budget, savings, loan tolerance, and family cash flow', hi: 'बजट, बचत, ऋण क्षमता और मासिक संतुलन' },
     questions: [
       {
-        id: 'q_money_budget',
+        id: 'income_band',
         section_id: 'money',
         type: 'single_choice',
         prompt: {
-          en: 'What is your comfortable annual budget for your child’s higher education?',
-          hi: 'अपने बच्चे की उच्च शिक्षा के लिए आपका सहज वार्षिक बजट क्या है?'
+          en: 'What is your approximate annual family income?',
+          hi: 'आपके परिवार की लगभग वार्षिक आय कितनी है?',
         },
         required: true,
         options: [
-          { id: 'opt_b1', label: { en: 'Under ₹3 Lakhs / year', hi: '₹3 लाख / वर्ष से कम' } },
-          { id: 'opt_b2', label: { en: '₹3 - ₹7 Lakhs / year', hi: '₹3 - ₹7 लाख / वर्ष' } },
-          { id: 'opt_b3', label: { en: '₹7 - ₹15 Lakhs / year', hi: '₹7 - ₹15 लाख / वर्ष' } },
-          { id: 'opt_b4', label: { en: 'Above ₹15 Lakhs / year', hi: '₹15 लाख / वर्ष से अधिक' } },
-        ]
+          { id: 'under_3l', label: { en: 'Under ₹3 lakh', hi: '₹3 लाख से कम' } },
+          { id: '3_6l', label: { en: '₹3 lakh to ₹6 lakh', hi: '₹3 लाख से ₹6 लाख' } },
+          { id: '6_12l', label: { en: '₹6 lakh to ₹12 lakh', hi: '₹6 लाख से ₹12 लाख' } },
+          { id: '12_25l', label: { en: '₹12 lakh to ₹25 lakh', hi: '₹12 लाख से ₹25 लाख' } },
+          { id: 'over_25l', label: { en: 'Over ₹25 lakh', hi: '₹25 लाख से अधिक' } },
+        ],
       },
       {
-        id: 'q_money_source',
+        id: 'savings_band',
         section_id: 'money',
         type: 'single_choice',
         prompt: {
-          en: 'What will be the primary source for funding college fees and living costs?',
-          hi: 'कॉलेज फीस और रहने के खर्च का प्राथमिक साधन क्या होगा?'
+          en: "How much savings have you set aside for your child's higher education?",
+          hi: 'आपने बच्चे की उच्च शिक्षा के लिए लगभग कितनी बचत रखी है?',
         },
         required: true,
         options: [
-          { id: 'opt_s1', label: { en: 'Family savings and ongoing income', hi: 'पारिवारिक बचत और नियमित आय' } },
-          { id: 'opt_s2', label: { en: 'Education loan with manageable EMI', hi: 'आसान किस्तों वाला शिक्षा ऋण (Education Loan)' } },
-          { id: 'opt_s3', label: { en: 'Combination of scholarships and family support', hi: 'छात्रवृत्ति (Scholarships) और पारिवारिक सहयोग' } },
-          { id: 'opt_s4', label: { en: 'Selling or leveraging assets / investments', hi: 'निवेश या संपत्ति का उपयोग' } },
-        ]
+          { id: 'none', label: { en: 'No dedicated savings yet', hi: 'अभी कोई अलग बचत नहीं है' } },
+          { id: 'under_1l', label: { en: 'Under ₹1 lakh', hi: '₹1 लाख से कम' } },
+          { id: '1_3l', label: { en: '₹1 lakh to ₹3 lakh', hi: '₹1 लाख से ₹3 लाख' } },
+          { id: '3_8l', label: { en: '₹3 lakh to ₹8 lakh', hi: '₹3 लाख से ₹8 लाख' } },
+          { id: 'over_8l', label: { en: 'Over ₹8 lakh', hi: '₹8 लाख से अधिक' } },
+        ],
       },
       {
-        id: 'q_money_priority',
+        id: 'loan_band',
         section_id: 'money',
         type: 'single_choice',
         prompt: {
-          en: 'What is your primary financial priority when selecting a college program?',
-          hi: 'कॉलेज या कोर्स चुनते समय आपकी प्राथमिक वित्तीय प्राथमिकता क्या है?'
+          en: 'What amount of education loan would your family feel comfortable taking?',
+          hi: 'आपकी पारिवारिक स्थिति के अनुसार आप कितना शिक्षा ऋण (लोन) लेने में सहज हैं?',
         },
         required: true,
         options: [
-          { id: 'opt_p1', label: { en: 'Quick return on investment (high early starting salary)', hi: 'लागत की जल्द भरपाई (शुरुआती अच्छा वेतन)' } },
-          { id: 'opt_p2', label: { en: 'Minimizing debt and keeping upfront expenses low', hi: 'कर्ज से बचना और शुरुआती खर्च कम रखना' } },
-          { id: 'opt_p3', label: { en: 'Institutional prestige and brand value regardless of cost', hi: 'संस्थान की प्रतिष्ठा और ब्रांड वैल्यू, चाहे लागत जो भी हो' } },
-          { id: 'opt_p4', label: { en: 'Long-term career ceiling rather than short-term payback', hi: 'दीर्घकालिक करियर विकास, न कि सिर्फ़ तात्कालिक लाभ' } },
-        ]
-      }
-    ]
+          { id: 'none', label: { en: 'Prefer no loan at all', hi: 'लोन बिल्कुल नहीं लेना चाहते' } },
+          { id: 'up_to_3l', label: { en: 'Up to ₹3 lakh', hi: '₹3 लाख तक' } },
+          { id: '3_8l', label: { en: '₹3 lakh to ₹8 lakh', hi: '₹3 लाख से ₹8 लाख' } },
+          { id: '8_15l', label: { en: '₹8 lakh to ₹15 lakh', hi: '₹8 लाख से ₹15 लाख' } },
+          { id: 'over_15l', label: { en: 'Over ₹15 lakh', hi: '₹15 लाख से अधिक' } },
+        ],
+      },
+      {
+        id: 'surplus_band',
+        section_id: 'money',
+        type: 'single_choice',
+        prompt: {
+          en: 'How much money is left over each month after all expenses?',
+          hi: 'हर महीने सारे खर्चों के बाद परिवार के पास लगभग कितनी बचत बचती है?',
+        },
+        required: true,
+        options: [
+          { id: 'none', label: { en: 'None', hi: 'कुछ नहीं' } },
+          { id: 'under_5k', label: { en: 'Under ₹5,000 (illustrative)', hi: '₹5,000 से कम (अनुमानित)' } },
+          { id: '5k_15k', label: { en: '₹5,000 to ₹15,000 (illustrative)', hi: '₹5,000 से ₹15,000 (अनुमानित)' } },
+          { id: '15k_30k', label: { en: '₹15,000 to ₹30,000 (illustrative)', hi: '₹15,000 से ₹30,000 (अनुमानित)' } },
+          { id: 'over_30k', label: { en: 'Over ₹30,000 (illustrative)', hi: '₹30,000 से अधिक (अनुमानित)' } },
+        ],
+      },
+      {
+        id: 'emi_band',
+        section_id: 'money',
+        type: 'single_choice',
+        prompt: {
+          en: 'What total loan EMIs does the family already pay each month?',
+          hi: 'परिवार हर महीने कुल कितनी लोन ईएमआई (EMI) भरता है?',
+        },
+        required: true,
+        options: [
+          { id: 'none', label: { en: 'None', hi: 'कोई ईएमआई नहीं' } },
+          { id: 'under_5k', label: { en: 'Under ₹5,000 (illustrative)', hi: '₹5,000 से कम (अनुमानित)' } },
+          { id: '5k_15k', label: { en: '₹5,000 to ₹15,000 (illustrative)', hi: '₹5,000 से ₹15,000 (अनुमानित)' } },
+          { id: 'over_15k', label: { en: 'Over ₹15,000 (illustrative)', hi: '₹15,000 से अधिक (अनुमानित)' } },
+        ],
+      },
+    ],
   },
   {
     id: 'risk',
-    title: { en: 'Risk & Stability', hi: 'स्थिरता और जोखिम' },
-    description: { en: 'Career security, relocation, and preparation timelines', hi: 'करियर सुरक्षा, स्थानांतरण और तैयारी की अवधि' },
+    title: { en: 'Career Risk & Return', hi: 'करियर जोखिम और लाभ' },
+    description: { en: 'Risk preference on post-college job outcomes', hi: 'कॉलेज के बाद करियर सुरक्षा और जोखिम' },
     questions: [
       {
-        id: 'q_risk_security',
+        id: 'risk_1',
         section_id: 'risk',
         type: 'single_choice',
         prompt: {
-          en: 'How important is job stability versus rapid financial growth in your child’s career?',
-          hi: 'बच्चे के करियर में नौकरी की स्थिरता बनाम तेज़ वित्तीय तरक्की कितनी महत्वपूर्ण है?'
+          en: 'Imagine two starting job offers for your child after college. Which would you prefer they choose?',
+          hi: 'कल्पना करें कि कॉलेज के बाद आपके बच्चे के सामने नौकरी के दो विकल्प हैं। आप किसे प्राथमिकता देंगे?',
         },
         required: true,
         options: [
-          { id: 'opt_sec1', label: { en: 'Stability is essential (Govt, PSU, or established enterprise)', hi: 'स्थिरता सबसे ज़रूरी है (सरकारी, PSU या स्थापित संस्थान)' } },
-          { id: 'opt_sec2', label: { en: 'Balanced (stable industry with good corporate promotion track)', hi: 'संतुलित (स्थिर उद्योग और अच्छी पदोन्नति के अवसर)' } },
-          { id: 'opt_sec3', label: { en: 'Growth-first (open to startups, tech, and fast-changing sectors)', hi: 'विकास प्राथमिकता (स्टार्टअप्स, तकनीक और नए क्षेत्र)' } },
-          { id: 'opt_sec4', label: { en: 'Entrepreneurial (fully comfortable with high risk / reward)', hi: 'उद्यमिता (उच्च जोखिम और बड़े अवसरों के लिए तैयार)' } },
-        ]
+          {
+            id: 'safe',
+            label: {
+              en: '₹3.5 lakh a year, guaranteed (illustrative)',
+              hi: '₹3.5 लाख प्रति वर्ष, तय और सुरक्षित (अनुमानित)',
+            },
+          },
+          {
+            id: 'gamble',
+            label: {
+              en: '50% chance of ₹10 lakh a year, 50% chance of ₹2 lakh a year (illustrative)',
+              hi: '50% संभावना ₹10 लाख प्रति वर्ष की, 50% संभावना ₹2 लाख प्रति वर्ष की (अनुमानित)',
+            },
+          },
+        ],
       },
       {
-        id: 'q_risk_location',
+        id: 'risk_2',
         section_id: 'risk',
         type: 'single_choice',
         prompt: {
-          en: 'What is your stance on your child relocating for higher studies or work?',
-          hi: 'उच्च शिक्षा या नौकरी के लिए बच्चे के बाहर जाने पर आपका क्या विचार है?'
+          en: 'Imagine a different set of starting job offers for your child. Which would you prefer they choose?',
+          hi: 'अब मान लें कि आपके बच्चे के सामने ये दो विकल्प हैं। आप किसे बेहतर मानेंगे?',
         },
         required: true,
         options: [
-          { id: 'opt_loc1', label: { en: 'Prefer staying within our home city / region', hi: 'अपने शहर या आसपास के क्षेत्र में रहना पसंद करेंगे' } },
-          { id: 'opt_loc2', label: { en: 'Any major metropolitan hub across India is welcome', hi: 'भारत के किसी भी बड़े शहर में जाने के लिए पूरी सहमति है' } },
-          { id: 'opt_loc3', label: { en: 'Open to studies and careers abroad if feasible', hi: 'यदि संभव हो तो विदेश जाकर पढ़ाई या काम करने के लिए तैयार' } },
-        ]
+          {
+            id: 'safe',
+            label: {
+              en: '₹4.5 lakh a year, guaranteed (illustrative)',
+              hi: '₹4.5 लाख प्रति वर्ष, तय और सुरक्षित (अनुमानित)',
+            },
+          },
+          {
+            id: 'gamble',
+            label: {
+              en: '50% chance of ₹10 lakh a year, 50% chance of ₹2 lakh a year (illustrative)',
+              hi: '50% संभावना ₹10 लाख प्रति वर्ष की, 50% संभावना ₹2 लाख प्रति वर्ष की (अनुमानित)',
+            },
+          },
+        ],
       },
       {
-        id: 'q_risk_gap',
+        id: 'risk_3',
         section_id: 'risk',
         type: 'single_choice',
         prompt: {
-          en: 'How comfortable are you with a drop year (gap year) for competitive exam prep?',
-          hi: 'प्रतियोगी परीक्षा की तैयारी के लिए ड्रॉप ईयर (गैप ईयर) लेने पर आपकी क्या राय है?'
+          en: 'Imagine a higher guaranteed offer vs the same variable opportunity. Which would you prefer they choose?',
+          hi: 'मान लें कि एक अधिक सुरक्षित विकल्प और वही अनिश्चित अवसर सामने है। आप क्या चुनेंगे?',
         },
         required: true,
         options: [
-          { id: 'opt_gap1', label: { en: 'Strictly no gap year; continuous admission is preferred', hi: 'ड्रॉप ईयर नहीं लेना चाहिए; सीधे प्रवेश बेहतर है' } },
-          { id: 'opt_gap2', label: { en: 'One dedicated drop year is acceptable for top tier exams', hi: 'शीर्ष परीक्षाओं के लिए एक साल का ड्रॉप स्वीकार्य है' } },
-          { id: 'opt_gap3', label: { en: 'Flexible if there is a structured coaching plan and discipline', hi: 'यदि सुनियोजित तैयारी और अनुशासन हो तो कोई आपत्ति नहीं' } },
-        ]
-      }
-    ]
+          {
+            id: 'safe',
+            label: {
+              en: '₹5.5 lakh a year, guaranteed (illustrative)',
+              hi: '₹5.5 लाख प्रति वर्ष, तय और सुरक्षित (अनुमानित)',
+            },
+          },
+          {
+            id: 'gamble',
+            label: {
+              en: '50% chance of ₹10 lakh a year, 50% chance of ₹2 lakh a year (illustrative)',
+              hi: '50% संभावना ₹10 लाख प्रति वर्ष की, 50% संभावना ₹2 लाख प्रति वर्ष की (अनुमानित)',
+            },
+          },
+        ],
+      },
+    ],
   },
   {
     id: 'plans',
-    title: { en: 'Academic Path & Timeline', hi: 'शैक्षणिक योजना और समय' },
-    description: { en: 'Degree structures and postgraduate expectations', hi: 'डिग्री का स्वरूप और स्नातकोत्तर की उम्मीदें' },
+    title: { en: 'Future Plans', hi: 'भविष्य की योजनाएं' },
+    description: { en: 'Relocation boundaries and timeline expectations', hi: 'शहर से दूरी और कमाई शुरू करने का समय' },
     questions: [
       {
-        id: 'q_plans_degree',
+        id: 'relocation',
         section_id: 'plans',
         type: 'single_choice',
         prompt: {
-          en: 'What degree path do you envision for your child right after school?',
-          hi: 'स्कूल के बाद आप अपने बच्चे के लिए किस प्रकार की डिग्री की उम्मीद करते हैं?'
+          en: 'How far are you comfortable sending your child for higher studies or work?',
+          hi: 'पढ़ाई या नौकरी के लिए आप अपने बच्चे को कितनी दूर भेजने में सहज हैं?',
         },
         required: true,
-        options: [
-          { id: 'opt_deg1', label: { en: 'Standard 3-4 year Bachelor’s (B.Tech, B.Sc, B.Com, BA)', hi: 'पारंपरिक 3-4 वर्षीय स्नातक डिग्री (B.Tech, B.Sc, B.Com, BA)' } },
-          { id: 'opt_deg2', label: { en: 'Integrated 5-year Dual Degree (B.Tech+M.Tech, BBA+MBA, Law)', hi: '5 वर्षीय एकीकृत दोहरी डिग्री (B.Tech+M.Tech, BBA+MBA, लॉ)' } },
-          { id: 'opt_deg3', label: { en: 'Professional certification / vocational specialization', hi: 'व्यावसायिक या विशेष सर्टिफिकेशन कार्यक्रम' } },
-        ]
+        options: RELOCATION_OPTIONS,
       },
       {
-        id: 'q_plans_postgrad',
+        id: 'time_to_earn',
         section_id: 'plans',
         type: 'single_choice',
         prompt: {
-          en: 'What is your expectation regarding postgraduate studies (Masters / MBA)?',
-          hi: 'स्नातकोत्तर (Masters / MBA) की पढ़ाई को लेकर आपकी क्या अपेक्षा है?'
+          en: 'How soon do you expect your child to start earning after completing school?',
+          hi: 'स्कूल पूरा करने के बाद आप बच्चे से कब तक कमाई शुरू करने की उम्मीद करते हैं?',
         },
         required: true,
-        options: [
-          { id: 'opt_pg1', label: { en: 'Should start working immediately after graduation', hi: 'स्नातक पूरा होते ही नौकरी शुरू करनी चाहिए' } },
-          { id: 'opt_pg2', label: { en: 'Work 2-3 years first, then pursue a specialized Masters / MBA', hi: 'पहले 2-3 साल काम करे, फिर मास्टर्स या एमबीए करे' } },
-          { id: 'opt_pg3', label: { en: 'Complete Masters / higher degrees back-to-back before work', hi: 'नौकरी से पहले मास्टर्स या उच्च शिक्षा पूरी करे' } },
-        ]
-      }
-    ]
+        options: TIME_TO_EARN_OPTIONS,
+      },
+    ],
   },
   {
     id: 'hopes',
-    title: { en: 'Aspirations & Hopes', hi: 'उम्मीदें और आकांक्षाएँ' },
-    description: { en: 'Fields of pride, family involvement, and personal wishes', hi: 'पसंदीदा क्षेत्र, पारिवारिक सहयोग और व्यक्तिगत उम्मीदें' },
+    title: { en: 'Aspirations & Hopes', hi: 'उम्मीदें और प्राथमिकताएं' },
+    description: { en: 'Aspirational career domains and non-negotiables', hi: 'पसंदीदा करियर क्षेत्र और मुख्य प्राथमिकताएँ' },
     questions: [
       {
-        id: 'q_hopes_fields',
+        id: 'domain_wish',
         section_id: 'hopes',
         type: 'multi_choice',
         max_select: 3,
         prompt: {
-          en: 'Which sectors or career paths would you be proudest to see your child pursue? (Select up to 3)',
-          hi: 'किन क्षेत्रों या करियर में बच्चे को आगे बढ़ते देख आपको सबसे ज़्यादा गर्व होगा? (अधिकतम 3 चुनें)'
+          en: 'Which career domains do you hope your child considers? (Pick up to 3)',
+          hi: 'आप किन क्षेत्रों में अपने बच्चे के जाने की उम्मीद रखते हैं? (अधिकतम 3 चुनें)',
         },
         required: true,
-        options: [
-          { id: 'fld_tech', label: { en: 'Engineering, AI & Technology', hi: 'इंजीनियरिंग, एआई और तकनीक' } },
-          { id: 'fld_med', label: { en: 'Medicine, Surgery & Healthcare', hi: 'चिकित्सा और स्वास्थ्य सेवा' } },
-          { id: 'fld_gov', label: { en: 'Civil Services, Defense & Public Administration', hi: 'सिविल सेवा, रक्षा और लोक प्रशासन' } },
-          { id: 'fld_biz', label: { en: 'Business Management, Consulting & Finance', hi: 'बिजनेस मैनेजमेंट, कंसल्टिंग और फाइनेंस' } },
-          { id: 'fld_law', label: { en: 'Law, Judiciary & Legal Practice', hi: 'कानून और न्यायपालिका' } },
-          { id: 'fld_art', label: { en: 'Design, Architecture & Creative Media', hi: 'डिजाइन, वास्तुकला और मीडिया' } },
-          { id: 'fld_sci', label: { en: 'Academic Research & Pure Sciences', hi: 'शोध और वैज्ञानिक अनुसंधान' } },
-        ]
+        options: CANONICAL_CAREER_DOMAIN_OPTIONS,
       },
       {
-        id: 'q_hopes_support',
+        id: 'non_negotiables',
         section_id: 'hopes',
         type: 'multi_choice',
         prompt: {
-          en: 'How are you most excited to support them on this journey? (Optional)',
-          hi: 'इस यात्रा में आप किस प्रकार उनका सहयोग करने के लिए सबसे उत्सुक हैं? (वैकल्पिक)'
+          en: 'Are there any factors you consider non-negotiable for their career?',
+          hi: 'क्या ऐसी कोई बातें हैं जिन पर आप बिल्कुल समझौता नहीं करना चाहते?',
         },
         required: false,
         options: [
-          { id: 'sup_mentor', label: { en: 'Mentorship, industry guidance and professional network', hi: 'मार्गदर्शन और व्यावसायिक नेटवर्क से जोड़ना' } },
-          { id: 'sup_moral', label: { en: 'Unconditional emotional and motivational encouragement', hi: 'सकारात्मक माहौल और भावनात्मक संबल' } },
-          { id: 'sup_finance', label: { en: 'Financial backup and safety cushion', hi: 'आर्थिक सहयोग और सुरक्षा' } },
-          { id: 'sup_indep', label: { en: 'Giving full autonomy to make and learn from their choices', hi: 'स्वतंत्रता और अपने निर्णय खुद लेने का अवसर' } },
-        ]
+          { id: 'near_home', label: { en: 'Must stay close to family', hi: 'परिवार के पास रहना जरूरी' } },
+          { id: 'job_security', label: { en: 'High job security is essential', hi: 'नौकरी की सुरक्षा सबसे जरूरी' } },
+          { id: 'govt_or_public', label: { en: 'Government or public sector preferred', hi: 'सरकारी या सार्वजनिक क्षेत्र को प्राथमिकता' } },
+          { id: 'low_loan', label: { en: 'Must avoid heavy education debt', hi: 'भारी कर्ज से बचना जरूरी' } },
+        ],
       },
       {
-        id: 'q_hopes_personal',
+        id: 'hope_text',
         section_id: 'hopes',
         type: 'long_text',
-        max_length: 300,
         prompt: {
-          en: 'What is your biggest personal hope or message for your child’s future? (Optional)',
-          hi: 'अपने बच्चे के भविष्य के लिए आपकी सबसे बड़ी व्यक्तिगत उम्मीद या संदेश क्या है? (वैकल्पिक)'
+          en: "In your own words, what is your biggest hope or dream for your child's future?",
+          hi: 'अपने शब्दों में बताएं, अपने बच्चे के भविष्य के लिए आपकी सबसे बड़ी उम्मीद या सपना क्या है?',
         },
         required: false,
+        max_length: 600,
         placeholder: {
-          en: 'Share your hopes for their happiness, independence, resilience...',
-          hi: 'उनकी खुशी, आत्मनिर्भरता और सफलता को लेकर अपनी भावनाएँ साझा करें...'
-        }
-      }
-    ]
+          en: 'Share your thoughts, expectations, or concerns (optional)...',
+          hi: 'अपने विचार, उम्मीदें या चिंताएं साझा करें (वैकल्पिक)...',
+        },
+      },
+    ],
   },
   {
     id: 'perception',
-    title: { en: 'Strengths & Perception', hi: 'क्षमता और समझ' },
-    description: { en: 'Observed strengths and natural inclinations', hi: 'बच्चे की ताकत और स्वाभाविक प्रवृत्तियाँ' },
+    title: { en: 'Understanding Your Child', hi: 'बच्चे की पसंद की समझ' },
+    description: { en: 'What you perceive about your child’s interests and risk appetite', hi: 'बच्चे की रुचियों और जोखिम लेने की समझ' },
     questions: [
       {
-        id: 'q_perc_strength',
+        id: 'guess_domain',
         section_id: 'perception',
         type: 'single_choice',
         prompt: {
-          en: 'Where do you observe your child naturally shining the brightest?',
-          hi: 'आपके अनुसार आपका बच्चा स्वाभाविक रूप से किस चीज़ में सबसे बेहतर है?'
+          en: 'Which field do you think your child is most interested in?',
+          hi: 'आपको क्या लगता है, आपका बच्चा किस क्षेत्र में सबसे ज्यादा रुचि रखता है?',
         },
         required: true,
         options: [
-          { id: 'str_logic', label: { en: 'Logical reasoning, quantitative calculations and problem-solving', hi: 'तार्किक सोच, गणितीय गणना और समस्याओं का हल' } },
-          { id: 'str_people', label: { en: 'Communication, empathy and connecting with people', hi: 'संवाद, सहानुभूति और लोगों से जुड़ाव' } },
-          { id: 'str_creative', label: { en: 'Artistic creativity, innovative design and out-of-box ideas', hi: 'रचनात्मकता, कला और नए विचार' } },
-          { id: 'str_practical', label: { en: 'Practical execution, organizing tasks and building physical things', hi: 'व्यावहारिक काम, चीज़ें बनाना और प्रबंधन' } },
-        ]
+          ...CANONICAL_CAREER_DOMAIN_OPTIONS,
+          { id: 'not_sure', label: { en: 'Not sure / Open to anything', hi: 'पक्का नहीं पता / किसी भी क्षेत्र में' } },
+        ],
       },
       {
-        id: 'q_perc_pressure',
+        id: 'guess_relocation',
         section_id: 'perception',
         type: 'single_choice',
         prompt: {
-          en: 'How does your child typically respond during stressful exam or competition periods?',
-          hi: 'परीक्षा या तनावपूर्ण समय में आपका बच्चा आमतौर पर कैसा व्यवहार करता है?'
+          en: 'How far do you think your child is willing to move for college or work?',
+          hi: 'आपको क्या लगता है, आपका बच्चा कॉलेज या काम के लिए कितनी दूर जाने को तैयार है?',
         },
         required: true,
-        options: [
-          { id: 'prs_calm', label: { en: 'Remains calm, methodical and sticks to a consistent schedule', hi: 'शांत रहता है और योजनाबद्ध तरीके से पढ़ाई करता है' } },
-          { id: 'prs_burst', label: { en: 'Works in energetic, intense bursts closer to deadlines', hi: 'आखिरी दिनों में बहुत ऊर्जा और एकाग्रता के साथ काम करता है' } },
-          { id: 'prs_anxious', label: { en: 'Experiences anxiety and thrives best with regular parent reassurance', hi: 'तनाव महसूस करता है और प्रोत्साहन से बेहतर करता है' } },
-        ]
+        options: RELOCATION_OPTIONS,
       },
       {
-        id: 'q_perc_discussion',
+        id: 'guess_risk',
         section_id: 'perception',
         type: 'single_choice',
         prompt: {
-          en: 'How are major educational and career choices currently discussed at home?',
-          hi: 'घर पर पढ़ाई और करियर से जुड़े बड़े फैसले किस तरह लिए जाते हैं?'
+          en: "How would you describe your child's appetite for career risk?",
+          hi: 'करियर में जोखिम लेने के मामले में आपके बच्चे का रवैया कैसा है?',
         },
         required: true,
         options: [
-          { id: 'disc_open', label: { en: 'Open equal discussions where everyone shares viewpoints freely', hi: 'खुली बातचीत जहाँ सभी अपनी राय खुलकर रखते हैं' } },
-          { id: 'disc_guided', label: { en: 'Parents provide structured guidance and shortlisted choices', hi: 'अभिभावक सही दिशा और विकल्प सुझाते हैं' } },
-          { id: 'disc_student', label: { en: 'Child takes full ownership and parents support their lead', hi: 'बच्चा खुद निर्णय लेता है और परिवार उसका साथ देता है' } },
-        ]
-      }
-    ]
-  }
+          { id: 'low', label: { en: 'Prefers safe, predictable options', hi: 'सुरक्षित और तय रास्ते पसंद करता/करती है' } },
+          { id: 'medium', label: { en: 'Balanced: open to reasonable risks', hi: 'संतुलित: सोच-समझकर जोखिम ले सकता/सकती है' } },
+          { id: 'high', label: { en: 'Ambitious: willing to take big risks for big rewards', hi: 'महत्वाकांक्षी: बड़े अवसरों के लिए बड़ा जोखिम लेने को तैयार' } },
+        ],
+      },
+    ],
+  },
 ];
 
 // ==========================================
@@ -1226,7 +1645,7 @@ export async function getIntakeQuestions(
     if (token.includes('student-token-invalid')) {
       throw new ApiError('wrong_role', 'Student cannot access parent intake', 403);
     }
-    return { sections: MOCK_INTAKE_SECTIONS };
+    return { version: 'starter-2', sections: MOCK_INTAKE_SECTIONS };
   }
 
   try {
@@ -1241,7 +1660,7 @@ export async function getIntakeQuestions(
     );
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) {
-      return { sections: MOCK_INTAKE_SECTIONS };
+      return { version: 'starter-2', sections: MOCK_INTAKE_SECTIONS };
     }
     throw err;
   }
