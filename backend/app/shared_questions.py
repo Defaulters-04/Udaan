@@ -7,6 +7,7 @@ All financial amounts are illustrative approximations.
 
 from __future__ import annotations
 from dataclasses import dataclass
+from typing import Any
 
 from engine.domains import CANONICAL_DOMAINS
 
@@ -44,6 +45,43 @@ RISK_3_OPTIONS: list[InternalOption] = [
 ]
 
 
+# Edit 1: Shared Risk 3 Prompts
+PREF_RISK_3_PROMPT_EN = "Imagine one more pair of starting job offers. Which would you choose?"
+PREF_RISK_3_PROMPT_HI = "एक और बार, मान लें कि आपके सामने नौकरी के ये दो विकल्प हैं। आप किसे चुनेंगे?"
+
+# Risk Steps for Mirror display (defined ONCE next to shared risk definition)
+RISK_STEPS: list[dict[str, Any]] = [
+    {
+        "id": "risk_0",
+        "label": {
+            "en": "Chose the guaranteed offer every time",
+            "hi": "हर बार पक्की कमाई वाला विकल्प चुना",
+        },
+    },
+    {
+        "id": "risk_1",
+        "label": {
+            "en": "Chose the gamble once",
+            "hi": "एक बार जोखिम वाला विकल्प चुना",
+        },
+    },
+    {
+        "id": "risk_2",
+        "label": {
+            "en": "Chose the gamble twice",
+            "hi": "दो बार जोखिम वाला विकल्प चुना",
+        },
+    },
+    {
+        "id": "risk_3",
+        "label": {
+            "en": "Chose the gamble every time",
+            "hi": "हर बार जोखिम वाला विकल्प चुना",
+        },
+    },
+]
+
+
 # ---------------------------------------------------------------------------
 # 2. Shared Relocation Options (pref_relocation, relocation, guess_relocation)
 # ---------------------------------------------------------------------------
@@ -54,14 +92,43 @@ RELOCATION_OPTIONS: list[InternalOption] = [
     InternalOption("abroad_ok", "Abroad / International is fine too", "विदेश जाने में भी कोई आपत्ति नहीं"),
 ]
 
+RELOCATION_STEPS: list[dict[str, Any]] = [
+    {
+        "id": opt.id,
+        "label": {"en": opt.label_en, "hi": opt.label_hi},
+    }
+    for opt in RELOCATION_OPTIONS
+]
+
 
 # ---------------------------------------------------------------------------
 # 3. Shared Time-to-Earn Options (pref_time_to_earn and time_to_earn)
 # ---------------------------------------------------------------------------
+# Edit 2: Updated labels for time_to_earn options
 TIME_TO_EARN_OPTIONS: list[InternalOption] = [
-    InternalOption("within_4y", "Within 3 to 4 years (e.g., direct degree or diploma)", "3 से 4 साल के भीतर (जैसे डिग्री या डिप्लोमा के तुरंत बाद)"),
-    InternalOption("five_six", "In 5 to 6 years (e.g., professional degree like B.Tech / MBBS / Masters)", "5 से 6 साल में (जैसे बी.टेक, एमबीबीएस या मास्टर्स के बाद)"),
-    InternalOption("seven_plus", "7+ years is fine (e.g., advanced research or specialization)", "7 साल या उससे अधिक भी चलेगा (जैसे उच्च शोध या विशेषज्ञता)"),
+    InternalOption(
+        "within_4y",
+        "About 4 years (e.g., a regular degree, B.Tech or a diploma)",
+        "लगभग 4 साल (जैसे सामान्य डिग्री, बी.टेक या डिप्लोमा)",
+    ),
+    InternalOption(
+        "five_six",
+        "About 5 to 6 years (e.g., MBBS, 5-year law, or a degree plus a Master's)",
+        "लगभग 5 से 6 साल (जैसे एमबीबीएस, 5 साल का लॉ, या डिग्री के बाद मास्टर्स)",
+    ),
+    InternalOption(
+        "seven_plus",
+        "7 years or more is fine (e.g., MD/MS or a PhD)",
+        "7 साल या उससे ज़्यादा भी चलेगा (जैसे एमडी/एमएस या पीएचडी)",
+    ),
+]
+
+TIME_TO_EARN_STEPS: list[dict[str, Any]] = [
+    {
+        "id": opt.id,
+        "label": {"en": opt.label_en, "hi": opt.label_hi},
+    }
+    for opt in TIME_TO_EARN_OPTIONS
 ]
 
 
@@ -70,6 +137,14 @@ TIME_TO_EARN_OPTIONS: list[InternalOption] = [
 # ---------------------------------------------------------------------------
 CAREER_DOMAINS: list[InternalOption] = [
     InternalOption(id=d.id, label_en=d.en, label_hi=d.hi)
+    for d in CANONICAL_DOMAINS
+]
+
+MIRROR_DOMAIN_OPTIONS: list[dict[str, Any]] = [
+    {
+        "id": d.id,
+        "label": {"en": d.en, "hi": d.hi},
+    }
     for d in CANONICAL_DOMAINS
 ]
 
