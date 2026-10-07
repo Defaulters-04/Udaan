@@ -163,6 +163,11 @@ class MarketReport(BaseModel):
     source_labels: Dict[str, str] = Field(default_factory=dict, description="Audit source citations")
     fetched_at: Optional[str] = None
     explanation: str = Field(..., description="Template-based factual explanation")
+    demand_tier: str = Field(default="stable", description="Demand tier: rising, stable, declining")
+    velocity_tier: str = Field(default="stable", description="Velocity tier: rising, stable, declining")
+    disruption_tier: str = Field(default="medium", description="Disruption tier: low, medium, high")
+    market_tier_points: float = Field(default=60.0, description="Lookup points from market tiers (0-100)")
+    evidence_level: str = Field(default="career", description="Evidence citation level")
 
 
 class MarketCatalogueResult(BaseModel):
@@ -194,9 +199,14 @@ class RankedCareer(BaseModel):
     F_student: float
     F_family: float
     F_market: float
-    conflict_score: float
+    fit_gap: float = Field(..., description="Per-career |Fit - Family| gap (0-100)")
     composite_score: float
     final_score: float
+
+    @property
+    def conflict_score(self) -> float:
+        """Alias for backward compatibility."""
+        return self.fit_gap
 
 
 class BlockedCareer(BaseModel):

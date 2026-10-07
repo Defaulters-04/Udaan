@@ -3,44 +3,42 @@ config.py
 UDAAN PRISM Engine — Student Fit Configuration
 
 Centralized configuration for stage weights, dimensions, scale bounds,
-and sensitivity analysis parameters.
+sensitivity analysis parameters, stretch criteria, and blended interest fit.
 """
 
 from typing import Final
+from engine.config import DEFAULT_CONFIG as MASTER_CONFIG, StudentFitConfig
+
+# Link to master engine config
+DEFAULT_STUDENT_CONFIG: StudentFitConfig = MASTER_CONFIG.student_fit
 
 # Scale normalization bounds
-SCALE_MIN: Final[float] = 0.0
-SCALE_MAX: Final[float] = 1.0
+SCALE_MIN: Final[float] = DEFAULT_STUDENT_CONFIG.scale_min
+SCALE_MAX: Final[float] = DEFAULT_STUDENT_CONFIG.scale_max
 
 # RIASEC 6-factor interest model dimensions (order-preserved for Pearson vectors)
-RIASEC_DIMENSIONS: Final[list[str]] = ["R", "I", "A", "S", "E", "C"]
+RIASEC_DIMENSIONS: Final[list[str]] = list(DEFAULT_STUDENT_CONFIG.riasec_dimensions)
 
 # Core aptitude dimensions evaluated in student cognitive profiling
-APTITUDE_DIMENSIONS: Final[list[str]] = ["logical", "numerical", "verbal", "spatial"]
+APTITUDE_DIMENSIONS: Final[list[str]] = list(DEFAULT_STUDENT_CONFIG.aptitude_dimensions)
 
 # Stage-specific scoring weights: w_I (Interest), w_A (Aptitude), w_S (Skill), w_P (Personality)
-# school:  0.55, 0.35, 0.00, 0.10 (skips SkillFit entirely for early learners)
-# college: 0.40, 0.30, 0.20, 0.10 (incorporates acquired domain skills)
 STAGE_WEIGHTS: dict[str, dict[str, float]] = {
-    "school": {
-        "w_I": 0.55,
-        "w_A": 0.35,
-        "w_S": 0.00,
-        "w_P": 0.10,
-    },
-    "college": {
-        "w_I": 0.40,
-        "w_A": 0.30,
-        "w_S": 0.20,
-        "w_P": 0.10,
-    },
+    "school": dict(DEFAULT_STUDENT_CONFIG.stage_weights_school),
+    "college": dict(DEFAULT_STUDENT_CONFIG.stage_weights_college),
 }
 
-# SWOT Analysis configuration
-# For strengths: "high u_j" criterion choice
-# Option "mean": importance u_j >= mean(u) across that career's aptitude importances
-# Option "median": top half of that career's aptitude importances
-SWOT_IMPORTANCE_CRITERIA: Final[str] = "mean"
+# Stretch career threshold (Fix 3)
+# Weighted aptitude shortfall ratio threshold
+STRETCH_SHORTFALL_RATIO: Final[float] = DEFAULT_STUDENT_CONFIG.stretch_shortfall_ratio  # design assumption, unsourced
 
-# Maximum count of top weaknesses to return
-SWOT_MAX_WEAKNESSES: Final[int] = 3
+# InterestFit blend weights (Fix 6)
+W_PEARSON: Final[float] = DEFAULT_STUDENT_CONFIG.w_pearson  # design assumption, unsourced
+W_OVERLAP: Final[float] = DEFAULT_STUDENT_CONFIG.w_overlap  # design assumption, unsourced
+
+# Flat RIASEC standard deviation threshold (Fix 6)
+RIASEC_FLAT_STD_THRESHOLD: Final[float] = DEFAULT_STUDENT_CONFIG.riasec_flat_std_threshold  # design assumption, unsourced
+
+# SWOT Analysis configuration
+SWOT_IMPORTANCE_CRITERIA: Final[str] = DEFAULT_STUDENT_CONFIG.swot_importance_criteria
+SWOT_MAX_WEAKNESSES: Final[int] = DEFAULT_STUDENT_CONFIG.swot_max_weaknesses

@@ -14,6 +14,60 @@ def clamp(val: float, low: float = 0.0, high: float = 1.0) -> float:
     return max(low, min(high, float(val)))
 
 
+def map_velocity_to_tier(velocity: Optional[float], config: MarketSolverConfig = DEFAULT_CONFIG) -> str:
+    """Map velocity/growth rate to tier: rising, stable, declining (Fix 5)."""
+    if velocity is None or (isinstance(velocity, float) and np.isnan(velocity)):
+        return "stable"
+    v = float(velocity)
+    if v > config.velocity_rising_threshold:
+        return "rising"
+    elif v < config.velocity_declining_threshold:
+        return "declining"
+    return "stable"
+
+
+def map_demand_to_tier(demand: Optional[float], config: MarketSolverConfig = DEFAULT_CONFIG) -> str:
+    """Map raw demand level postings to tier: rising, stable, declining (Fix 5)."""
+    if demand is None or (isinstance(demand, float) and np.isnan(demand)):
+        return "stable"
+    d = float(demand)
+    if d >= config.demand_rising_threshold:
+        return "rising"
+    elif d <= config.demand_declining_threshold:
+        return "declining"
+    return "stable"
+
+
+def map_disruption_to_tier(disruption: Optional[float], config: MarketSolverConfig = DEFAULT_CONFIG) -> str:
+    """Map disruption index D to tier: low, medium, high (Fix 5)."""
+    if disruption is None or (isinstance(disruption, float) and np.isnan(disruption)):
+        return "medium"
+    d = float(disruption)
+    if d <= config.disruption_low_threshold:
+        return "low"
+    elif d >= config.disruption_high_threshold:
+        return "high"
+    return "medium"
+
+
+def calculate_tier_points(
+    demand_tier: str,
+    velocity_tier: str,
+    disruption_tier: str,
+    config: MarketSolverConfig = DEFAULT_CONFIG,
+) -> float:
+    """Convert tiers to points via lookup table in config (Fix 5)."""
+    table = config.tier_points
+    p_dem = table.get("demand", {}).get(demand_tier, 60.0)
+    p_vel = table.get("velocity", {}).get(velocity_tier, 60.0)
+    p_dis = table.get("disruption", {}).get(disruption_tier, 60.0)
+    total_w = config.w_tier_demand + config.w_tier_velocity + config.w_tier_disruption
+    if total_w <= 0.0:
+        total_w = 1.0
+    score = (config.w_tier_demand * p_dem + config.w_tier_velocity * p_vel + config.w_tier_disruption * p_dis) / total_w
+    return round(clamp(score, 0.0, 100.0), 2)
+
+
 def calculate_percentile_ranks(
     values: List[Optional[float]],
     config: MarketSolverConfig = DEFAULT_CONFIG,

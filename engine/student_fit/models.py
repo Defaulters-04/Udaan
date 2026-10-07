@@ -271,7 +271,13 @@ class Result:
     weaknesses: list[dict[str, Any]]
     blocked: bool
     blocked_reasons: list[str]
+    stretch: bool = False
+    stretch_reasons: list[str] = field(default_factory=list)
+    stretch_shortfall_ratio: float = 0.0
+    low_signal: bool = False
+    data_confidence: str = "high"
 
     def to_dict(self) -> dict[str, Any]:
         """Returns a clean JSON-serializable dictionary."""
         return asdict(self)
+

@@ -156,7 +156,7 @@ def calculate_grant_shortfall(
         cap_rb = 0.0
 
     # Constraint 3: 12 * EMI / Y1 <= dsr_gate_max -> EMI <= (dsr_gate_max * Y1) / 12
-    if starting_salary > 0.0:
+    if starting_salary is not None and starting_salary != "NOT FOUND" and float(starting_salary) > 0.0:
         max_emi_dsr = max(0.0, (config.dsr_gate_max * float(starting_salary)) / 12.0)
         cap_dsr = max_emi_dsr / emi_factor if emi_factor > 0 else 0.0
     else:
