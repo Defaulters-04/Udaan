@@ -79,6 +79,7 @@ export default function StudentAssessmentPage() {
   const retryCountRef = useRef(0);
   const unsavedAnswersRef = useRef<Record<string, AnswerValue>>({});
   const isTabVisibleRef = useRef(true);
+  const answersRef = useRef<Record<string, AnswerValue>>({});
 
   // Rehydrate store on mount per CONTEXT.md
   useEffect(() => {
@@ -185,6 +186,7 @@ export default function StudentAssessmentPage() {
   // Update answer in local state and queue autosave
   const setAnswer = useCallback(
     (qId: string, val: AnswerValue) => {
+      answersRef.current[qId] = val;
       setAnswers((prev) => {
         const next = { ...prev, [qId]: val };
         return next;
@@ -206,6 +208,7 @@ export default function StudentAssessmentPage() {
       .then(([qRes, pRes]) => {
         setSections(qRes.sections);
         setAnswers(pRes.answers || {});
+        answersRef.current = { ...(pRes.answers || {}) };
 
         if (pRes.submitted) {
           setPhase('done');
@@ -325,7 +328,7 @@ export default function StudentAssessmentPage() {
     const q = flatQuestions[currentIndex];
     if (!q) return;
 
-    const val = answers[q.id];
+    const val = answersRef.current[q.id] !== undefined ? answersRef.current[q.id] : answers[q.id];
     const answered = isQuestionAnswered(q, val);
 
     if (q.required && !answered) {
@@ -333,6 +336,7 @@ export default function StudentAssessmentPage() {
       return;
     }
 
+    setShowRequiredError(false);
     navigateToQuestion(currentIndex + 1);
   }, [flatQuestions, currentIndex, answers, navigateToQuestion]);
 
@@ -352,13 +356,14 @@ export default function StudentAssessmentPage() {
 
   // Auto-advance helper for single_choice and scale
   const scheduleAutoAdvance = useCallback(
-    (delayMs = 450) => {
+    (targetIndex: number, delayMs = 450) => {
       cancelAutoAdvance();
+      setShowRequiredError(false);
       autoAdvanceTimerRef.current = setTimeout(() => {
-        handleContinue();
+        navigateToQuestion(targetIndex);
       }, delayMs);
     },
-    [cancelAutoAdvance, handleContinue]
+    [cancelAutoAdvance, navigateToQuestion]
   );
 
   // Handle Single Choice selection
@@ -369,7 +374,7 @@ export default function StudentAssessmentPage() {
 
       setSelectedSingleChoice(optId);
       setAnswer(q.id, optId);
-      scheduleAutoAdvance(450);
+      scheduleAutoAdvance(currentIndex + 1, 450);
     },
     [flatQuestions, currentIndex, setAnswer, scheduleAutoAdvance]
   );
@@ -382,7 +387,7 @@ export default function StudentAssessmentPage() {
 
       setPulseScaleValue(num);
       setAnswer(q.id, num);
-      scheduleAutoAdvance(450);
+      scheduleAutoAdvance(currentIndex + 1, 450);
     },
     [flatQuestions, currentIndex, setAnswer, scheduleAutoAdvance]
   );
@@ -393,7 +398,7 @@ export default function StudentAssessmentPage() {
       const q = flatQuestions[currentIndex];
       if (!q) return;
 
-      const curr = (answers[q.id] as string[]) || [];
+      const curr = ((answersRef.current[q.id] !== undefined ? answersRef.current[q.id] : answers[q.id]) as string[]) || [];
       const next = curr.includes(optId)
         ? curr.filter((id) => id !== optId)
         : [...curr, optId];

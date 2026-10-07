@@ -133,13 +133,15 @@ export interface SaveAnswersPayload {
 }
 
 export interface SaveAnswersResponse {
-  saved: boolean;
-  answers: Record<string, AnswerValue>;
+  answered?: number;
+  total?: number;
+  saved?: boolean;
+  answers?: Record<string, AnswerValue>;
 }
 
 export interface SubmitAssessmentResponse {
   submitted: boolean;
-  done: boolean;
+  done?: boolean;
 }
 
 const getApiBaseUrl = (): string => {
@@ -756,7 +758,7 @@ export async function saveAnswers(
   return request<SaveAnswersResponse>(
     `/families/${encodeURIComponent(cleanCode)}/assessment/answers`,
     {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         'X-Member-Token': token,
       },
