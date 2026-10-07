@@ -1,0 +1,6 @@
+institute_id,evidence_level,programme,academic_year,annual_tuition_inr,hostel_mess_inr,other_fees_inr,source_url,last_verified,confidence
+iit_madras,education,B.Tech,2024-25,200000,NOT FOUND,NOT FOUND,https://www.iitm.ac.in/academics/academic-services/fee-structure,2024-07-15,high
+iit_bombay,education,B.Tech,2024-25,200000,NOT FOUND,NOT FOUND,https://www.iitb.ac.in/newacadhome/toFeeStructure.jsp,2024-07-20,high
+ceg_anna_univ,education,B.E.,2024-25,20000,NOT FOUND,NOT FOUND,https://www.annauniv.edu/drc/fees.php,2024-06-30,high
+jadavpur_univ,education,B.E.,2024-25,2400,NOT FOUND,NOT FOUND,http://www.jaduniv.edu.in/upload_files/admission_data/,2024-07-10,high
+aiims_delhi,education,MBBS,2024-25,1350,NOT FOUND,NOT FOUND,https://www.aiims.edu/en/academic-section.html,2024-08-01,high

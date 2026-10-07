@@ -1,0 +1,40 @@
+institute_id,institute_name,short_name,category,state,city,admission_channel,nirf_rank_category
+iit_madras,Indian Institute of Technology Madras,IIT Madras,Top NIRF Engg,Tamil Nadu,Chennai,JoSAA (JEE Advanced),NIRF Engg #1
+iit_delhi,Indian Institute of Technology Delhi,IIT Delhi,Top NIRF Engg,Delhi,New Delhi,JoSAA (JEE Advanced),NIRF Engg #2
+iit_bombay,Indian Institute of Technology Bombay,IIT Bombay,Top NIRF Engg,Maharashtra,Mumbai,JoSAA (JEE Advanced),NIRF Engg #3
+iit_kanpur,Indian Institute of Technology Kanpur,IIT Kanpur,Top NIRF Engg,Uttar Pradesh,Kanpur,JoSAA (JEE Advanced),NIRF Engg #4
+iit_kharagpur,Indian Institute of Technology Kharagpur,IIT Kharagpur,Top NIRF Engg,West Bengal,Kharagpur,JoSAA (JEE Advanced),NIRF Engg #5
+iit_roorkee,Indian Institute of Technology Roorkee,IIT Roorkee,Top NIRF Engg,Uttarakhand,Roorkee,JoSAA (JEE Advanced),NIRF Engg #6
+nit_trichy,National Institute of Technology Tiruchirappalli,NIT Trichy,Top NIRF Engg (NIT),Tamil Nadu,Tiruchirappalli,JoSAA (JEE Main),NIRF Engg #9
+nit_surathkal,National Institute of Technology Karnataka Surathkal,NIT Surathkal,Top NIRF Engg (NIT),Karnataka,Surathkal,JoSAA (JEE Main),NIRF Engg #12
+iiit_hyderabad,International Institute of Information Technology Hyderabad,IIIT Hyderabad,Top Engg (IIIT),Telangana,Hyderabad,Institute Portal / JEE Main,Premier Tech Flagship
+bits_pilani,Birla Institute of Technology and Science Pilani,BITS Pilani,Top Deemed Engg,Rajasthan,Pilani,BITSAT,Premier Private Flagship
+ceg_anna_univ,College of Engineering Guindy (Anna University),CEG Anna Univ,State Govt Engg (TN),Tamil Nadu,Chennai,TNEA,Premier TN State Govt
+mit_anna_univ,Madras Institute of Technology (Anna University),MIT Anna Univ,State Govt Engg (TN),Tamil Nadu,Chennai,TNEA,Premier TN State Govt
+gct_coimbatore,Government College of Technology Coimbatore,GCT Coimbatore,State Govt Engg (TN),Tamil Nadu,Coimbatore,TNEA,Major TN State Govt
+psg_tech,PSG College of Technology,PSG Tech,Govt-Aided Autonomous (TN),Tamil Nadu,Coimbatore,TNEA,Top Aided TN Autonomous
+tce_madurai,Thiagarajar College of Engineering,TCE Madurai,Govt-Aided Autonomous (TN),Tamil Nadu,Madurai,TNEA,Top Aided TN Autonomous
+jadavpur_univ,Jadavpur University (Faculty of Engg & Tech),Jadavpur Univ,State Govt Engg (WB),West Bengal,Kolkata,WBJEE,NIRF Engg #10
+calcutta_univ,University of Calcutta (Faculty of Tech),Calcutta Univ,State Govt Engg (WB),West Bengal,Kolkata,WBJEE,Top WB State University
+kgec_kalyani,Kalyani Government Engineering College,KGEC Kalyani,State Govt Engg (WB),West Bengal,Kalyani,WBJEE,Premier WB State Govt
+jgec_jalpaiguri,Jalpaiguri Government Engineering College,JGEC Jalpaiguri,State Govt Engg (WB),West Bengal,Jalpaiguri,WBJEE,Premier WB State Govt
+gcect_kolkata,Govt College of Engineering and Ceramic Technology,GCECT Kolkata,State Govt Engg (WB),West Bengal,Kolkata,WBJEE,Specialized WB State Govt
+vit_vellore,Vellore Institute of Technology,VIT Vellore,Large Private Univ,Tamil Nadu,Vellore,VITEEE,NIRF Engg #11
+srmist_chennai,SRM Institute of Science and Technology,SRMIST,Large Private Univ,Tamil Nadu,Kattankulathur,SRMJEEE,NIRF Engg Top 20
+thapar_patiala,Thapar Institute of Engineering and Technology,Thapar Univ,Large Private Univ,Punjab,Patiala,TIET / JEE Main,NIRF Engg Top 25
+mit_manipal,Manipal Institute of Technology (MAHE),MIT Manipal,Large Private Univ,Karnataka,Manipal,MET (MAHE),NIRF Engg Top 60
+amrita_coimbatore,Amrita Vishwa Vidyapeetham,Amrita Univ,Large Private Univ,Tamil Nadu,Coimbatore,AEEE / JEE Main,NIRF Overall Top 10
+snu_noida,Shiv Nadar University,SNU,Large Private Univ,Uttar Pradesh,Greater Noida,SNUSAT / JEE Main,Premier Research Private
+aiims_delhi,All India Institute of Medical Sciences New Delhi,AIIMS New Delhi,Top Medical,Delhi,New Delhi,MCC (NEET UG),NIRF Medical #1
+cmc_vellore,Christian Medical College Vellore,CMC Vellore,Top Medical (Private/Trust),Tamil Nadu,Vellore,MCC / TN State (NEET UG),NIRF Medical #3
+mmc_chennai,Madras Medical College,MMC Chennai,State Govt Medical (TN),Tamil Nadu,Chennai,MCC AIQ / TN State (NEET UG),NIRF Medical Top 15
+cmc_kolkata,Medical College Kolkata,CMC Kolkata,State Govt Medical (WB),West Bengal,Kolkata,MCC AIQ / WBMCC (NEET UG),Historic WB State GMC
+kgmu_lucknow,King Georges Medical University,KGMU Lucknow,State Govt Medical (UP),Uttar Pradesh,Lucknow,MCC AIQ / UP DGME (NEET UG),NIRF Medical Top 12
+kmc_manipal,Kasturba Medical College Manipal (MAHE),KMC Manipal,Deemed Medical,Karnataka,Manipal,MCC Deemed (NEET UG),NIRF Medical Top 10
+nid_ahmedabad,National Institute of Design Ahmedabad,NID Ahmedabad,Institute of National Importance (Design),Gujarat,Ahmedabad,NID DAT (Prelims & Mains),Premier Design INI
+nift_delhi,National Institute of Fashion Technology New Delhi,NIFT New Delhi,Statutory INI (Textile & Fashion),Delhi,New Delhi,NIFT Entrance Exam,Premier Fashion INI
+msu_baroda,Maharaja Sayajirao University of Baroda (Faculty of Fine Arts),MSU Baroda Fine Arts,State Public University (Fine Arts),Gujarat,Vadodara,Faculty Aptitude & Practical Test,Premier Fine Arts Faculty
+dse_delhi,Delhi School of Economics (University of Delhi),DSE Delhi,Central University Department (Economics),Delhi,New Delhi,CUET-PG (Economics),Premier Economics Department
+iimc_delhi,Indian Institute of Mass Communication New Delhi,IIMC New Delhi,Autonomous Media Institute (MIB),Delhi,New Delhi,CUET-PG / IIMC Entrance,Premier Mass Comm Institute
+jnu_delhi,Jawaharlal Nehru University New Delhi,JNU New Delhi,Central University (Social Sciences),Delhi,New Delhi,CUET-PG (NTA),NIRF University #2
+iirs_isro,Indian Institute of Remote Sensing (ISRO),IIRS-ISRO Dehradun,Department of Space / ISRO,Uttarakhand,Dehradun,IIRS Entrance / GATE,National Space Agency Institute

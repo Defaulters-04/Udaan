@@ -1,0 +1,8 @@
+institute_id,institute_name,institute_type,state,city,programme,level,evidence_level,duration_years,approved_intake,nirf_rank,nirf_year,source_url,retrieved_on
+iit_madras,Indian Institute of Technology Madras,CFTI_Central_Govt,Tamil Nadu,Chennai,B.Tech,UG,education,4,1195,1,2024,https://www.nirfindia.org/Rankings/2024/EngineeringRanking.html,2026-10-07
+iit_bombay,Indian Institute of Technology Bombay,CFTI_Central_Govt,Maharashtra,Mumbai,B.Tech,UG,education,4,1356,3,2024,https://www.nirfindia.org/Rankings/2024/EngineeringRanking.html,2026-10-07
+ceg_anna_univ,"College of Engineering, Guindy, Anna University",State_Government,Tamil Nadu,Chennai,B.E.,UG,education,4,NOT FOUND,13,2024,https://www.nirfindia.org/Rankings/2024/EngineeringRanking.html,2026-10-07
+jadavpur_univ,Jadavpur University (Faculty of Engineering & Technology),State_Government,West Bengal,Kolkata,B.E.,UG,education,4,NOT FOUND,10,2024,https://www.nirfindia.org/Rankings/2024/EngineeringRanking.html,2026-10-07
+vit_vellore,Vellore Institute of Technology,Deemed_Private,Tamil Nadu,Vellore,B.Tech,UG,education,4,NOT FOUND,11,2024,https://www.nirfindia.org/Rankings/2024/EngineeringRanking.html,2026-10-07
+aiims_delhi,"All India Institute of Medical Sciences, New Delhi",INI_Central_Govt,Delhi,New Delhi,MBBS,UG,education,5.5,125,1,2024,https://www.nirfindia.org/Rankings/2024/MedicalRanking.html,2026-10-07
+mmc_chennai,Madras Medical College,State_Government,Tamil Nadu,Chennai,MBBS,UG,education,5.5,250,11,2024,https://www.nirfindia.org/Rankings/2024/MedicalRanking.html,2026-10-07

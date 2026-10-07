@@ -1,0 +1,11 @@
+{
+  "dataset_name": "PRISM Engine Market Snapshots (Illustrative)",
+  "fetched_at": "2026-10-01",
+  "source_labels": {
+    "job_postings": "Adzuna India Labour Market Index (Illustrative Snapshot)",
+    "salary_benchmarks": "NCS / AmbitionBox India Salary Report (Illustrative)",
+    "disruption": "World Economic Forum / ILO Automation Index v1.0 (Illustrative)"
+  },
+  "is_illustrative": true,
+  "notes": "Offline synthetic demo dataset generated strictly for 24-hour hackathon PRISM validation."
+}

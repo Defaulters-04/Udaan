@@ -1,0 +1,4 @@
+month,scope,evidence_level,name,index_value,yoy_pct,report_name,source_url,page_or_section,restated,notes
+2024-12,national,industry,Overall National Index,2680,10.1,Naukri JobSpeak December 2024,https://www.infoedge.in/naukri-jobspeak/,"Monthly Release PDF, Page 2",no,Directly extracted from Info Edge official release. Base July 2008 = 1000.
+2024-07,national,industry,Overall National Index,2720,5.7,Naukri JobSpeak July 2024,https://www.infoedge.in/naukri-jobspeak/,"Monthly Release PDF, Page 2",no,Directly extracted from Info Edge official release. Base July 2008 = 1000.
+2023-12,national,industry,Overall National Index,2433,-16.0,Naukri JobSpeak December 2023,https://www.infoedge.in/naukri-jobspeak/,"Monthly Release PDF, Page 2",yes,Directly extracted from Info Edge official release. Restated following September 2023 IT sub-industry reclassification.

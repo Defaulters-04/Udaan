@@ -1,0 +1,14 @@
+# Python environment
+.venv/
+__pycache__/
+*.pyc
+
+# Secrets & Config
+.env
+.env.*
+!.env.example
+
+# Raw Data Downloads & Cache
+raw/
+scratch/
+tmp/

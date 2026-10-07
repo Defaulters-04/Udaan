@@ -1,0 +1,426 @@
+[
+  {
+    "career_id": "historian",
+    "career_name": "Historian",
+    "career_type": "A",
+    "broad_category": "HSS",
+    "subcategory": "History & Heritage",
+    "career_description": "Professional researcher who analyzes, contextualizes, and interprets historical events, written documents, oral records, and material culture to reconstruct societal, political, and economic trajectories across human civilizations.",
+    "education_entry_route": "B.A. (Hons.) in History (3-4 years) -> M.A. in History (Ancient, Medieval, Modern) (2 years) -> Ph.D. in History. UGC-NET/JRF qualification required for academic and public research appointments.",
+    "relevant_skills": [
+      "Archival Research",
+      "Historiographical Analysis",
+      "Palaeography & Epigraphy",
+      "Critical Source Verification",
+      "Academic Writing",
+      "Manuscript Conservation Interpretation"
+    ],
+    "aptitude_interest_profile": "Investigative / Artistic (RIASEC: I-A). High verbal reasoning, meticulous textual comprehension, long-horizon archival patience, historical pattern synthesis.",
+    "employment_market_signal": "MoSPI PLFS 2023-24 Sectoral Distribution: Libraries, archives, museums and other cultural activities (Division 91) accounts for 0.1% of usually working persons (Statement 5, Page 58). UGC JRF monthly research fellowship: Rs 37,000/month.",
+    "salary_information": "NOT FOUND — Adzuna live advertised salary JSON histograms unavailable. Public university assistant professors enter at UGC 7th CPC Academic Pay Level 10 (Basic Pay Rs 57,700/month).",
+    "entrance_exams_pathways": [
+      "CUET-UG (Central Universities B.A. History)",
+      "CUET-PG (M.A. History)",
+      "UGC-NET / JRF (History, Subject Code 06)"
+    ],
+    "premier_institutions": [
+      "Jawaharlal Nehru University (Centre for Historical Studies), New Delhi",
+      "University of Delhi (St. Stephen's, Hindu College), New Delhi",
+      "Banaras Hindu University (Department of History), Varanasi",
+      "Jadavpur University (Department of History), Kolkata",
+      "Aligarh Muslim University (Centre of Advanced Study in History), Aligarh"
+    ],
+    "career_alternatives": [
+      "Archivist",
+      "Heritage Conservator",
+      "Museum Curator",
+      "Civil Services Officer (UPSC)",
+      "Publishing Editor"
+    ],
+    "source_name": "UGC National Eligibility Test Bulletin / MoSPI PLFS Annual Report 2023-24",
+    "source_url": "https://ugcnet.nta.ac.in/",
+    "retrieved_on": "2026-10-07"
+  },
+  {
+    "career_id": "archaeologist",
+    "career_name": "Archaeologist",
+    "career_type": "A",
+    "broad_category": "HSS",
+    "subcategory": "History & Heritage",
+    "career_description": "Field scientist who investigates human antiquity and cultural evolution through systematic stratigraphic excavation, artifact cataloging, spatial surveying, and bioarchaeological analysis of material remains.",
+    "education_entry_route": "B.A. in History / Archaeology / Anthropology -> M.A. / M.Sc. in Archaeology / AIHC & Archaeology -> Post Graduate Diploma in Archaeology (PGDA) from Institute of Archaeology (ASI) or Ph.D. in Archaeology. UPSC / State PSC for official ASI service.",
+    "relevant_skills": [
+      "Stratigraphic Excavation Techniques",
+      "Artifact Typology & Classification",
+      "Archaeological Surveying & Total Station Mapping",
+      "Radiocarbon & Luminescence Dating Interpretation",
+      "Cultural Resource Management",
+      "GIS for Field Archaeology"
+    ],
+    "aptitude_interest_profile": "Realistic / Investigative (RIASEC: R-I). Spatial reasoning, high physical field endurance, precision in delicate artifact handling, systematic observation.",
+    "employment_market_signal": "Archaeological Survey of India (ASI) official register: 3,697 Centrally Protected Monuments and Archaeological Sites of national importance maintained under the AMASR Act 1958 (Ministry of Culture Annual Report 2023-24, Page 12).",
+    "salary_information": "NOT FOUND — Adzuna live advertised vacancy median unavailable. Central government Assistant Superintending Archaeologist enters at 7th CPC Pay Matrix Level 10 (Basic Pay Rs 56,100/month).",
+    "entrance_exams_pathways": [
+      "CUET-PG (Archaeology / AIHC)",
+      "Institute of Archaeology (ASI) PGDA Entrance Exam",
+      "UGC-NET / JRF (Archaeology, Subject Code 67)",
+      "UPSC Combined Recruitment Drives for ASI"
+    ],
+    "premier_institutions": [
+      "Institute of Archaeology, Archaeological Survey of India (ASI), New Delhi",
+      "Deccan College Post-Graduate and Research Institute, Pune",
+      "Banaras Hindu University (Department of AIHC & Archaeology), Varanasi",
+      "University of Calcutta (Department of Archaeology), Kolkata"
+    ],
+    "career_alternatives": [
+      "Museum Conservator",
+      "Epigraphist & Numismatist",
+      "Heritage Site Manager",
+      "Cultural Resource Consultant",
+      "Geoarchaeologist"
+    ],
+    "source_name": "Archaeological Survey of India / Ministry of Culture Annual Report 2023-24",
+    "source_url": "https://asi.nic.in/",
+    "retrieved_on": "2026-10-07"
+  },
+  {
+    "career_id": "geographer",
+    "career_name": "Geographer",
+    "career_type": "A",
+    "broad_category": "HSS",
+    "subcategory": "Geography & Geospatial",
+    "career_description": "Spatial scientist who investigates natural environmental systems, climatic patterns, landforms, human demographic settlements, and spatial interactions between physical environments and human socioeconomic activities.",
+    "education_entry_route": "B.A. / B.Sc. (Hons.) in Geography (3-4 years) -> M.A. / M.Sc. in Geography / Geomorphology / Regional Planning (2 years) -> Ph.D. in Geography. UGC-NET / JRF in Geography for academic and research appointments.",
+    "relevant_skills": [
+      "Spatial Data Interpretation",
+      "Geomorphological Field Mapping",
+      "Thematic Cartography",
+      "Climatic & Demographic Modeling",
+      "Environmental Impact Assessment (EIA)",
+      "Spatial Statistics (R / GeoDa)"
+    ],
+    "aptitude_interest_profile": "Investigative / Conventional (RIASEC: I-C). High spatial and abstract reasoning, systemic environmental understanding, demographic pattern analysis.",
+    "employment_market_signal": "MoSPI PLFS 2023-24 Sectoral Distribution: Scientific Research and Development (Division 72) accounts for 0.3% of usually working persons in India (Statement 5, Page 58).",
+    "salary_information": "NOT FOUND — Adzuna live advertised vacancy median unavailable. Academic faculty enters at UGC Level 10 (Basic Pay Rs 57,700/month).",
+    "entrance_exams_pathways": [
+      "CUET-UG (Geography)",
+      "CUET-PG (M.A. / M.Sc. Geography)",
+      "UGC-NET / JRF (Geography, Subject Code 80)"
+    ],
+    "premier_institutions": [
+      "Jawaharlal Nehru University (Centre for the Study of Regional Development - CSRD), New Delhi",
+      "Delhi School of Economics (Department of Geography, DU), New Delhi",
+      "Banaras Hindu University (Department of Geography), Varanasi",
+      "Jamia Millia Islamia (Department of Geography), New Delhi",
+      "Presidency University, Kolkata"
+    ],
+    "career_alternatives": [
+      "Urban & Regional Planner",
+      "Environmental Consultant",
+      "Climatological Analyst",
+      "Cartographer",
+      "Disaster Management Specialist"
+    ],
+    "source_name": "MoSPI Periodic Labour Force Survey Annual Report 2023-2024 / UGC NET Bulletin",
+    "source_url": "https://www.mospi.gov.in/",
+    "retrieved_on": "2026-10-07"
+  },
+  {
+    "career_id": "gis_analyst",
+    "career_name": "GIS Analyst",
+    "career_type": "A",
+    "broad_category": "HSS",
+    "subcategory": "Geography & Geospatial",
+    "career_description": "Geospatial data specialist who designs, maintains, and processes spatial datasets using Geographic Information Systems, satellite imagery, LiDAR, and spatial database engines to solve infrastructure, navigation, urban planning, and environmental challenges.",
+    "education_entry_route": "B.Sc. in Geography/Geology/Computer Science or B.Tech in Geoinformatics/Civil/CS -> M.Sc. / M.Tech in Geoinformatics, Remote Sensing, or Geomatics (2 years). Industry GIS certification (Esri, QGIS).",
+    "relevant_skills": [
+      "ArcGIS Pro / ArcMap & QGIS",
+      "Spatial SQL & PostGIS",
+      "Satellite Remote Sensing & Spectral Indices",
+      "Python for Geospatial Data (GeoPandas, GDAL, Shapely)",
+      "Drone Photogrammetry & LiDAR Processing",
+      "WebGIS (Leaflet, Mapbox, GeoServer)"
+    ],
+    "aptitude_interest_profile": "Realistic / Investigative / Conventional (RIASEC: R-I-C). Strong spatial manipulation, database logic, algorithm design, map aesthetics.",
+    "employment_market_signal": "National Geospatial Policy 2022 / Geospatial World projection: Indian Geospatial Economy market size expanding to INR 63,100 Crore ($7.6 Billion) by 2025 (Executive Summary, Page 6).",
+    "salary_information": "NOT FOUND — Adzuna live advertised salary JSON histograms unexecuted. Scraped salary estimates purged under anti-synthetic rule.",
+    "entrance_exams_pathways": [
+      "GATE (Geomatics Engineering - GE)",
+      "CUET-PG (M.Sc. Geoinformatics)",
+      "IIRS-ISRO Entrance Test",
+      "Institute-level M.Tech Geoinformatics Exams"
+    ],
+    "premier_institutions": [
+      "Indian Institute of Remote Sensing (IIRS-ISRO), Dehradun",
+      "CEPT University, Ahmedabad",
+      "Indian Institute of Technology Bombay (CSRE), Mumbai",
+      "Symbiosis Institute of Geoinformatics (SIG), Pune",
+      "Anna University (Institute of Remote Sensing), Chennai"
+    ],
+    "career_alternatives": [
+      "Remote Sensing Scientist",
+      "Geospatial Software Developer",
+      "Spatial Database Administrator",
+      "Navigation Systems Analyst",
+      "Urban GIS Specialist"
+    ],
+    "source_name": "Geospatial World / Association of Geospatial Industries & DST India Report 2023",
+    "source_url": "https://geospatialworld.net/",
+    "retrieved_on": "2026-10-07"
+  },
+  {
+    "career_id": "linguist",
+    "career_name": "Linguist",
+    "career_type": "A",
+    "broad_category": "HSS",
+    "subcategory": "Language & Linguistics",
+    "career_description": "Language scientist who investigates the phonetic structures, morphological grammar, syntactic hierarchies, semantic meanings, and cognitive representations of human languages. Computational linguists build NLP tokenizers, speech models, and multilingual AI architectures.",
+    "education_entry_route": "B.A. in Linguistics, English, Foreign Languages, or Computer Science -> M.A. in Linguistics / Applied Linguistics or M.S. in Computational Linguistics (2 years) -> Ph.D. in Linguistics / NLP.",
+    "relevant_skills": [
+      "Acoustic Phonetics & Speech Analysis",
+      "Morpho-syntactic Parsing & Formal Grammars",
+      "Formal Semantics & Pragmatics",
+      "Python for NLP (spaCy, NLTK, Transformers)",
+      "Corpus Annotation & Lexicography",
+      "Multilingual Alignment"
+    ],
+    "aptitude_interest_profile": "Investigative / Conventional (RIASEC: I-C). High symbolic abstraction, structural pattern recognition, deep interest in phonetic nuances and comparative language trees.",
+    "employment_market_signal": "WEF Future of Jobs Report 2025: 75% of global employers project adopting artificial intelligence and language processing technologies by 2030 (Chapter 2, Page 30).",
+    "salary_information": "NOT FOUND — Adzuna live advertised salary histograms unexecuted. Tech computational linguist ranges vary widely; unverified figures omitted.",
+    "entrance_exams_pathways": [
+      "CUET-PG (M.A. Linguistics)",
+      "IIIT Hyderabad PGEE (M.S. Computational Linguistics)",
+      "UGC-NET / JRF (Linguistics, Subject Code 31)"
+    ],
+    "premier_institutions": [
+      "Jawaharlal Nehru University (Centre for Linguistics), New Delhi",
+      "University of Hyderabad (CALTS), Hyderabad",
+      "International Institute of Information Technology (LTRC), Hyderabad",
+      "English and Foreign Languages University (EFLU), Hyderabad",
+      "University of Delhi (Department of Linguistics), New Delhi"
+    ],
+    "career_alternatives": [
+      "Computational Linguist",
+      "NLP Data Scientist",
+      "Speech Recognition Specialist",
+      "Lexicographer",
+      "Language Documentation Researcher"
+    ],
+    "source_name": "UGC National Eligibility Test Bulletin / WEF Future of Jobs Report 2025",
+    "source_url": "https://ugcnet.nta.ac.in/",
+    "retrieved_on": "2026-10-07"
+  },
+  {
+    "career_id": "translator_interpreter",
+    "career_name": "Translator & Interpreter",
+    "career_type": "A",
+    "broad_category": "HSS",
+    "subcategory": "Language & Linguistics",
+    "career_description": "Linguistic professional who converts complex written documents (translation) or real-time spoken discourse (simultaneous/consecutive interpretation) between two or more languages with cultural fidelity, stylistic accuracy, and contextual nuance.",
+    "education_entry_route": "B.A. (Hons.) in Foreign Languages (French, German, Spanish, Japanese, Mandarin, Arabic, Russian) or Indian Languages -> M.A. in Translation Studies or Specialized Interpretation -> Language certification (JLPT N1/N2, DELE C1/C2, HSK 5/6, Goethe C1/C2). Official MEA empanelment.",
+    "relevant_skills": [
+      "Bilingual / Multilingual Near-Native Fluency",
+      "Simultaneous & Consecutive Interpretation",
+      "CAT Tools (SDL Trados, memoQ, Phrase)",
+      "Technical & Legal Terminology Localization",
+      "Cross-Cultural Cultural Pragmatics",
+      "Diplomatic Protocol Communication"
+    ],
+    "aptitude_interest_profile": "Artistic / Enterprising (RIASEC: A-E). High auditory agility, fast bilingual cognitive switching speed, composed public speaking, acute listening focus.",
+    "employment_market_signal": "MoSPI PLFS 2023-24 Sectoral Distribution: Other professional, scientific and technical activities (Division 74, including translation & interpretation) accounts for 0.5% of usually working persons (Statement 5, Page 58).",
+    "salary_information": "NOT FOUND — Adzuna live advertised salary histograms unexecuted. Conference interpreter per-diem rates vary by language tier; unsupported averages purged.",
+    "entrance_exams_pathways": [
+      "CUET-UG (Central Universities Foreign Language Programs)",
+      "CUET-PG (M.A. Translation Studies / Foreign Languages)",
+      "Ministry of External Affairs (MEA) Official Empanelment Examinations"
+    ],
+    "premier_institutions": [
+      "Jawaharlal Nehru University (School of Language, Literature and Culture Studies), New Delhi",
+      "English and Foreign Languages University (EFLU), Hyderabad",
+      "Banaras Hindu University (Faculty of Arts), Varanasi",
+      "Jamia Millia Islamia, New Delhi",
+      "Alliance Française / Goethe-Institut / Instituto Cervantes (Accredited Centers)"
+    ],
+    "career_alternatives": [
+      "Localization Manager",
+      "Diplomatic Liaison Officer",
+      "Bilingual Subtitle & Dubbing Editor",
+      "International Relations Communications Officer",
+      "Multilingual Content Editor"
+    ],
+    "source_name": "MoSPI Periodic Labour Force Survey Annual Report 2023-2024 / JNU SLL&CS Guidelines",
+    "source_url": "https://www.mospi.gov.in/",
+    "retrieved_on": "2026-10-07"
+  },
+  {
+    "career_id": "political_scientist",
+    "career_name": "Political Scientist",
+    "career_type": "A",
+    "broad_category": "HSS",
+    "subcategory": "Political Science & International Relations",
+    "career_description": "Social scientist who analyzes political theory, constitutional law, governance structures, public opinion, electoral dynamics, and public policy formulation to understand state behavior and civic institutions.",
+    "education_entry_route": "B.A. (Hons.) in Political Science (3-4 years) -> M.A. in Political Science / Public Policy (2 years) -> Ph.D. in Political Science. UGC-NET / JRF qualification for academic and public research appointments.",
+    "relevant_skills": [
+      "Comparative Political Analysis",
+      "Public Policy Evaluation",
+      "Quantitative Survey Methods (SPSS, Stata)",
+      "Constitutional & Administrative Law Analysis",
+      "Psephology & Electoral Modeling",
+      "Policy Brief Drafting"
+    ],
+    "aptitude_interest_profile": "Investigative / Social / Enterprising (RIASEC: I-S-E). Strong deductive reasoning, ideological analysis, interest in democratic institutions and legal frameworks.",
+    "employment_market_signal": "MoSPI PLFS 2023-24 Sectoral Distribution: Public Administration and Defence (Section O) accounts for 3.4% of usually working persons across India (Statement 5, Page 58).",
+    "salary_information": "NOT FOUND — Adzuna live advertised salary histograms unexecuted. University faculty baseline enters at UGC Pay Level 10 (Rs 57,700/month).",
+    "entrance_exams_pathways": [
+      "CUET-UG (Political Science)",
+      "CUET-PG (M.A. Political Science / Public Policy)",
+      "UGC-NET / JRF (Political Science, Subject Code 02)"
+    ],
+    "premier_institutions": [
+      "Jawaharlal Nehru University (Centre for Political Studies), New Delhi",
+      "University of Delhi (Hindu College, St. Stephen's, Lady Shri Ram College), New Delhi",
+      "National Law School of India University (MPP Program), Bengaluru",
+      "Banaras Hindu University (Department of Political Science), Varanasi",
+      "Tata Institute of Social Sciences (School of Public Policy and Governance), Hyderabad"
+    ],
+    "career_alternatives": [
+      "Public Policy Analyst",
+      "Legislative Assistant (LAMP Fellow)",
+      "Political Campaign Strategist",
+      "Psephologist & Survey Researcher",
+      "Governance & Think Tank Fellow"
+    ],
+    "source_name": "UGC National Eligibility Test Bulletin / MoSPI PLFS Annual Report 2023-24",
+    "source_url": "https://ugcnet.nta.ac.in/",
+    "retrieved_on": "2026-10-07"
+  },
+  {
+    "career_id": "international_relations_specialist",
+    "career_name": "International Relations Specialist",
+    "career_type": "A",
+    "broad_category": "HSS",
+    "subcategory": "Political Science & International Relations",
+    "career_description": "Geopolitical strategist and foreign affairs analyst who assesses diplomatic treaties, multilateral organizations, cross-border security pacts, international trade regimes, and geopolitical risks shaping international order.",
+    "education_entry_route": "B.A. (Hons.) in Political Science / International Relations / History / Economics -> M.A. in International Relations, Politics (International Studies), or Strategic Studies (2 years) -> UPSC CSE (IFS) or Ph.D. / Think Tank Research Fellowship.",
+    "relevant_skills": [
+      "Geopolitical Risk Assessment",
+      "Multilateral Treaty & Trade Regime Analysis",
+      "Foreign Policy Synthesis",
+      "Strategic Foresight & Conflict Resolution",
+      "Diplomatic Briefing Preparation",
+      "Regional Security Modeling"
+    ],
+    "aptitude_interest_profile": "Investigative / Enterprising (RIASEC: I-E). Broad macroeconomic and geopolitical awareness, cross-cultural diplomacy, strategic negotiation capability.",
+    "employment_market_signal": "MoSPI PLFS 2023-24 Sectoral Distribution: Activities of Extraterritorial Organizations and Bodies (Section U) accounts for 0.1% of usually working persons (Statement 5, Page 58).",
+    "salary_information": "NOT FOUND — Adzuna live advertised salary histograms unexecuted. Diplomatic service (IFS) enters at 7th CPC Junior Time Scale Level 10 (Rs 56,100/month basic + foreign allowance).",
+    "entrance_exams_pathways": [
+      "CUET-PG (M.A. Politics & International Studies, JNU SIS)",
+      "UPSC Civil Services Examination (Indian Foreign Service - IFS)",
+      "UGC-NET / JRF (International and Area Studies, Subject Code 90)"
+    ],
+    "premier_institutions": [
+      "Jawaharlal Nehru University (School of International Studies - SIS), New Delhi",
+      "South Asian University (Faculty of International Studies), New Delhi",
+      "Jadavpur University (Department of International Relations), Kolkata",
+      "OP Jindal Global University (Jindal School of International Affairs), Sonipat",
+      "Pondicherry University (Department of Politics and International Studies), Puducherry"
+    ],
+    "career_alternatives": [
+      "Diplomat / Foreign Service Officer",
+      "Geopolitical Risk Consultant",
+      "Think Tank Foreign Policy Fellow",
+      "Defense & Strategic Affairs Analyst",
+      "Multilateral Agency Program Specialist (UN/World Bank)"
+    ],
+    "source_name": "JNU School of International Studies Bulletin / MoSPI PLFS Annual Report 2023-24",
+    "source_url": "https://www.jnu.ac.in/sis",
+    "retrieved_on": "2026-10-07"
+  },
+  {
+    "career_id": "economist",
+    "career_name": "Economist",
+    "career_type": "A",
+    "broad_category": "HSS",
+    "subcategory": "Economics",
+    "career_description": "Quantitative social scientist who develops theoretical models and econometric frameworks to study resource allocation, inflation, labor markets, international trade, fiscal policies, and corporate market structure.",
+    "education_entry_route": "B.A. (Hons.) / B.Sc. in Economics with Mathematics/Statistics (3-4 years) -> M.A. / M.Sc. in Economics or MSQE (2 years) -> UPSC Indian Economic Service (IES), RBI Grade B (DEPR), or Ph.D. in Economics.",
+    "relevant_skills": [
+      "Microeconomic & Macroeconomic Theory",
+      "Econometric Modeling (Time Series, Panel Data)",
+      "Statistical Programming (R, Stata, Python, Julia)",
+      "Causal Inference & Applied Microeconometrics",
+      "Monetary & Fiscal Policy Evaluation",
+      "Quantitative Forecasting"
+    ],
+    "aptitude_interest_profile": "Investigative / Conventional (RIASEC: I-C). Outstanding mathematical-analytical aptitude, deductive logic, interest in socioeconomic trends and financial indicators.",
+    "employment_market_signal": "MoSPI PLFS 2023-24 Sectoral Distribution: Financial and Insurance Activities (Section K) accounts for 1.0% of usually working persons (Statement 5, Page 58). SEBI Mutual Fund Industry AAUM reached INR 54.1 Lakh Crore in FY24 (Page 22).",
+    "salary_information": "NOT FOUND — Adzuna live advertised salary histograms unexecuted. Reserve Bank of India (RBI Grade B DEPR) entry basic pay: Rs 55,200/month with gross emoluments of ~Rs 1.16 Lakhs/month (Class A official RBI recruitment circular).",
+    "entrance_exams_pathways": [
+      "CUET-PG (Economics for DSE, JNU)",
+      "ISI Admission Test (Master of Science in Quantitative Economics - MSQE)",
+      "UPSC Indian Economic Service (IES) Examination",
+      "RBI Grade B (DEPR) Examination",
+      "UGC-NET / JRF (Economics, Subject Code 01)"
+    ],
+    "premier_institutions": [
+      "Delhi School of Economics (DSE, University of Delhi), New Delhi",
+      "Indian Statistical Institute (ISI Delhi / Kolkata)",
+      "Jawaharlal Nehru University (Centre for Economic Studies and Planning - CESP), New Delhi",
+      "Indira Gandhi Institute of Development Research (IGIDR), Mumbai",
+      "Madras School of Economics (MSE), Chennai"
+    ],
+    "career_alternatives": [
+      "Macroeconomic Strategist",
+      "Econometrician & Quantitative Researcher",
+      "Central Bank Research Officer",
+      "Financial Risk Modeler",
+      "Competition & Antitrust Consultant"
+    ],
+    "source_name": "Delhi School of Economics Bulletin / Reserve Bank of India Recruitment Circular",
+    "source_url": "http://econdse.org/",
+    "retrieved_on": "2026-10-07"
+  },
+  {
+    "career_id": "journalist",
+    "career_name": "Journalist",
+    "career_type": "A",
+    "broad_category": "HSS",
+    "subcategory": "Journalism",
+    "career_description": "News and media professional who investigates, verifies, reports, and edits stories on public affairs, politics, economy, environment, and culture across print, broadcast, digital, and interactive media channels.",
+    "education_entry_route": "B.A. in Journalism & Mass Communication (BJMC) or B.A. in English/Social Sciences -> M.A. in Journalism / PG Diploma in Journalism from premier statutory or autonomous institutes (IIMC, ACJ) (1-2 years).",
+    "relevant_skills": [
+      "Investigative News Gathering",
+      "Fact-Checking & Source Authentication",
+      "News Writing & Sub-Editing",
+      "Broadcast Scriptwriting & Audio-Visual Production",
+      "Media Law, Copyright & Defamation Ethics",
+      "Data Journalism & Visualization"
+    ],
+    "aptitude_interest_profile": "Artistic / Enterprising / Social (RIASEC: A-E-S). High investigative curiosity, objective commitment to factual truth, composure under tight deadlines, persuasive verbal expression.",
+    "employment_market_signal": "Registrar of Newspapers for India (RNI) Press in India 66th Annual Report: Total of 1,44,520 registered periodicals and publications in India (Page 1). MoSPI PLFS 2023-24: Publishing activities (Division 58) accounts for 0.2% of usually working persons (Statement 5, Page 58).",
+    "salary_information": "NOT FOUND — Adzuna live advertised salary histograms unexecuted. Media entry pay varies widely; unverified third-party estimates purged.",
+    "entrance_exams_pathways": [
+      "IIMC Entrance Examination (NTA CUET-PG)",
+      "Asian College of Journalism (ACJ) Entrance Exam",
+      "Jamia Millia Islamia MCRC Entrance Test",
+      "UGC-NET / JRF (Mass Communication and Journalism, Subject Code 63)"
+    ],
+    "premier_institutions": [
+      "Indian Institute of Mass Communication (IIMC), New Delhi",
+      "Asian College of Journalism (ACJ), Chennai",
+      "A.J.K. Mass Communication Research Centre (Jamia Millia Islamia), New Delhi",
+      "Symbiosis Institute of Media and Communication (SIMC), Pune",
+      "Xavier Institute of Communications (XIC), Mumbai"
+    ],
+    "career_alternatives": [
+      "Digital News Editor",
+      "Investigative Media Correspondent",
+      "Fact-Checking Specialist",
+      "Multimedia Storyteller & Documentary Producer",
+      "Public Relations & Communications Specialist"
+    ],
+    "source_name": "Registrar of Newspapers for India 66th Annual Report / IIMC Official Prospectus",
+    "source_url": "http://rni.nic.in/",
+    "retrieved_on": "2026-10-07"
+  }
+]

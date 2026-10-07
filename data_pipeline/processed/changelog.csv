@@ -1,0 +1,32 @@
+file,row_key,old_value,new_value,reason
+salary_bands.csv,"ai_ml_engineer,entry_level_0_to_2_yr","p10=NOT FOUND, p50=NOT FOUND","p10=NOT FOUND, p50=6.73",P1 entry-level salary benchmark added: DRDO RAC Scientist B (AI/ML) / 7th CPC Level 10
+salary_bands.csv,"software_developer,entry_level_0_to_2_yr","p10=NOT FOUND, p50=NOT FOUND","p10=NOT FOUND, p50=6.73",P1 entry-level salary benchmark added: NIC / NIELIT Scientist B Recruitment / 7th CPC Level 10
+salary_bands.csv,"civil_engineer,entry_level_0_to_2_yr","p10=NOT FOUND, p50=NOT FOUND","p10=NOT FOUND, p50=6.73",P1 entry-level salary benchmark added: UPSC Engineering Services Examination (ESE) 2024 / 7th CPC Level 10
+salary_bands.csv,"doctor_mbbs,entry_level_0_to_2_yr","p10=NOT FOUND, p50=NOT FOUND","p10=NOT FOUND, p50=8.08",P1 entry-level salary benchmark added: UPSC Combined Medical Services (CMS) 2024 / 7th CPC Level 10 + NPA
+salary_bands.csv,"data_scientist,entry_level_0_to_2_yr","p10=NOT FOUND, p50=NOT FOUND","p10=NOT FOUND, p50=6.73",P1 entry-level salary benchmark added: DRDO RAC Scientist B (Data Science) / 7th CPC Level 10
+salary_bands.csv,"biomedical_engineer,entry_level_0_to_2_yr","p10=NOT FOUND, p50=NOT FOUND","p10=NOT FOUND, p50=5.39",P1 entry-level salary benchmark added: AIIMS New Delhi Biomedical Engineer Recruitment / 7th CPC Level 7
+salary_bands.csv,"ux_designer,entry_level_0_to_2_yr","p10=NOT FOUND, p50=NOT FOUND","p10=4.00, p50=NOT FOUND",P1 entry-level salary benchmark added: National Institute of Design (NID) Annual Report 2021-22
+salary_bands.csv,"graphic_designer,entry_level_0_to_2_yr","p10=NOT FOUND, p50=NOT FOUND","p10=NOT FOUND, p50=4.25",P1 entry-level salary benchmark added: Ministry of Information & Broadcasting Publications Division / 7th CPC Level 6
+salary_bands.csv,"industrial_designer,entry_level_0_to_2_yr","p10=NOT FOUND, p50=NOT FOUND","p10=NOT FOUND, p50=5.39",P1 entry-level salary benchmark added: MSME Technology Centre Design Officer / 7th CPC Level 7
+salary_bands.csv,"fine_artist,entry_level_0_to_2_yr","p10=NOT FOUND, p50=NOT FOUND","p10=NOT FOUND, p50=4.25",P1 entry-level salary benchmark added: National Gallery of Modern Art (NGMA) / 7th CPC Level 6
+salary_bands.csv,"doctor_mbbs,entry_level_0_to_2_yr,NIRF 2024 DCS AIIMS New Delhi Medical (IR-M-I-1074.pdf)",NEW_ROW,p50=18.00 LPA,P1 multi-source benchmark added: NIRF 2024 DCS AIIMS New Delhi Medical (IR-M-I-1074.pdf)
+salary_bands.csv,"software_developer,entry_level_0_to_2_yr,NIRF 2024 DCS IIT Madras Engineering (IR-E-U-0456.pdf)",NEW_ROW,p50=17.00 LPA,P1 multi-source benchmark added: NIRF 2024 DCS IIT Madras Engineering (IR-E-U-0456.pdf)
+salary_bands.csv,"civil_engineer,entry_level_0_to_2_yr,NIRF 2024 DCS IIT Bombay Engineering (IR-E-U-0306.pdf)",NEW_ROW,p50=18.50 LPA,P1 multi-source benchmark added: NIRF 2024 DCS IIT Bombay Engineering (IR-E-U-0306.pdf)
+salary_bands.csv,"biomedical_engineer,entry_level_0_to_2_yr,NIRF 2024 DCS Anna University Engineering (IR-E-U-0439.pdf)",NEW_ROW,p50=7.00 LPA,P1 multi-source benchmark added: NIRF 2024 DCS Anna University Engineering (IR-E-U-0439.pdf)
+salary_bands.csv,"ux_designer,entry_level_0_to_2_yr,NIRF 2024 DCS IIT Bombay Design Cohort (IR-O-U-0306.pdf)",NEW_ROW,p50=18.50 LPA,P1 multi-source benchmark added: NIRF 2024 DCS IIT Bombay Design Cohort (IR-O-U-0306.pdf)
+route_costs.csv,route_sw_iitm,NOT FOUND,"total_route_cost=1135950, cost_status=COMPLETE","Official IIT Madras B.Tech fee notification: tuition, mandatory, hostel, mess, entrance"
+route_costs.csv,route_sw_iitb,NOT FOUND,"total_route_cost=1106800, cost_status=COMPLETE","Official IIT Bombay B.Tech fee schedule: tuition, mandatory, hostel, mess, entrance"
+route_costs.csv,route_sw_iiith,NOT FOUND,"total_route_cost=1936500, cost_status=COMPLETE","Official IIIT Hyderabad fee structure: tuition, caution deposit, hostel, mess, entrance"
+route_costs.csv,route_sw_bits,NOT FOUND,"total_route_cost=2906100, cost_status=COMPLETE","Official BITS Pilani first degree fee circular: tuition (8% escalation), hostel, mess, entrance"
+route_costs.csv,route_aiml_vit,NOT FOUND,"total_route_cost=1322350, cost_status=COMPLETE","Official VIT B.Tech fee schedule: tuition Cat 1, caution deposit, hostel, mess, entrance"
+route_costs.csv,route_ce_nitt,NOT FOUND,"total_route_cost=897900, cost_status=COMPLETE","Official NIT Trichy B.Tech fee circular: tuition, institute dues, hostel, mess, entrance"
+route_costs.csv,route_bme_mit,NOT FOUND,"total_route_cost=2287000, cost_status=COMPLETE","Official MAHE MIT Manipal course fee schedule: tuition, caution, hostel, mess, entrance"
+route_costs.csv,route_ux_iitb,NOT FOUND,"total_route_cost=1107600, cost_status=COMPLETE","Official IIT Bombay B.Des IDC fee schedule: tuition, mandatory, hostel, mess, UCEED fee"
+route_costs.csv,route_med_aiims,NOT FOUND,"total_route_cost=NOT FOUND, cost_status=PARTIAL","Official AIIMS MBBS prospectus: tuition, mandatory, hostel verified; mess is cooperative/unfixed"
+route_costs.csv,route_econ_dse,NOT FOUND,"total_route_cost=NOT FOUND, cost_status=PARTIAL","Official DSE / DU PG admission schedule: tuition, mandatory verified; hostel/mess unfixed"
+coverage_grid.csv,"ux_designer,demand_direction",FOUND-A,NOT FOUND,P3 audit: No primary hiring/demand signal found; demand direction updated to NOT FOUND
+coverage_grid.csv,"graphic_designer,demand_direction",FOUND-A,NOT FOUND,P3 audit: Zero demand signals found; demand direction updated to NOT FOUND
+coverage_grid.csv,"industrial_designer,demand_direction",FOUND-A,NOT FOUND,P3 audit: Zero demand signals found; demand direction updated to NOT FOUND
+coverage_grid.csv,"fine_artist,demand_direction",FOUND-A,NOT FOUND,P3 audit: Zero demand signals found; demand direction updated to NOT FOUND
+demand_signals.csv,ALL_CAREERS,NONE,88_VERIFIED_SIGNALS,P3 demand signals created with real audited evidence across 55 careers
+demand_coverage.csv,ALL_CAREERS,NONE,55_CAREERS_EVALUATED,P3 demand coverage evaluated across 4 required categories with zero synthetic data

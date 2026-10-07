@@ -1,0 +1,17 @@
+career_id,routes_found,complete_routes,partial_routes,cost_components_found,cost_components_missing,coverage_status
+ai_ml_engineer,2,2,0,entrance; hostel; mandatory; mess; tuition,NONE,COMPLETE
+software_developer,4,4,0,entrance; hostel; mandatory; mess; tuition,NONE,COMPLETE
+data_scientist,2,2,0,entrance; hostel; mandatory; mess; tuition,NONE,COMPLETE
+civil_engineer,3,3,0,entrance; hostel; mandatory; mess; tuition,NONE,COMPLETE
+doctor_mbbs,2,0,2,entrance; hostel; mandatory; tuition,hostel; mess,PARTIAL
+biomedical_engineer,2,1,1,entrance; hostel; mandatory; mess; tuition,hostel; mess,COMPLETE
+ux_designer,2,1,1,entrance; hostel; mandatory; mess; tuition,mess,COMPLETE
+graphic_designer,1,0,1,entrance; hostel; mandatory; tuition,mess,PARTIAL
+industrial_designer,2,1,1,entrance; hostel; mandatory; mess; tuition,mess,COMPLETE
+fine_artist,1,0,1,entrance; mandatory; tuition,hostel; mess,PARTIAL
+historian,1,0,1,entrance; hostel; mandatory; tuition,mess,PARTIAL
+geographer,1,0,1,entrance; hostel; mandatory; tuition,mess,PARTIAL
+gis_analyst,1,0,1,entrance; hostel; mandatory; tuition,mess,PARTIAL
+linguist,1,0,1,entrance; hostel; mandatory; tuition,mess,PARTIAL
+economist,1,0,1,entrance; mandatory; tuition,hostel; mess,PARTIAL
+journalist,1,0,1,entrance; hostel; mandatory; tuition,mess,PARTIAL

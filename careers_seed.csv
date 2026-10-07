@@ -1,0 +1,56 @@
+career_id,career_name,career_type,suggested_adzuna_keywords,broad_category,subcategory
+ai_ml_engineer,AI / Machine Learning Engineer,A,"AI Engineer, Machine Learning Engineer, ML Specialist",Technology & Engineering,AI & Data Science
+software_developer,Software Developer,A,"Software Developer, Software Engineer, Full Stack Developer",Technology & Engineering,Software Engineering
+civil_engineer,Civil Engineer,A,"Civil Engineer, Structural Engineer, Construction Engineer",Engineering,Civil & Infrastructure
+doctor_mbbs,Doctor (MBBS),A,"Doctor, MBBS, Resident Medical Officer, General Physician",Healthcare & Medicine,Clinical Medicine
+data_scientist,Data Scientist,A,"Data Scientist, Data Science Specialist",Technology & Engineering,AI & Data Science
+data_analyst,Data Analyst,A,"Data Analyst, Business Intelligence Analyst",Technology & Engineering,Analytics & BI
+mechanical_engineer,Mechanical Engineer,A,"Mechanical Engineer, Design Engineer",Engineering,Mechanical & Automotive
+electrical_engineer,Electrical Engineer,A,"Electrical Engineer, Power Systems Engineer",Engineering,Electrical & Power
+electronics_engineer,Electronics Engineer,A,"Electronics Engineer, VLSI Engineer, Embedded Systems",Engineering,Electronics & Semiconductors
+chemical_engineer,Chemical Engineer,A,"Chemical Engineer, Process Engineer",Engineering,Chemical & Petrochemical
+aerospace_engineer,Aerospace Engineer,A,"Aerospace Engineer, Aeronautical Engineer",Engineering,Aerospace & Defense
+biomedical_engineer,Biomedical Engineer,A,"Biomedical Engineer, Medical Devices Engineer",Engineering,Biomedical & Healthcare
+cybersecurity_analyst,Cybersecurity Analyst,A,"Cybersecurity Analyst, Information Security Analyst",Technology & Engineering,Information Security
+cloud_solutions_architect,Cloud Solutions Architect,A,"Cloud Solutions Architect, Cloud Engineer, AWS Architect",Technology & Engineering,Cloud & Infrastructure
+devops_engineer,DevOps Engineer,A,"DevOps Engineer, SRE, Site Reliability Engineer",Technology & Engineering,DevOps & Platform
+product_manager,Product Manager,A,"Product Manager, Technical Product Manager",Management,Product Management
+investment_banker,Investment Banker,A,"Investment Banker, Equity Research Analyst, M&A Analyst",Business & Finance,Investment Banking
+chartered_accountant,Chartered Accountant,A,"Chartered Accountant, CA, Internal Auditor",Business & Finance,Accounting & Audit
+financial_analyst,Financial Analyst,A,"Financial Analyst, Financial Planning Analyst",Business & Finance,Asset Management
+management_consultant,Management Consultant,A,"Management Consultant, Strategy Consultant",Management,Management Consulting
+human_resources_specialist,Human Resources Specialist,A,"HR Generalist, Talent Acquisition Specialist",Management,Human Resources
+marketing_manager,Marketing Manager,A,"Marketing Manager, Brand Manager, Growth Marketer",Business & Marketing,Marketing & Brand Management
+digital_marketing_specialist,Digital Marketing Specialist,A,"Digital Marketing Specialist, SEO Specialist",Business & Marketing,Digital Marketing
+operations_manager,Operations Manager,A,"Operations Manager, Supply Chain Manager",Management,Operations & Logistics
+commercial_pilot,Commercial Pilot,A,"Commercial Pilot, Airline Pilot, First Officer",Aviation,Civil Aviation
+lawyer_corporate,Corporate Lawyer,A,"Corporate Lawyer, Legal Counsel, Associate Advocate",Law,Corporate & Commercial Law
+pharmacist,Pharmacist,A,"Pharmacist, Clinical Pharmacist, Regulatory Affairs",Healthcare & Medicine,Pharmacy & Pharmaceuticals
+biotechnologist,Biotechnologist,A,"Biotechnologist, Research Scientist, Bioinformatics",Sciences,Biotechnology & Life Sciences
+environmental_scientist,Environmental Scientist,A,"Environmental Scientist, Sustainability Consultant",Sciences,Environmental Sciences
+nursing_officer,Nursing Officer,A,"Staff Nurse, Nursing Officer, Clinical Nurse",Healthcare & Medicine,Nursing & Clinical Care
+dentist_bds,Dentist (BDS),A,"Dentist, Dental Surgeon",Healthcare & Medicine,Dental Sciences
+physiotherapist,Physiotherapist,A,"Physiotherapist, Physical Therapist",Healthcare & Medicine,Allied Health Sciences
+ux_designer,UX/UI Designer,B,"UX Designer, UI Designer, Product Designer",Design & Creative,UX/UI Design
+architect,Architect,B,"Architect, B.Arch, Urban Designer, Landscape Architect",Architecture,Architecture & Built Environment
+graphic_designer,Graphic Designer,B,"Graphic Designer, Visual Designer, Brand Identity Designer",Design & Creative,Graphic & Visual Design
+animator_vfx_artist,Animator / VFX Artist,B,"Animator, 3D Animator, VFX Artist, Compositor",Media & Entertainment,Animation & VFX
+game_developer,Game Developer,B,"Game Developer, Unity Developer, Unreal Engine Developer",Media & Entertainment,Game Development
+industrial_designer,Industrial Designer,B,"Industrial Designer, Product Designer, CAD Designer",Design & Creative,Industrial Design
+video_editor,Video Editor,B,"Video Editor, Motion Graphics Designer, Post Production",Media & Entertainment,Video & Post Production
+fashion_designer,Fashion Designer,B,"Fashion Designer, Apparel Designer, Textile Designer",Design & Creative,Fashion & Textile Design
+fine_artist,Fine Artist,B,"Fine Artist, Illustrator, Concept Artist",Design & Creative,Fine Arts & Illustration
+video_creator,Video Content Creator,C,"Content Creator, YouTuber, Video Producer",Creator Economy,Online Video Production
+streamer_esports_player,Gaming Streamer / Esports Athlete,C,"Esports Player, Streamer, Gaming Creator",Creator Economy,Esports & Gaming
+independent_musician,Independent Musician / Producer,C,"Music Producer, Audio Engineer, Indie Musician",Creative & Performing,Music Production
+freelance_creative,Freelance Creative Professional,C,"Freelance Designer, Freelance Writer, Freelancer",Creative & Independent,Freelance Creative
+historian,Historian,A,"Historian, Archivist, Research Historian, Heritage Officer",HSS,History & Heritage
+archaeologist,Archaeologist,A,"Archaeologist, Excavation Assistant, Heritage Conservator",HSS,History & Heritage
+geographer,Geographer,A,"Geographer, Urban Planner, Spatial Analyst, Physical Geographer",HSS,Geography & Geospatial
+gis_analyst,GIS Analyst,A,"GIS Analyst, Remote Sensing Analyst, GIS Specialist, Geospatial Analyst",HSS,Geography & Geospatial
+linguist,Linguist,A,"Linguist, Computational Linguist, Language Specialist, Phonetician",HSS,Language & Linguistics
+translator_interpreter,Translator & Interpreter,A,"Translator, Interpreter, Language Specialist, Localization Specialist",HSS,Language & Linguistics
+political_scientist,Political Scientist,A,"Political Scientist, Policy Analyst, Legislative Assistant, Public Policy Specialist",HSS,Political Science & International Relations
+international_relations_specialist,International Relations Specialist,A,"International Relations Specialist, Diplomatic Officer, Foreign Affairs Analyst, Geopolitical Analyst",HSS,Political Science & International Relations
+economist,Economist,A,"Economist, Economic Analyst, Financial Economist, Quantitative Researcher",HSS,Economics
+journalist,Journalist,A,"Journalist, Reporter, News Editor, Media Correspondent, Investigative Journalist",HSS,Journalism
