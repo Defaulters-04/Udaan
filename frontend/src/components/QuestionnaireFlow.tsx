@@ -124,6 +124,7 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
 
   // UI state for questions
   const [showRequiredError, setShowRequiredError] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [selectedSingleChoice, setSelectedSingleChoice] = useState<string | null>(null);
   const [pulseScaleValue, setPulseScaleValue] = useState<number | null>(null);
   const [touchedSliders, setTouchedSliders] = useState<Record<string, boolean>>({});
@@ -339,25 +340,23 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
       const currentQ = flatQuestions[currentIndex];
       const targetQ = flatQuestions[targetIndex];
 
+      const prevSec = currentQ ? questionToSectionMap.get(currentQ.id)?.section : undefined;
+      const nextSec = targetQ ? questionToSectionMap.get(targetQ.id)?.section : undefined;
+
       // Check if advancing across a section boundary
       if (
         targetIndex > currentIndex &&
-        currentQ &&
-        targetQ &&
-        currentQ.section_id !== targetQ.section_id
+        prevSec &&
+        nextSec &&
+        prevSec.id !== nextSec.id
       ) {
-        const prevSec = questionToSectionMap.get(currentQ.id)?.section;
-        const nextSec = questionToSectionMap.get(targetQ.id)?.section;
-
-        if (prevSec && nextSec) {
-          setInterstitialInfo({
-            prevSectionTitle: getLocalizedText(prevSec.title, storeLang),
-            nextSectionTitle: getLocalizedText(nextSec.title, storeLang),
-            targetIndex,
-          });
-          setPhase('interstitial');
-          return;
-        }
+        setInterstitialInfo({
+          prevSectionTitle: getLocalizedText(prevSec.title, storeLang),
+          nextSectionTitle: getLocalizedText(nextSec.title, storeLang),
+          targetIndex,
+        });
+        setPhase('interstitial');
+        return;
       }
 
       setCurrentIndex(targetIndex);
@@ -387,6 +386,16 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
     }
   }, [interstitialInfo]);
 
+  // Return back to review screen from edit mode
+  const handleReturnToReview = useCallback(() => {
+    cancelAutoAdvance();
+    setIsEditingFromReview(false);
+    setShowRequiredError(false);
+    setSelectedSingleChoice(null);
+    setPulseScaleValue(null);
+    setPhase('review');
+  }, [cancelAutoAdvance]);
+
   // Handle "Continue" click on current question
   const handleContinue = useCallback(() => {
     const q = flatQuestions[currentIndex];
@@ -402,34 +411,36 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
 
     setShowRequiredError(false);
 
-    // If editing from review screen, Continue returns straight to review!
-    if (isEditingFromReview) {
+    // If at the end of questions, return to review
+    if (currentIndex >= flatQuestions.length - 1) {
       setIsEditingFromReview(false);
       setPhase('review');
       return;
     }
 
     navigateToQuestion(currentIndex + 1);
-  }, [flatQuestions, currentIndex, answers, isEditingFromReview, navigateToQuestion]);
+  }, [flatQuestions, currentIndex, answers, navigateToQuestion]);
 
   // Handle "Back" click
   const handleBack = useCallback(() => {
     cancelAutoAdvance();
     if (currentIndex > 0) {
       navigateToQuestion(currentIndex - 1);
+    } else if (isEditingFromReview) {
+      handleReturnToReview();
     }
-  }, [cancelAutoAdvance, currentIndex, navigateToQuestion]);
+  }, [cancelAutoAdvance, currentIndex, isEditingFromReview, navigateToQuestion, handleReturnToReview]);
 
   // Handle "Skip" on optional question
   const handleSkip = useCallback(() => {
     cancelAutoAdvance();
-    if (isEditingFromReview) {
+    if (currentIndex >= flatQuestions.length - 1) {
       setIsEditingFromReview(false);
       setPhase('review');
       return;
     }
     navigateToQuestion(currentIndex + 1);
-  }, [cancelAutoAdvance, currentIndex, isEditingFromReview, navigateToQuestion]);
+  }, [cancelAutoAdvance, currentIndex, flatQuestions.length, navigateToQuestion]);
 
   // Auto-advance helper for single_choice and scale
   const scheduleAutoAdvance = useCallback(
@@ -437,7 +448,7 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
       cancelAutoAdvance();
       setShowRequiredError(false);
       autoAdvanceTimerRef.current = setTimeout(() => {
-        if (isEditingFromReview) {
+        if (targetIndex >= flatQuestions.length) {
           setIsEditingFromReview(false);
           setPhase('review');
         } else {
@@ -445,7 +456,7 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
         }
       }, delayMs);
     },
-    [cancelAutoAdvance, isEditingFromReview, navigateToQuestion]
+    [cancelAutoAdvance, flatQuestions.length, navigateToQuestion]
   );
 
   // Handle Single Choice selection
@@ -576,7 +587,21 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
   const handleSubmit = async () => {
     if (!storeFamily?.code || !storeFamily?.token) return;
 
+    if (saveDebounceTimerRef.current) {
+      clearTimeout(saveDebounceTimerRef.current);
+    }
+    const pending = { ...unsavedAnswersRef.current };
+    if (Object.keys(pending).length > 0) {
+      try {
+        await config.saveAnswers(storeFamily.code, storeFamily.token, pending);
+        Object.keys(pending).forEach((k) => delete unsavedAnswersRef.current[k]);
+      } catch {
+        // Continue to submit which handles validation
+      }
+    }
+
     setPhase('submitting');
+    setSubmitError(null);
     try {
       await config.submit(storeFamily.code, storeFamily.token);
       setPhase('done');
@@ -601,6 +626,9 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
             return;
           }
         }
+        setSubmitError(err.message || 'Submission could not be completed. Please check your answers.');
+      } else {
+        setSubmitError(err instanceof Error ? err.message : 'Submission failed. Please try again.');
       }
       setPhase('review');
     }
@@ -639,10 +667,12 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
 
   // Calculate section progress counts for rail and review
   const sectionStats = useMemo(() => {
-    return sections.map((sec) => {
+    return sections.map((sec, secIdx) => {
+      const startIndex = sections
+        .slice(0, secIdx)
+        .reduce((sum, s) => sum + s.questions.length, 0);
       const total = sec.questions.length;
       const answered = sec.questions.filter((q) => isQuestionAnswered(q, answers[q.id])).length;
-      const startIndex = flatQuestions.findIndex((q) => q.section_id === sec.id);
       return {
         section: sec,
         total,
@@ -650,7 +680,7 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
         startIndex,
       };
     });
-  }, [sections, answers, flatQuestions]);
+  }, [sections, answers]);
 
   if (!hasHydrated || phase === 'loading') {
     return (
@@ -727,7 +757,18 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
               {/* Progress Rail Header */}
               <div className="mb-8 space-y-2.5">
                 <div className="flex items-center justify-between text-xs text-midnight/70 font-medium">
-                  <span>{sectionInfo ? getLocalizedText(sectionInfo.section.title, storeLang) : ''}</span>
+                  <div className="flex items-center gap-2">
+                    <span>{sectionInfo ? getLocalizedText(sectionInfo.section.title, storeLang) : ''}</span>
+                    {isEditingFromReview && (
+                      <button
+                        type="button"
+                        onClick={handleReturnToReview}
+                        className="text-[11px] font-semibold text-ocean hover:underline px-2 py-0.5 rounded bg-ocean/10 transition-colors cursor-pointer"
+                      >
+                        {t.backToReview} →
+                      </button>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3">
                     {/* Autosave status indicator */}
                     <span className="text-[11px] text-midnight/55 transition-opacity">
@@ -813,7 +854,9 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
                         <div className="space-y-3">
                           {currentQ.options.map((opt, optIdx) => {
                             const isSelected =
-                              selectedSingleChoice === opt.id || currentAnswer === opt.id;
+                              selectedSingleChoice !== null
+                                ? selectedSingleChoice === opt.id
+                                : currentAnswer === opt.id;
                             const isDimmed =
                               selectedSingleChoice !== null && selectedSingleChoice !== opt.id;
 
@@ -1077,12 +1120,30 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
                           >
                             ← {t.back}
                           </button>
+                        ) : isEditingFromReview ? (
+                          <button
+                            type="button"
+                            onClick={handleReturnToReview}
+                            className="px-4 py-2 text-sm font-medium text-midnight/70 hover:text-midnight rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-ocean cursor-pointer"
+                          >
+                            ← {t.backToReview}
+                          </button>
                         ) : (
                           <div />
                         )}
                       </div>
 
                       <div className="flex items-center gap-3">
+                        {isEditingFromReview && (
+                          <button
+                            type="button"
+                            onClick={handleReturnToReview}
+                            className="px-4 py-2 text-sm font-semibold text-ocean hover:bg-ocean/10 rounded-xl transition-colors focus-visible:outline-2 focus-visible:outline-ocean cursor-pointer"
+                          >
+                            {t.backToReview}
+                          </button>
+                        )}
+
                         {!currentQ.required && (
                           <button
                             type="button"
@@ -1148,51 +1209,104 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
                       </p>
                     </div>
 
-                    {/* Section Summary Rows */}
-                    <div className="space-y-3">
+                    {/* Section Summary & Question Rows */}
+                    <div className="space-y-4">
                       {sectionStats.map((stat) => {
                         const isAllDone = stat.answered === stat.total;
 
                         return (
-                          <button
+                          <div
                             key={stat.section.id}
-                            type="button"
-                            onClick={() => {
-                              if (stat.startIndex !== -1) {
-                                setCurrentIndex(stat.startIndex);
-                                setPhase('question');
-                              }
-                            }}
-                            className="w-full p-4 sm:p-5 bg-white border-2 border-cloud hover:border-ocean/60 rounded-xl flex items-center justify-between text-left transition-colors focus-visible:outline-2 focus-visible:outline-ocean cursor-pointer"
+                            className="bg-white border-2 border-cloud rounded-xl p-4 sm:p-5 space-y-3"
                           >
-                            <div className="space-y-0.5">
-                              <h3 className="text-base font-semibold text-midnight">
-                                {getLocalizedText(stat.section.title, storeLang)}
-                              </h3>
-                              <p className="text-xs sm:text-sm text-midnight/60 font-normal">
-                                {t.answeredOf
-                                  .replace('{answered}', stat.answered.toString())
-                                  .replace('{total}', stat.total.toString())}
-                              </p>
+                            <div className="flex items-center justify-between">
+                              <div className="space-y-0.5">
+                                <h3 className="text-base font-semibold text-midnight">
+                                  {getLocalizedText(stat.section.title, storeLang)}
+                                </h3>
+                                <p className="text-xs sm:text-sm text-midnight/60 font-normal">
+                                  {t.answeredOf
+                                    .replace('{answered}', stat.answered.toString())
+                                    .replace('{total}', stat.total.toString())}
+                                </p>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                {isAllDone && (
+                                  <span className="text-xs bg-sky-tint text-ocean px-2 py-0.5 rounded font-medium">
+                                    ✓
+                                  </span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditFromReview(stat.startIndex)}
+                                  className="text-sm font-semibold text-ocean hover:underline px-2 py-1 rounded cursor-pointer"
+                                >
+                                  {t.edit} →
+                                </button>
+                              </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                              {isAllDone && (
-                                <span className="text-xs bg-sky-tint text-ocean px-2 py-0.5 rounded font-medium">
-                                  ✓
-                                </span>
-                              )}
-                              <span className="text-sm font-semibold text-ocean">
-                                {t.edit} →
-                              </span>
+                            {/* Individual questions in this section */}
+                            <div className="pt-2 border-t border-cloud/60 divide-y divide-cloud/60">
+                              {stat.section.questions.map((q) => {
+                                const flatIdx = flatQuestions.findIndex((item) => item.id === q.id);
+                                const rawVal = answers[q.id];
+                                const hasAnswer =
+                                  rawVal !== undefined &&
+                                  rawVal !== null &&
+                                  rawVal !== '' &&
+                                  !(Array.isArray(rawVal) && rawVal.length === 0);
+                                const answerDisplay = formatAnswerText(
+                                  q,
+                                  rawVal,
+                                  storeLang,
+                                  t.skippedAnswer
+                                );
+
+                                return (
+                                  <div
+                                    key={q.id}
+                                    className="py-2.5 flex items-start justify-between gap-3"
+                                  >
+                                    <div className="space-y-0.5 flex-1 min-w-0">
+                                      <p className="text-xs sm:text-sm font-medium text-midnight leading-snug">
+                                        {getLocalizedText(q.prompt, storeLang)}
+                                      </p>
+                                      <p
+                                        className={`text-xs ${
+                                          hasAnswer
+                                            ? 'text-ocean font-medium'
+                                            : 'text-midnight/45 italic font-normal'
+                                        }`}
+                                      >
+                                        {answerDisplay}
+                                      </p>
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleEditFromReview(flatIdx)}
+                                      className="text-xs font-semibold text-ocean hover:underline px-2 py-1 rounded shrink-0 cursor-pointer"
+                                    >
+                                      {t.edit}
+                                    </button>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          </button>
+                          </div>
                         );
                       })}
                     </div>
                   </div>
 
                   <div className="pt-4 border-t border-cloud/70">
+                    {submitError && (
+                      <p role="alert" className="text-xs sm:text-sm text-red-600 font-medium mb-3 text-center">
+                        {submitError}
+                      </p>
+                    )}
                     <button
                       type="button"
                       disabled={phase === 'submitting'}
@@ -1281,6 +1395,11 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
                   </div>
 
                   <div className="pt-6 border-t border-cloud/70">
+                    {submitError && (
+                      <p role="alert" className="text-xs sm:text-sm text-red-600 font-medium mb-3 text-center">
+                        {submitError}
+                      </p>
+                    )}
                     <button
                       type="button"
                       disabled={phase === 'submitting'}

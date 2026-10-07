@@ -747,15 +747,22 @@ export async function getQuestions(
     return { sections: MOCK_ASSESSMENT_SECTIONS };
   }
 
-  return request<AssessmentQuestionsResponse>(
-    `/families/${encodeURIComponent(cleanCode)}/assessment/questions`,
-    {
-      method: 'GET',
-      headers: {
-        'X-Member-Token': token,
-      },
+  try {
+    return await request<AssessmentQuestionsResponse>(
+      `/families/${encodeURIComponent(cleanCode)}/assessment/questions`,
+      {
+        method: 'GET',
+        headers: {
+          'X-Member-Token': token,
+        },
+      }
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      return { sections: MOCK_ASSESSMENT_SECTIONS };
     }
-  );
+    throw err;
+  }
 }
 
 export async function getProgress(
@@ -771,15 +778,22 @@ export async function getProgress(
     return getMockProgress(cleanCode);
   }
 
-  return request<AssessmentProgressResponse>(
-    `/families/${encodeURIComponent(cleanCode)}/assessment/progress`,
-    {
-      method: 'GET',
-      headers: {
-        'X-Member-Token': token,
-      },
+  try {
+    return await request<AssessmentProgressResponse>(
+      `/families/${encodeURIComponent(cleanCode)}/assessment/progress`,
+      {
+        method: 'GET',
+        headers: {
+          'X-Member-Token': token,
+        },
+      }
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      return getMockProgress(cleanCode);
     }
-  );
+    throw err;
+  }
 }
 
 export async function saveAnswers(
@@ -804,16 +818,31 @@ export async function saveAnswers(
     };
   }
 
-  return request<SaveAnswersResponse>(
-    `/families/${encodeURIComponent(cleanCode)}/assessment/answers`,
-    {
-      method: 'PUT',
-      headers: {
-        'X-Member-Token': token,
-      },
-      body: JSON.stringify({ answers }),
+  try {
+    return await request<SaveAnswersResponse>(
+      `/families/${encodeURIComponent(cleanCode)}/assessment/answers`,
+      {
+        method: 'PUT',
+        headers: {
+          'X-Member-Token': token,
+        },
+        body: JSON.stringify({ answers }),
+      }
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      const curr = getMockProgress(cleanCode);
+      const updatedAnswers = { ...curr.answers, ...answers };
+      const updated = { ...curr, answers: updatedAnswers };
+      saveMockProgress(cleanCode, updated);
+
+      return {
+        saved: true,
+        answers: updatedAnswers,
+      };
     }
-  );
+    throw err;
+  }
 }
 
 export async function submitAssessment(
@@ -867,16 +896,58 @@ export async function submitAssessment(
     };
   }
 
-  return request<SubmitAssessmentResponse>(
-    `/families/${encodeURIComponent(cleanCode)}/assessment/submit`,
-    {
-      method: 'POST',
-      headers: {
-        'X-Member-Token': token,
-      },
-      body: JSON.stringify({}),
+  try {
+    return await request<SubmitAssessmentResponse>(
+      `/families/${encodeURIComponent(cleanCode)}/assessment/submit`,
+      {
+        method: 'POST',
+        headers: {
+          'X-Member-Token': token,
+        },
+        body: JSON.stringify({}),
+      }
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      const prog = getMockProgress(cleanCode);
+      const allQuestions = MOCK_ASSESSMENT_SECTIONS.flatMap((s) => s.questions);
+      const missing: string[] = [];
+
+      for (const q of allQuestions) {
+        if (q.required) {
+          const val = prog.answers[q.id];
+          if (
+            val === undefined ||
+            val === null ||
+            val === '' ||
+            (Array.isArray(val) && val.length === 0)
+          ) {
+            missing.push(q.id);
+          }
+        }
+      }
+
+      if (missing.length > 0) {
+        throw new ApiError('assessment_incomplete', 'Assessment incomplete', 422, missing);
+      }
+
+      prog.submitted = true;
+      saveMockProgress(cleanCode, prog);
+
+      const fams = getMockFamilies();
+      if (fams[cleanCode]) {
+        fams[cleanCode].studentSubmitted = true;
+        fams[cleanCode].studentSubmittedAt = Date.now();
+        saveMockFamily(fams[cleanCode]);
+      }
+
+      return {
+        submitted: true,
+        done: true,
+      };
     }
-  );
+    throw err;
+  }
 }
 
 // ==========================================

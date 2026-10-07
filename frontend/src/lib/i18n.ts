@@ -60,6 +60,7 @@ export interface Translations {
   nextUp: string;
   reviewTitle: string;
   reviewBody: string;
+  backToReview: string;
   edit: string;
   submit: string;
   submitting: string;
@@ -143,6 +144,7 @@ export const translations: Record<Language, Translations> = {
     nextUp: "Next: {section}",
     reviewTitle: "Almost done",
     reviewBody: "Check your answers, then submit. You can change any of them.",
+    backToReview: "Back to review",
     edit: "Edit",
     submit: "Submit",
     submitting: "Submitting…",
@@ -224,6 +226,7 @@ export const translations: Record<Language, Translations> = {
     nextUp: "आगे: {section}",
     reviewTitle: "बस थोड़ा और",
     reviewBody: "अपने जवाब देख लें, फिर सबमिट करें। आप कोई भी जवाब बदल सकते हैं।",
+    backToReview: "समीक्षा पर वापस जाएं",
     edit: "बदलें",
     submit: "सबमिट करें",
     submitting: "सबमिट हो रहा है…",
