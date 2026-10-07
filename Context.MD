@@ -49,10 +49,10 @@ Udaan is career guidance for the whole family. A student and a parent answer sep
 3. Student assessment: stepper built from the API's sections with autosave
 4. Parent intake: form, then a confirmation screen where the parent edits values
 5. Family Mirror: overlaid radar charts, Conflict Index gauge, per-dimension bars
-6. Negotiation Explorer: Fit vs Family viability scatter, slider, ranked list, compromise zone
+6. Negotiation Explorer: viability vs fit scatter, slider (server blend grid), winner strip, ranked list, blocked careers with remedies
 7. Career page: cost, payback, demand, exams, scholarships, skill gaps
 8. What-if chat: optional, skipped for now
 9. Family brief: one-page PDF with shortlist, costs, exams, SWOT, next steps
 
 ## Status
-Pages 1 to 4 built, Page 5 in progress
+Pages 1 to 5 built, Page 6 in progress

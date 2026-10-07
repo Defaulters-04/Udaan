@@ -2055,3 +2055,616 @@ export async function getMirror(
   }
 }
 
+// ==========================================
+// Negotiation Explorer (Page 6) Types & APIs
+// ==========================================
+
+export interface Remedy {
+  id: string;
+  text: {
+    en: string;
+    hi: string | null;
+  };
+}
+
+export interface BlendPoint {
+  score: number;
+  rank: number;
+}
+
+export interface CareerBlocked {
+  gates: ('money' | 'academic')[];
+  cause: 'no_route_data' | 'cost' | 'academic' | 'other';
+  remedies: Remedy[];
+}
+
+export interface ExplorerCareer {
+  id: string;
+  name: LocalizedText;
+  domain: string;
+  fit: number | null;
+  viability: number | null;
+  market: number | null;
+  years_to_income: number | null;
+  conflict: number;
+  in_compromise: boolean;
+  blend: BlendPoint[] | null;
+  blocked: CareerBlocked | null;
+  data_gaps: string[];
+}
+
+export interface ExplorerSlider {
+  positions: number[];
+  default: number;
+}
+
+export interface ExplorerCompromise {
+  min_fit: number;
+  min_viability: number;
+}
+
+export interface ExplorerResponse {
+  slider: ExplorerSlider;
+  careers: ExplorerCareer[];
+  frontier: string[];
+  compromise: ExplorerCompromise | null;
+}
+
+export function validateExplorerResponse(data: unknown): { valid: boolean; brokenRule?: string } {
+  if (!data || typeof data !== 'object') {
+    return { valid: false, brokenRule: 'invalid_data_shape' };
+  }
+  const res = data as Partial<ExplorerResponse>;
+
+  // 1. Slider check
+  if (!res.slider || !Array.isArray(res.slider.positions) || typeof res.slider.default !== 'number') {
+    return { valid: false, brokenRule: 'slider_missing_or_invalid' };
+  }
+  const { positions, default: defPos } = res.slider;
+  if (positions.length === 0) {
+    return { valid: false, brokenRule: 'slider_positions_empty' };
+  }
+  for (let i = 1; i < positions.length; i++) {
+    if (positions[i] <= positions[i - 1]) {
+      return { valid: false, brokenRule: 'slider_positions_not_ascending' };
+    }
+  }
+  if (!positions.includes(defPos)) {
+    return { valid: false, brokenRule: 'slider_default_not_in_positions' };
+  }
+
+  // 2. Careers check
+  if (!Array.isArray(res.careers)) {
+    return { valid: false, brokenRule: 'careers_not_array' };
+  }
+
+  const idSet = new Set<string>();
+  const nonBlockedMap = new Map<string, ExplorerCareer>();
+
+  for (const c of res.careers) {
+    if (!c.id || typeof c.id !== 'string') {
+      return { valid: false, brokenRule: 'career_id_missing' };
+    }
+    if (idSet.has(c.id)) {
+      return { valid: false, brokenRule: 'career_ids_not_unique' };
+    }
+    idSet.add(c.id);
+
+    if (!Array.isArray(c.data_gaps)) {
+      return { valid: false, brokenRule: 'data_gaps_not_array' };
+    }
+
+    if (c.blocked) {
+      if (!c.blocked.cause || !['no_route_data', 'cost', 'academic', 'other'].includes(c.blocked.cause)) {
+        return { valid: false, brokenRule: 'blocked_career_missing_cause' };
+      }
+      if (c.blend !== null) {
+        return { valid: false, brokenRule: 'blocked_career_has_blend' };
+      }
+      if (c.in_compromise !== false) {
+        return { valid: false, brokenRule: 'blocked_career_in_compromise_not_false' };
+      }
+      if (c.fit === null && (!c.blocked.gates || !c.blocked.gates.includes('academic'))) {
+        return { valid: false, brokenRule: 'fit_null_without_academic_gate' };
+      }
+      const isMoneyBlocked =
+        (c.blocked.gates && c.blocked.gates.includes('money')) ||
+        c.blocked.cause === 'cost' ||
+        c.blocked.cause === 'no_route_data';
+      if (isMoneyBlocked && c.viability !== null) {
+        return { valid: false, brokenRule: 'money_blocked_viability_not_null' };
+      }
+      if (c.viability === null && !isMoneyBlocked) {
+        return { valid: false, brokenRule: 'viability_null_without_money_gate' };
+      }
+    } else {
+      nonBlockedMap.set(c.id, c);
+      if (typeof c.fit !== 'number' || typeof c.viability !== 'number') {
+        return { valid: false, brokenRule: 'non_blocked_career_null_fit_or_viability' };
+      }
+      if (!Array.isArray(c.blend) || c.blend.length !== positions.length) {
+        return { valid: false, brokenRule: 'non_blocked_career_blend_length_mismatch' };
+      }
+    }
+
+    // Score ranges
+    if (c.fit !== null && (c.fit < 0 || c.fit > 100)) {
+      return { valid: false, brokenRule: 'fit_score_out_of_bounds' };
+    }
+    if (c.viability !== null && (c.viability < 0 || c.viability > 100)) {
+      return { valid: false, brokenRule: 'viability_score_out_of_bounds' };
+    }
+    if (c.market !== null && (c.market < 0 || c.market > 100)) {
+      return { valid: false, brokenRule: 'market_score_out_of_bounds' };
+    }
+    if (typeof c.conflict === 'number' && (c.conflict < 0 || c.conflict > 100)) {
+      return { valid: false, brokenRule: 'conflict_score_out_of_bounds' };
+    }
+  }
+
+  // 3. Frontier check
+  if (!Array.isArray(res.frontier)) {
+    return { valid: false, brokenRule: 'frontier_not_array' };
+  }
+  for (const fid of res.frontier) {
+    if (!nonBlockedMap.has(fid)) {
+      return { valid: false, brokenRule: 'frontier_id_missing_or_blocked' };
+    }
+  }
+
+  // 4. Compromise check
+  if (res.compromise !== null && res.compromise !== undefined) {
+    if (
+      typeof res.compromise.min_fit !== 'number' ||
+      typeof res.compromise.min_viability !== 'number' ||
+      res.compromise.min_fit < 0 ||
+      res.compromise.min_fit > 100 ||
+      res.compromise.min_viability < 0 ||
+      res.compromise.min_viability > 100
+    ) {
+      return { valid: false, brokenRule: 'compromise_thresholds_out_of_bounds' };
+    }
+  }
+
+  // 5. Ranks 1..N check
+  const N = nonBlockedMap.size;
+  if (N > 0) {
+    const nonBlockedList = Array.from(nonBlockedMap.values());
+    for (let posIdx = 0; posIdx < positions.length; posIdx++) {
+      const ranksSeen = new Set<number>();
+      for (const c of nonBlockedList) {
+        const bp = c.blend![posIdx];
+        if (!bp || typeof bp.rank !== 'number' || typeof bp.score !== 'number') {
+          return { valid: false, brokenRule: 'blend_point_invalid' };
+        }
+        if (bp.score < 0 || bp.score > 100) {
+          return { valid: false, brokenRule: 'blend_score_out_of_bounds' };
+        }
+        ranksSeen.add(bp.rank);
+      }
+      if (ranksSeen.size !== N) {
+        return { valid: false, brokenRule: 'ranks_not_unique_at_position' };
+      }
+      for (let r = 1; r <= N; r++) {
+        if (!ranksSeen.has(r)) {
+          return { valid: false, brokenRule: 'ranks_do_not_form_1_to_N' };
+        }
+      }
+    }
+  }
+
+  return { valid: true };
+}
+
+/* MOCK ONLY, not production logic */
+export function generateMockExplorerResponse(scenario: string = 'normal'): ExplorerResponse {
+  const positions = [
+    0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100,
+  ];
+
+  if (scenario === 'none_viable') {
+    return {
+      slider: { positions, default: 50 },
+      frontier: [],
+      compromise: null,
+      careers: [
+        {
+          id: 'commercial_pilot',
+          name: { en: 'Commercial Pilot', hi: 'कमर्शियल पायलट' },
+          domain: 'tech_engineering',
+          fit: 85.0,
+          viability: null,
+          market: null,
+          years_to_income: 4,
+          conflict: 45.0,
+          in_compromise: false,
+          blend: null,
+          blocked: {
+            gates: ['money'],
+            cause: 'cost',
+            remedies: [
+              {
+                id: 'cadet_sponsorship',
+                text: {
+                  en: 'Apply for airline cadet pilot sponsorship programs.',
+                  hi: 'एयरलाइन कैडेट पायलट स्पॉन्सरशिप प्रोग्राम के लिए आवेदन करें।',
+                },
+              },
+            ],
+          },
+          data_gaps: ['verified_route_costs', 'verified_entry_salary'],
+        },
+        {
+          id: 'aerospace_engineer',
+          name: { en: 'Aerospace Engineer', hi: 'एयरोस्पेस इंजीनियर' },
+          domain: 'tech_engineering',
+          fit: 75.0,
+          viability: null,
+          market: null,
+          years_to_income: 4,
+          conflict: 30.0,
+          in_compromise: false,
+          blend: null,
+          blocked: {
+            gates: ['money'],
+            cause: 'no_route_data',
+            remedies: [],
+          },
+          data_gaps: [],
+        },
+      ],
+    };
+  }
+
+  const rawNonBlocked = [
+    {
+      id: 'ai_ml_engineer',
+      name: { en: 'AI / ML Engineer', hi: 'एआई / एमएल इंजीनियर' },
+      domain: 'tech_engineering',
+      fit: 78.0,
+      viability: 65.0,
+      conflict: 22.0,
+      years_to_income: 4,
+      data_gaps: [] as string[],
+    },
+    {
+      id: 'software_developer',
+      name: { en: 'Software Developer', hi: 'सॉफ्टवेयर डेवलपर' },
+      domain: 'tech_engineering',
+      fit: 75.0,
+      viability: 70.0,
+      conflict: 18.0,
+      years_to_income: 4,
+      data_gaps: ['verified_route_costs', 'verified_entry_salary'],
+    },
+    {
+      id: 'biomedical_engineer',
+      name: { en: 'Biomedical Engineer', hi: 'बायोमेडिकल इंजीनियर' },
+      domain: 'tech_engineering',
+      fit: 72.0,
+      viability: 78.0,
+      conflict: 14.0,
+      years_to_income: 4,
+      data_gaps: [] as string[],
+    },
+    {
+      id: 'civil_engineer',
+      name: { en: 'Civil Engineer', hi: 'सिविल इंजीनियर' },
+      domain: 'tech_engineering',
+      fit: 70.0,
+      viability: 68.0,
+      conflict: 16.0,
+      years_to_income: 4,
+      data_gaps: [] as string[],
+    },
+    {
+      id: 'data_scientist',
+      name: { en: 'Data Scientist', hi: 'डेटा साइंटिस्ट' },
+      domain: 'tech_engineering',
+      fit: 70.0,
+      viability: 68.0,
+      conflict: 20.0,
+      years_to_income: 4,
+      data_gaps: ['verified_route_costs', 'verified_entry_salary'],
+    },
+    {
+      id: 'doctor_mbbs',
+      name: { en: 'Doctor (MBBS)', hi: 'डॉक्टर (एमबीबीएस)' },
+      domain: 'healthcare_medicine',
+      fit: 68.0,
+      viability: 62.0,
+      conflict: 32.0,
+      years_to_income: 5,
+      data_gaps: [] as string[],
+    },
+    {
+      id: 'financial_analyst',
+      name: { en: 'Financial Analyst', hi: 'वित्तीय विश्लेषक' },
+      domain: 'business_management',
+      fit: 65.0,
+      viability: 80.0,
+      conflict: 12.0,
+      years_to_income: 3,
+      data_gaps: [] as string[],
+    },
+    {
+      id: 'marketing_manager',
+      name: { en: 'Marketing Manager', hi: 'मार्केटिंग मैनेजर' },
+      domain: 'business_management',
+      fit: 58.0,
+      viability: 74.0,
+      conflict: 24.0,
+      years_to_income: 3,
+      data_gaps: ['verified_route_costs', 'verified_entry_salary'],
+    },
+  ];
+
+  // Generate linear blends and ranks for each position
+  const nonBlockedCareers: ExplorerCareer[] = rawNonBlocked.map((c) => ({
+    id: c.id,
+    name: c.name,
+    domain: c.domain,
+    fit: c.fit,
+    viability: c.viability,
+    market: null,
+    years_to_income: c.years_to_income,
+    conflict: c.conflict,
+    in_compromise: c.fit >= 60.0 && c.viability >= 60.0,
+    blend: [] as BlendPoint[],
+    blocked: null,
+    data_gaps: c.data_gaps,
+  }));
+
+  for (let posIdx = 0; posIdx < positions.length; posIdx++) {
+    const pos = positions[posIdx];
+    const alpha = 1.0 - pos / 100.0;
+
+    const scored = nonBlockedCareers.map((c) => {
+      const base = alpha * c.fit! + (1.0 - alpha) * c.viability!;
+      const penalty = (c.conflict / 100.0) * 15.0 * Math.min(alpha, 1.0 - alpha);
+      const score = Math.max(0.0, Math.min(100.0, Math.round((base - penalty) * 10) / 10));
+      return { id: c.id, score };
+    });
+
+    // Stable sort: score desc, then id asc
+    scored.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
+
+    scored.forEach((item, rankIdx) => {
+      const target = nonBlockedCareers.find((c) => c.id === item.id)!;
+      target.blend![posIdx] = {
+        score: item.score,
+        rank: rankIdx + 1,
+      };
+    });
+  }
+
+  const blockedCareers: ExplorerCareer[] = [
+    {
+      id: 'commercial_pilot',
+      name: { en: 'Commercial Pilot', hi: 'कमर्शियल पायलट' },
+      domain: 'tech_engineering',
+      fit: 85.0,
+      viability: null,
+      market: null,
+      years_to_income: 4,
+      conflict: 45.0,
+      in_compromise: false,
+      blend: null,
+      blocked: {
+        gates: ['money'],
+        cause: 'cost',
+        remedies: [
+          {
+            id: 'cadet_sponsorship',
+            text: {
+              en: 'Apply for airline cadet pilot sponsorship programs.',
+              hi: 'एयरलाइन कैडेट पायलट स्पॉन्सरशिप प्रोग्राम के लिए आवेदन करें।',
+            },
+          },
+          {
+            id: 'state_aviation_subsidy',
+            text: {
+              en: 'Seek state civil aviation subsidies and education loan interest subventions.',
+              hi: null, // 1 remedy with hi null to verify English-only note
+            },
+          },
+        ],
+      },
+      data_gaps: ['verified_route_costs', 'verified_entry_salary'],
+    },
+    {
+      id: 'architect',
+      name: { en: 'Architect', hi: 'वास्तुकार (आर्किटेक्ट)' },
+      domain: 'design_creative',
+      fit: 68.0,
+      viability: null,
+      market: null,
+      years_to_income: 5,
+      conflict: 25.0,
+      in_compromise: false,
+      blend: null,
+      blocked: {
+        gates: ['money'],
+        cause: 'cost',
+        remedies: [
+          {
+            id: 'govt_seat_nata',
+            text: {
+              en: 'Target state government architecture colleges through NATA merit.',
+              hi: 'NATA मेरिट के ज़रिए सरकारी आर्किटेक्चर कॉलेज में दाखिला लें।',
+            },
+          },
+        ],
+      },
+      data_gaps: [],
+    },
+    {
+      id: 'aerospace_engineer',
+      name: { en: 'Aerospace Engineer', hi: 'एयरोस्पेस इंजीनियर' },
+      domain: 'tech_engineering',
+      fit: 75.0,
+      viability: null,
+      market: null,
+      years_to_income: 4,
+      conflict: 28.0,
+      in_compromise: false,
+      blend: null,
+      blocked: {
+        gates: ['money'],
+        cause: 'no_route_data',
+        remedies: [],
+      },
+      data_gaps: [],
+    },
+    {
+      id: 'dentist_bds',
+      name: { en: 'Dentist (BDS)', hi: 'दंत चिकित्सक (बीडीएस)' },
+      domain: 'healthcare_medicine',
+      fit: 64.0,
+      viability: null,
+      market: null,
+      years_to_income: 5,
+      conflict: 22.0,
+      in_compromise: false,
+      blend: null,
+      blocked: {
+        gates: ['money'],
+        cause: 'no_route_data',
+        remedies: [],
+      },
+      data_gaps: [],
+    },
+    {
+      id: 'animator_vfx_artist',
+      name: { en: 'Animator / VFX Artist', hi: 'एनिमेटर / वीएफएक्स आर्टिस्ट' },
+      domain: 'media_entertainment',
+      fit: 60.0,
+      viability: null,
+      market: null,
+      years_to_income: 3,
+      conflict: 35.0,
+      in_compromise: false,
+      blend: null,
+      blocked: {
+        gates: ['money'],
+        cause: 'no_route_data',
+        remedies: [],
+      },
+      data_gaps: [],
+    },
+    {
+      id: 'lawyer_corporate',
+      name: { en: 'Corporate Lawyer', hi: 'कॉर्पोरेट वकील' },
+      domain: 'humanities_law',
+      fit: 55.0,
+      viability: null,
+      market: null,
+      years_to_income: 5,
+      conflict: 18.0,
+      in_compromise: false,
+      blend: null,
+      blocked: {
+        gates: ['money'],
+        cause: 'no_route_data',
+        remedies: [],
+      },
+      data_gaps: [],
+    },
+    {
+      id: 'environmental_scientist',
+      name: { en: 'Environmental Scientist', hi: 'पर्यावरण वैज्ञानिक' },
+      domain: 'sciences',
+      fit: 72.0,
+      viability: null,
+      market: null,
+      years_to_income: 4,
+      conflict: 15.0,
+      in_compromise: false,
+      blend: null,
+      blocked: {
+        gates: ['money'],
+        cause: 'no_route_data',
+        remedies: [],
+      },
+      data_gaps: [],
+    },
+    {
+      id: 'astrophysicist',
+      name: { en: 'Astrophysicist', hi: 'खगोल भौतिक विज्ञानी' },
+      domain: 'sciences',
+      fit: null,
+      viability: 70.0,
+      market: null,
+      years_to_income: 6,
+      conflict: 20.0,
+      in_compromise: false,
+      blend: null,
+      blocked: {
+        gates: ['academic'],
+        cause: 'academic',
+        remedies: [
+          {
+            id: 'advanced_maths_prep',
+            text: {
+              en: 'Take advanced mathematics coaching for national entrance exams.',
+              hi: 'राष्ट्रीय प्रवेश परीक्षाओं के लिए उच्च गणित की तैयारी करें।',
+            },
+          },
+        ],
+      },
+      data_gaps: [],
+    },
+  ];
+
+  const frontier =
+    scenario === 'single_frontier'
+      ? ['biomedical_engineer']
+      : ['ai_ml_engineer', 'biomedical_engineer', 'financial_analyst']; // sorted by viability asc: 65, 78, 80
+
+  return {
+    slider: { positions, default: 50 },
+    careers: [...nonBlockedCareers, ...blockedCareers],
+    frontier,
+    compromise: { min_fit: 60.0, min_viability: 60.0 },
+  };
+}
+
+export async function getExplorer(
+  familyCode: string,
+  token: string
+): Promise<ExplorerResponse> {
+  const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
+
+  if (isMockEnabled()) {
+    if (cleanCode === 'NOTFND') {
+      throw new ApiError('family_not_found', 'Family not found', 404);
+    }
+    const map = getMockFamilies();
+    const existing = map[cleanCode];
+    if (existing && (!existing.studentSubmitted || !existing.parentSubmitted)) {
+      throw new ApiError('explorer_not_ready', 'Both members must submit before viewing explorer', 409);
+    }
+    const scenario = process.env.NEXT_PUBLIC_MOCK_SCENARIO || 'normal';
+    return generateMockExplorerResponse(scenario);
+  }
+
+  try {
+    return await request<ExplorerResponse>(
+      `/families/${encodeURIComponent(cleanCode)}/explorer`,
+      {
+        method: 'GET',
+        headers: {
+          'X-Member-Token': token,
+        },
+      }
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      const scenario = process.env.NEXT_PUBLIC_MOCK_SCENARIO || 'normal';
+      return generateMockExplorerResponse(scenario);
+    }
+    throw err;
+  }
+}
+
+

@@ -123,8 +123,95 @@ export interface Translations {
   // Picks templates
   domain_shared: string;
   domain_none: string;
+  domain_guessLabel: string;
   domain_guessMatch: string;
   domain_guessMismatch: string;
+
+  // Page 5 link to explorer
+  seeYourOptions: string;
+
+  // Page 6 Negotiation Explorer strings
+  explorerTitle: string;
+  explorerSubtitle: string;
+  explorerErrorTitle: string;
+  explorerErrorDesc: string;
+  explorerWaitingTitle: string;
+  explorerWaitingDesc: string;
+  explorerWaitingBadge: string;
+  explorerFooterNote: string;
+
+  xAxisLabel: string;
+  yAxisLabel: string;
+  compromiseZoneLabel: string;
+  bestTradeOffsLabel: string;
+  bestOnBothLabel: string;
+  sweetSpotLabel: string;
+  zoomedChip: string;
+  showFullRange: string;
+  showZoomedRange: string;
+  chartAriaLabel: string;
+  gutterTitle: string;
+  allDomainsFilter: string;
+  clickToInspectHint: string;
+
+  legendTopPick: string;
+  legendFrontier: string;
+  legendEstimated: string;
+  legendNeedsPlan: string;
+  legendCoverageNote: string;
+
+  sliderLeftLabel: string;
+  sliderRightLabel: string;
+  sliderBalanceStudent: string;
+  sliderBalanceFamily: string;
+  sliderBalancePill: string;
+  heroTopMatch: string;
+  sliderAriaValue: string;
+  sliderTopPickSentence: string;
+  sliderTopPickSentenceNoViab: string;
+  sliderDisagreementNote: string;
+  sliderTopPickEstimated: string;
+  winnerStripCaption: string;
+  winnerStripEstimatedAsterisk: string;
+
+  rankedListTitle: string;
+  chipBestTradeOff: string;
+  chipCompromiseZone: string;
+  chipEstimatedFigures: string;
+  showAllToggle: string;
+  showTop10Toggle: string;
+  topPickAnnounced: string;
+
+  detailPanelTitle: string;
+  closeDetail: string;
+  scoreFit: string;
+  scoreViability: string;
+  scoreMarket: string;
+  scoreBlend: string;
+  rankAtPosition: string;
+  yearsToIncome: string;
+  yearsCount: string;
+  familyConflictLabel: string;
+  conflictScore: string;
+  estimatedNoteTitle: string;
+  coincidentGroupTitle: string;
+  selectCareerFromGroup: string;
+
+  needsPlanTitle: string;
+  needsPlanIntro: string;
+  notEnoughDataTitle: string;
+  notEnoughDataIntro: string;
+  gateCostSentence: string;
+  gateAcademicSentence: string;
+  remediesHeader: string;
+  englishOnlyNote: string;
+  neutralRemedyLine: string;
+  emptyStateTitle: string;
+
+  gap_verified_route_costs: string;
+  gap_verified_entry_salary: string;
+  gap_regional_hiring: string;
+  gap_exam_pattern: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -251,8 +338,95 @@ export const translations: Record<Language, Translations> = {
 
     domain_shared: "{student} and {parent} both picked {domains}.",
     domain_none: "No domain appears in both lists.",
-    domain_guessMatch: "{parent} guessed {domain}, which is one of {student}'s picks.",
-    domain_guessMismatch: "{parent} guessed {domain}; {student} picked {list}.",
+    domain_guessLabel: "{parent}'s guess about {student}",
+    domain_guessMatch: "{parent} thought {student} would pick {domain}, and {student} did.",
+    domain_guessMismatch: "{parent} thought {student} would pick {domain}. {student} picked {list}.",
+
+    // Page 5 link
+    seeYourOptions: "See your options",
+
+    // Page 6 Negotiation Explorer
+    explorerTitle: "Negotiation Explorer",
+    explorerSubtitle: "Find career paths balancing what {student} loves with what the family can afford.",
+    explorerErrorTitle: "Something is off with the data. Please try again.",
+    explorerErrorDesc: "Please refresh or try again later.",
+    explorerWaitingTitle: "Preparing your options…",
+    explorerWaitingDesc: "Both members have submitted. Calculating trade-offs, affordability, and the compromise zone…",
+    explorerWaitingBadge: "Checking automatically…",
+    explorerFooterNote: "This is a screening tool, not a diagnosis. Scores are estimates from the data snapshot; any rupee amount is illustrative.",
+
+    xAxisLabel: "What the family can afford",
+    yAxisLabel: "What {student} would love",
+    compromiseZoneLabel: "Compromise zone",
+    bestTradeOffsLabel: "Best trade-offs",
+    bestOnBothLabel: "Best on both",
+    sweetSpotLabel: "Sweet spot: High fit & affordability",
+    zoomedChip: "Zoomed to {min}–{max}",
+    showFullRange: "Show full 0–100",
+    showZoomedRange: "Zoom in",
+    chartAriaLabel: "Scatter chart comparing student fit versus family affordability for all careers",
+    gutterTitle: "Needs a plan",
+    allDomainsFilter: "All Domains",
+    clickToInspectHint: "Click any dot or career row to inspect details",
+
+    legendTopPick: "Top pick",
+    legendFrontier: "Best trade-offs",
+    legendEstimated: "Estimated figures",
+    legendNeedsPlan: "Needs a plan",
+    legendCoverageNote: "Verified data for {n} of {total} careers; the others use estimated defaults.",
+
+    sliderLeftLabel: "What {student} would love",
+    sliderRightLabel: "What the family can afford",
+    sliderBalanceStudent: "{student}'s Passion",
+    sliderBalanceFamily: "Family Affordability",
+    sliderBalancePill: "{studentPct}% Student • {familyPct}% Family",
+    heroTopMatch: "#1 Top Pick at this balance",
+    sliderAriaValue: "Priority balance: {val}% family affordability",
+    sliderTopPickSentence: "At this setting the top pick is {career}: fit {fit}, affordability {viability}.",
+    sliderTopPickSentenceNoViab: "At this setting the top pick is {career}: fit {fit}.",
+    sliderDisagreementNote: "Scores also lower careers the family disagrees about.",
+    sliderTopPickEstimated: "This top pick rests on some estimated figures.",
+    winnerStripCaption: "Who is the top pick as you move the slider",
+    winnerStripEstimatedAsterisk: "* some figures estimated",
+
+    rankedListTitle: "Ranked careers",
+    chipBestTradeOff: "Best trade-off",
+    chipCompromiseZone: "In the compromise zone",
+    chipEstimatedFigures: "Estimated figures",
+    showAllToggle: "Show all ({count})",
+    showTop10Toggle: "Show top 10",
+    topPickAnnounced: "Top pick changed to {career}, score {score}",
+
+    detailPanelTitle: "Career details",
+    closeDetail: "Close",
+    scoreFit: "Student fit",
+    scoreViability: "Family affordability",
+    scoreMarket: "Job market",
+    scoreBlend: "Score at current setting",
+    rankAtPosition: "Rank #{rank}",
+    yearsToIncome: "Years to first income",
+    yearsCount: "{n} years",
+    familyConflictLabel: "How far apart the family is on this career",
+    conflictScore: "{score} / 100",
+    estimatedNoteTitle: "Estimated figures",
+    coincidentGroupTitle: "Careers at this point ({count})",
+    selectCareerFromGroup: "Select a career to view details:",
+
+    needsPlanTitle: "Needs a plan",
+    needsPlanIntro: "Not out of reach: here is what would make it workable.",
+    notEnoughDataTitle: "Not enough data yet",
+    notEnoughDataIntro: "We don't have verified pathway and cost data for this career yet, so we can't say whether it's affordable.",
+    gateCostSentence: "College fees and pathway costs currently exceed the family budget.",
+    gateAcademicSentence: "Requires specific qualifying subjects or competitive entrance exam preparation.",
+    remediesHeader: "What could help:",
+    englishOnlyNote: "English only",
+    neutralRemedyLine: "Explore government merit-cum-means scholarships and alternative regional colleges.",
+    emptyStateTitle: "No career fits the budget you described yet. Here is what could change that.",
+
+    gap_verified_route_costs: "Educational pathway & tuition fees",
+    gap_verified_entry_salary: "Starting entry-level salary",
+    gap_regional_hiring: "Regional hiring trends",
+    gap_exam_pattern: "Entrance exam eligibility",
   },
   hi: {
     tagline: "ऐसा करियर, जिस पर पूरा परिवार सहमत हो।",
@@ -377,8 +551,95 @@ export const translations: Record<Language, Translations> = {
 
     domain_shared: "{student} और {parent} दोनों ने {domains} चुना है।",
     domain_none: "दोनों की पसंद में कोई भी क्षेत्र समान नहीं है।",
-    domain_guessMatch: "{parent} ने {domain} का अनुमान लगाया था, और यह {student} की पसंद में शामिल है।",
-    domain_guessMismatch: "{parent} ने {domain} का अनुमान लगाया था; {student} ने {list} चुना।",
+    domain_guessLabel: "{student} के बारे में {parent} का अनुमान",
+    domain_guessMatch: "{parent} को लगा था कि {student} {domain} चुनेंगे, और {student} ने वही चुना।",
+    domain_guessMismatch: "{parent} को लगा था कि {student} {domain} चुनेंगे। {student} ने {list} चुना।",
+
+    // Page 5 link
+    seeYourOptions: "अपने विकल्प देखें",
+
+    // Page 6 Negotiation Explorer
+    explorerTitle: "सहमति और करियर विकल्प",
+    explorerSubtitle: "ऐसे करियर खोजें जो {student} की पसंद और परिवार के बजट दोनों में सही बैठें।",
+    explorerErrorTitle: "डेटा में कुछ गड़बड़ी है। कृपया पुनः प्रयास करें।",
+    explorerErrorDesc: "कृपया पेज को रीफ़्रेश करें या थोड़ी देर बाद प्रयास करें।",
+    explorerWaitingTitle: "आपके करियर विकल्प तैयार हो रहे हैं…",
+    explorerWaitingDesc: "दोनों सदस्यों ने फ़ॉर्म सबमिट कर दिया है। सर्वोत्तम विकल्प, बजट और सहमति क्षेत्र का हिसाब लगाया जा रहा है…",
+    explorerWaitingBadge: "स्वचालित रूप से जाँच हो रही है…",
+    explorerFooterNote: "यह केवल एक आरंभिक आकलन है, कोई अंतिम निदान नहीं। सभी अंक डेटा के आधार पर अनुमानित हैं और राशियाँ केवल समझाने के लिए हैं।",
+
+    xAxisLabel: "परिवार की सामर्थ्य (बजट)",
+    yAxisLabel: "{student} की पसंद",
+    compromiseZoneLabel: "सहमति क्षेत्र",
+    bestTradeOffsLabel: "सर्वश्रेष्ठ संतुलन",
+    bestOnBothLabel: "दोनों में सबसे आगे",
+    sweetSpotLabel: "सर्वोत्तम क्षेत्र: उच्च पसंद और बजट",
+    zoomedChip: "{min}–{max} पर ज़ूम किया गया",
+    showFullRange: "पूरा 0–100 देखें",
+    showZoomedRange: "ज़ूम इन करें",
+    chartAriaLabel: "करियर की पसंद और परिवार के बजट की तुलना करने वाला चार्ट",
+    gutterTitle: "योजना ज़रूरी है",
+    allDomainsFilter: "सभी क्षेत्र",
+    clickToInspectHint: "विस्तृत जानकारी देखने के लिए किसी भी बिंदु या पंक्ति पर क्लिक करें",
+
+    legendTopPick: "शीर्ष पसंद",
+    legendFrontier: "सर्वश्रेष्ठ संतुलन",
+    legendEstimated: "अनुमानित आँकड़े",
+    legendNeedsPlan: "योजना ज़रूरी है",
+    legendCoverageNote: "{total} में से {n} करियर के लिए प्रमाणित डेटा उपलब्ध है; बाक़ी अनुमानित मानकों पर आधारित हैं।",
+
+    sliderLeftLabel: "{student} की पसंद",
+    sliderRightLabel: "परिवार का बजट",
+    sliderBalanceStudent: "{student} की पसंद",
+    sliderBalanceFamily: "परिवार की सामर्थ्य",
+    sliderBalancePill: "{studentPct}% विद्यार्थी • {familyPct}% परिवार",
+    heroTopMatch: "इस संतुलन पर #1 शीर्ष पसंद",
+    sliderAriaValue: "प्राथमिकता: {val}% परिवार की सामर्थ्य",
+    sliderTopPickSentence: "इस स्थिति पर शीर्ष पसंद {career} है: पसंद {fit}, सामर्थ्य {viability}।",
+    sliderTopPickSentenceNoViab: "इस स्थिति पर शीर्ष पसंद {career} है: पसंद {fit}।",
+    sliderDisagreementNote: "जिन करियर पर परिवार में मतभेद है, उनके अंक भी कम हो जाते हैं।",
+    sliderTopPickEstimated: "यह शीर्ष पसंद कुछ अनुमानित आँकड़ों पर आधारित है।",
+    winnerStripCaption: "जैसे-जैसे आप स्लाइडर खिसकाएँगे, शीर्ष पसंद बदलती दिखेगी",
+    winnerStripEstimatedAsterisk: "* कुछ आँकड़े अनुमानित हैं",
+
+    rankedListTitle: "वरीयता सूची",
+    chipBestTradeOff: "सर्वश्रेष्ठ संतुलन",
+    chipCompromiseZone: "सहमति क्षेत्र में",
+    chipEstimatedFigures: "अनुमानित आँकड़े",
+    showAllToggle: "सभी ({count}) देखें",
+    showTop10Toggle: "शीर्ष 10 देखें",
+    topPickAnnounced: "शीर्ष पसंद बदलकर {career} हो गई, अंक {score}",
+
+    detailPanelTitle: "करियर का विवरण",
+    closeDetail: "बंद करें",
+    scoreFit: "विद्यार्थी की पसंद",
+    scoreViability: "परिवार की सामर्थ्य",
+    scoreMarket: "रोज़गार बाज़ार",
+    scoreBlend: "वर्तमान स्थिति पर अंक",
+    rankAtPosition: "रैंक #{rank}",
+    yearsToIncome: "कमाई शुरू होने में वर्ष",
+    yearsCount: "{n} वर्ष",
+    familyConflictLabel: "इस करियर को लेकर परिवार में असहमति",
+    conflictScore: "{score} / 100",
+    estimatedNoteTitle: "अनुमानित आँकड़े",
+    coincidentGroupTitle: "इस बिंदु पर करियर ({count})",
+    selectCareerFromGroup: "विवरण देखने के लिए करियर चुनें:",
+
+    needsPlanTitle: "योजना की ज़रूरत है",
+    needsPlanIntro: "यह असंभव नहीं है: इसे संभव बनाने के रास्ते यहाँ दिए गए हैं।",
+    notEnoughDataTitle: "पर्याप्त डेटा अभी उपलब्ध नहीं",
+    notEnoughDataIntro: "हमारे पास अभी इस करियर के लिए प्रमाणित मार्ग और लागत का डेटा नहीं है, इसलिए हम यह नहीं कह सकते कि यह बजट में है या नहीं।",
+    gateCostSentence: "कॉलेज की फ़ीस और कुल ख़र्च वर्तमान में परिवार के बजट से अधिक है।",
+    gateAcademicSentence: "इसके लिए विशिष्ट विषयों या प्रतियोगी प्रवेश परीक्षा की तैयारी आवश्यक है।",
+    remediesHeader: "मददगार उपाय:",
+    englishOnlyNote: "केवल अंग्रेज़ी में",
+    neutralRemedyLine: "सरकारी छात्रवृत्ति योजनाओं और क्षेत्रीय कॉलेजों के विकल्पों की पड़ताल करें।",
+    emptyStateTitle: "आपके बताए गए बजट में अभी कोई करियर पूरी तरह फिट नहीं बैठता। इसे बदलने के विकल्प नीचे दिए गए हैं।",
+
+    gap_verified_route_costs: "कॉलेज की फ़ीस और कुल ख़र्च",
+    gap_verified_entry_salary: "शुरुआती वेतन",
+    gap_regional_hiring: "क्षेत्रीय नौकरियों के रुझान",
+    gap_exam_pattern: "प्रवेश परीक्षा के नियम",
   },
 };
 
