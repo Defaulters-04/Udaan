@@ -8,6 +8,7 @@ from app.config import settings
 from app.routers.assessment import router as assessment_router
 from app.routers.families import router as families_router
 from app.routers.health import router as health_router
+from app.routers.intake import router as intake_router
 
 
 def create_app() -> FastAPI:
@@ -59,7 +60,7 @@ def create_app() -> FastAPI:
                 "code": code,
                 "message": message,
             }
-            if code == "assessment_incomplete" and "missing" in exc.detail:
+            if code in ("assessment_incomplete", "intake_incomplete") and "missing" in exc.detail:
                 error_data["missing"] = exc.detail["missing"]
             return JSONResponse(
                 status_code=exc.status_code,
@@ -99,6 +100,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(families_router)
     app.include_router(assessment_router)
+    app.include_router(intake_router)
 
     return app
 

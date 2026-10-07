@@ -405,3 +405,60 @@ def test_submit_flow_incomplete_idempotent_and_status_done():
     ).json()
     assert parent_status["you"]["done"] is False
     assert parent_status["partner"]["done"] is True
+
+
+def test_assessment_empty_string_and_empty_list_treated_as_unanswered_on_submit():
+    code, student_token, _ = create_linked_family()
+
+    full_answers = {
+        "bg_stream": "science_bio",
+        "bg_marks_band": "75_90",
+        "bg_district": "Lucknow",
+        "bg_languages": ["hindi", "english"],
+        "int_01": 4,
+        "int_02": 3,
+        "int_03": 5,
+        "int_04": 2,
+        "int_05": 4,
+        "int_06": 3,
+        "int_07": 4,
+        "int_08": 5,
+        "int_09": 3,
+        "int_10": 4,
+        "int_11": 2,
+        "int_12": 1,
+        "apt_spatial": "a",
+        "apt_numerical": "b",
+        "apt_verbal": "c",
+        "apt_logical": "d",
+        "val_security": 8,
+        "val_independence": 9,
+        "val_helping": 7,
+        "val_income": 9,
+        "val_creativity": 6,
+    }
+
+    # Save full answers
+    client.put(
+        f"/families/{code}/assessment/answers",
+        headers={"X-Member-Token": student_token},
+        json={"answers": full_answers},
+    )
+
+    # Now clear two required answers: one with whitespace, one with empty list
+    client.put(
+        f"/families/{code}/assessment/answers",
+        headers={"X-Member-Token": student_token},
+        json={"answers": {"bg_district": "   ", "bg_languages": []}},
+    )
+
+    # Attempt submit -> must return 422 assessment_incomplete with missing in question-bank order
+    res = client.post(
+        f"/families/{code}/assessment/submit",
+        headers={"X-Member-Token": student_token},
+    )
+    assert res.status_code == 422
+    data = res.json()
+    assert data["error"]["code"] == "assessment_incomplete"
+    assert data["error"]["missing"] == ["bg_district", "bg_languages"]
+

@@ -92,8 +92,12 @@ def get_family_status(
         raise_api_error(status.HTTP_401_UNAUTHORIZED, "invalid_token", "Invalid member token")
 
     assert family is not None and you is not None
-    you_done = (you.role == RoleEnum.STUDENT and you.submitted)
-    partner_done = (partner.role == RoleEnum.STUDENT and partner.submitted) if partner else False
+    if you.role == RoleEnum.STUDENT:
+        you_done = you.submitted
+        partner_done = partner.intake_submitted if partner else False
+    else:
+        you_done = you.intake_submitted
+        partner_done = partner.submitted if partner else False
 
     return FamilyStatusResponse(
         family_code=family.family_code,

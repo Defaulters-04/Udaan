@@ -2,7 +2,8 @@
 
 FastAPI backend service for Udaan.
 
-> **Note on Question Bank**: Hardcoded stand-in for the ML question generator.
+> **Note on Assessment Question Bank**: Hardcoded stand-in for the ML question generator.
+> **Note on Parent Intake Question Bank**: Hardcoded stand-in until the career catalogue defines domains. All amounts are illustrative.
 
 ## Installation
 
