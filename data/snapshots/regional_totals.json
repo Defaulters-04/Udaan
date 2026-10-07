@@ -1,0 +1,15 @@
+{
+  "region_totals": {
+    "bengaluru": 65000.0,
+    "delhi_ncr": 58000.0,
+    "mumbai": 52000.0,
+    "hyderabad": 42000.0,
+    "pune": 31000.0,
+    "chennai": 27000.0,
+    "kolkata": 15000.0,
+    "ahmedabad": 12000.0
+  },
+  "national_total": 500000.0,
+  "source_label": "National Aggregated Labour Analytics (Illustrative Snapshot)",
+  "fetched_at": "2026-10-01"
+}

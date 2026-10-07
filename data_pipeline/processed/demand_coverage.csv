@@ -1,0 +1,56 @@
+career_id,signals_found,positive_signals,negative_signals,neutral_signals,unknown_signals,evidence_coverage,demand_direction,confidence_status,missing_evidence
+ai_ml_engineer,5,3,1,1,0,2/4 (50.0%),GROWING,HIGH,hiring_growth; geographic_demand
+software_developer,2,1,0,1,0,1/4 (25.0%),STABLE / MIXED,LOW,employment_size; geographic_demand; future_outlook
+civil_engineer,2,1,0,1,0,3/4 (75.0%),STABLE / MIXED,LOW,geographic_demand
+doctor_mbbs,3,0,0,3,0,1/4 (25.0%),STABLE / MIXED,MEDIUM,hiring_growth; geographic_demand; future_outlook
+data_scientist,2,2,0,0,0,2/4 (50.0%),GROWING,HIGH,employment_size; geographic_demand
+data_analyst,2,1,0,1,0,2/4 (50.0%),STABLE / MIXED,MEDIUM,hiring_growth; geographic_demand
+mechanical_engineer,2,1,0,1,0,3/4 (75.0%),STABLE / MIXED,LOW,geographic_demand
+electrical_engineer,2,1,0,1,0,3/4 (75.0%),STABLE / MIXED,LOW,geographic_demand
+electronics_engineer,2,2,0,0,0,2/4 (50.0%),GROWING,HIGH,employment_size; geographic_demand
+chemical_engineer,2,1,0,1,0,2/4 (50.0%),STABLE / MIXED,LOW,employment_size; geographic_demand
+aerospace_engineer,2,0,0,2,0,1/4 (25.0%),STABLE / MIXED,LOW,hiring_growth; geographic_demand; future_outlook
+biomedical_engineer,2,0,0,2,0,1/4 (25.0%),STABLE / MIXED,LOW,hiring_growth; employment_size; geographic_demand
+cybersecurity_analyst,2,1,0,1,0,2/4 (50.0%),STABLE / MIXED,MEDIUM,hiring_growth; geographic_demand
+cloud_solutions_architect,2,1,0,1,0,1/4 (25.0%),STABLE / MIXED,LOW,hiring_growth; employment_size; geographic_demand
+devops_engineer,2,1,0,1,0,2/4 (50.0%),STABLE / MIXED,LOW,hiring_growth; geographic_demand
+product_manager,2,1,0,1,0,2/4 (50.0%),STABLE / MIXED,MEDIUM,employment_size; geographic_demand
+investment_banker,2,1,0,1,0,2/4 (50.0%),STABLE / MIXED,LOW,employment_size; geographic_demand
+chartered_accountant,2,0,0,2,0,1/4 (25.0%),STABLE / MIXED,MEDIUM,hiring_growth; geographic_demand; future_outlook
+financial_analyst,2,1,0,1,0,2/4 (50.0%),STABLE / MIXED,LOW,employment_size; geographic_demand
+management_consultant,2,1,0,1,0,3/4 (75.0%),STABLE / MIXED,LOW,geographic_demand
+human_resources_specialist,2,1,0,1,0,3/4 (75.0%),STABLE / MIXED,MEDIUM,geographic_demand
+marketing_manager,2,1,0,1,0,2/4 (50.0%),STABLE / MIXED,MEDIUM,employment_size; geographic_demand
+digital_marketing_specialist,2,1,0,1,0,3/4 (75.0%),STABLE / MIXED,LOW,geographic_demand
+operations_manager,2,0,0,2,0,2/4 (50.0%),STABLE / MIXED,LOW,hiring_growth; geographic_demand
+commercial_pilot,2,0,0,2,0,1/4 (25.0%),STABLE / MIXED,MEDIUM,hiring_growth; geographic_demand; future_outlook
+lawyer_corporate,2,0,0,2,0,1/4 (25.0%),STABLE / MIXED,MEDIUM,hiring_growth; geographic_demand; future_outlook
+pharmacist,2,0,0,2,0,1/4 (25.0%),STABLE / MIXED,MEDIUM,hiring_growth; geographic_demand; future_outlook
+biotechnologist,2,0,0,2,0,1/4 (25.0%),STABLE / MIXED,LOW,hiring_growth; employment_size; geographic_demand
+environmental_scientist,2,2,0,0,0,1/4 (25.0%),GROWING,MEDIUM,hiring_growth; employment_size; geographic_demand
+nursing_officer,2,0,0,2,0,1/4 (25.0%),STABLE / MIXED,MEDIUM,hiring_growth; geographic_demand; future_outlook
+dentist_bds,2,0,0,2,0,1/4 (25.0%),STABLE / MIXED,MEDIUM,hiring_growth; geographic_demand; future_outlook
+physiotherapist,2,1,0,1,0,3/4 (75.0%),STABLE / MIXED,LOW,geographic_demand
+ux_designer,0,0,0,0,0,0/4 (0.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand; future_outlook
+architect,2,1,0,1,0,2/4 (50.0%),STABLE / MIXED,LOW,geographic_demand; future_outlook
+graphic_designer,0,0,0,0,0,0/4 (0.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand; future_outlook
+animator_vfx_artist,1,0,1,0,0,1/4 (25.0%),DECLINING,LOW,hiring_growth; employment_size; geographic_demand
+game_developer,1,0,0,1,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; geographic_demand; future_outlook
+industrial_designer,0,0,0,0,0,0/4 (0.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand; future_outlook
+video_editor,0,0,0,0,0,0/4 (0.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand; future_outlook
+fashion_designer,0,0,0,0,0,0/4 (0.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand; future_outlook
+fine_artist,0,0,0,0,0,0/4 (0.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand; future_outlook
+video_creator,6,2,0,4,0,2/4 (50.0%),STABLE / MIXED,MEDIUM,hiring_growth; geographic_demand
+streamer_esports_player,0,0,0,0,0,0/4 (0.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand; future_outlook
+independent_musician,0,0,0,0,0,0/4 (0.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand; future_outlook
+freelance_creative,0,0,0,0,0,0/4 (0.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand; future_outlook
+historian,1,0,0,1,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; geographic_demand; future_outlook
+archaeologist,1,0,0,1,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; geographic_demand; future_outlook
+geographer,1,0,0,1,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; geographic_demand; future_outlook
+gis_analyst,1,1,0,0,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand
+linguist,1,1,0,0,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; employment_size; geographic_demand
+translator_interpreter,1,0,0,1,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; geographic_demand; future_outlook
+political_scientist,1,0,0,1,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; geographic_demand; future_outlook
+international_relations_specialist,1,0,0,1,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; geographic_demand; future_outlook
+economist,1,0,0,1,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; geographic_demand; future_outlook
+journalist,1,0,0,1,0,1/4 (25.0%),INSUFFICIENT_EVIDENCE,INSUFFICIENT,hiring_growth; geographic_demand; future_outlook
