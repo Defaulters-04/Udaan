@@ -114,8 +114,8 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
 
   // Interstitial transition state
   const [interstitialInfo, setInterstitialInfo] = useState<{
-    prevSectionTitle: string;
-    nextSectionTitle: string;
+    prevSectionTitle: LocalizedText;
+    nextSectionTitle: LocalizedText;
     targetIndex: number;
   } | null>(null);
 
@@ -351,8 +351,8 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
         prevSec.id !== nextSec.id
       ) {
         setInterstitialInfo({
-          prevSectionTitle: getLocalizedText(prevSec.title, storeLang),
-          nextSectionTitle: getLocalizedText(nextSec.title, storeLang),
+          prevSectionTitle: prevSec.title,
+          nextSectionTitle: nextSec.title,
           targetIndex,
         });
         setPhase('interstitial');
@@ -362,7 +362,7 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
       setCurrentIndex(targetIndex);
       setPhase('question');
     },
-    [cancelAutoAdvance, flatQuestions, currentIndex, questionToSectionMap, storeLang]
+    [cancelAutoAdvance, flatQuestions, currentIndex, questionToSectionMap]
   );
 
   // Handle interstitial auto-advance
@@ -730,10 +730,10 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
             >
               <div className="space-y-4 w-full max-w-sm">
                 <h2 className={`${headingFontClass} text-2xl sm:text-3xl font-bold text-midnight`}>
-                  {interstitialInfo.prevSectionTitle}
+                  {getLocalizedText(interstitialInfo.prevSectionTitle, storeLang)}
                 </h2>
                 <p className="text-base text-midnight/70 font-normal">
-                  {interstitialInfo.nextSectionTitle}
+                  {getLocalizedText(interstitialInfo.nextSectionTitle, storeLang)}
                 </p>
 
                 {/* Smooth 1.4s animated ocean line */}
@@ -784,8 +784,15 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
                   </div>
                 </div>
 
-                {/* 5-segment rail proportional to question counts */}
-                <div className="flex gap-1.5 h-1.5 w-full">
+                {/* Stepper progress rail proportional to section question counts */}
+                <div
+                  className="flex gap-1.5 h-1.5 w-full"
+                  role="progressbar"
+                  aria-label="Progress rail"
+                  aria-valuenow={currentIndex + 1}
+                  aria-valuemin={1}
+                  aria-valuemax={flatQuestions.length || 1}
+                >
                   {sectionStats.map((stat, idx) => {
                     const isPassed = currentIndex > stat.startIndex + stat.total - 1;
                     const isCurrent =
@@ -793,14 +800,16 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
                     const fillPercent = isPassed
                       ? 100
                       : isCurrent
-                      ? ((currentIndex - stat.startIndex + 1) / stat.total) * 100
+                      ? ((currentIndex - stat.startIndex + 1) / Math.max(stat.total, 1)) * 100
                       : 0;
 
                     return (
                       <div
-                        key={idx}
+                        key={stat.section.id || idx}
                         className="h-full bg-cloud rounded-full overflow-hidden"
-                        style={{ flex: stat.total }}
+                        style={{ flex: Math.max(stat.total, 1) }}
+                        title={getLocalizedText(stat.section.title, storeLang)}
+                        aria-label={`Step ${idx + 1} of ${sections.length}: ${getLocalizedText(stat.section.title, storeLang)}`}
                       >
                         <motion.div
                           className="h-full bg-ocean"
