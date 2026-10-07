@@ -159,6 +159,11 @@ class MarketTiersConfig:
     w_tier_velocity: float = 0.35  # design assumption, unsourced
     w_tier_disruption: float = 0.25  # design assumption, unsourced
 
+    # Market signals tier mapping points (Option 1)
+    market_signals_growing_points: float = 80.0  # design assumption, unsourced
+    market_signals_stable_points: float = 60.0  # design assumption, unsourced
+    market_signals_declining_points: float = 40.0  # design assumption, unsourced
+
     # Confidence audit cutoffs
     confidence_high_threshold: float = 0.80
     confidence_medium_threshold: float = 0.50

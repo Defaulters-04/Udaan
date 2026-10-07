@@ -188,7 +188,8 @@ class ScoredCareerInput(BaseModel):
     career_name: Optional[str] = None
     student_fit: float = Field(..., ge=0.0, le=1.0, description="Student fit score [0, 1]")
     family_viability: float = Field(..., ge=0.0, le=1.0, description="Family affordability / parental viability [0, 1]")
-    market_score: float = Field(0.70, ge=0.0, le=1.0, description="Job market score [0, 1]")
+    market_score: Any = Field(0.70, description="Job market score [0, 1] or 'NOT FOUND'")
+    market_is_default: bool = Field(default=False, description="True if market score defaulted or NOT FOUND")
     career_risk: float = Field(0.50, ge=0.0, le=1.0)
     domain: str = "General"
     relocation_need: float = Field(0.50, ge=0.0, le=1.0)
@@ -205,7 +206,8 @@ class CompromiseCareer(BaseModel):
     career_name: Optional[str] = None
     student_fit: float
     family_viability: float
-    market_score: float = 0.50
+    market_score: Any = 0.50
+    market_is_default: bool = False
     fit_gap: float = Field(default=0.0, description="Per-career |Fit - Family| gap (Fix 2)")
     negotiated_score: float
     is_in_compromise_zone: bool

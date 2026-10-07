@@ -1,0 +1,726 @@
+# Synthetic Persona Validation Set for UDAAN PRISM Engine
+# 12 Personas with full student & family inputs and falsifiable expectations
+
+personas:
+  - id: "persona_01_creative_student_low_income_medical_family"
+    description: "Strong creative interest, low-income family wanting a medical career (demo story)"
+    student:
+      student_id: "p01_student"
+      stage: "school"
+      I_s:
+        R: 0.15
+        I: 0.20
+        A: 0.95
+        S: 0.35
+        E: 0.40
+        C: 0.15
+      a_j:
+        logical: 0.60
+        numerical: 0.50
+        verbal: 0.85
+        spatial: 0.85
+      academics:
+        marks: 78.0
+        subjects: ["english", "fine_arts", "design"]
+        exams: []
+      risk_appetite: 0.65
+      domain_preference:
+        design_creative: 5.0
+        media_entertainment: 4.0
+      relocation_willingness: 0.70
+      max_years_to_income: 4.0
+    family:
+      savings: 80000.0
+      monthly_surplus: 2500.0
+      household_income: 28000.0
+      existing_emis: 1500.0
+      loan_max: 150000.0
+      domain_ratings:
+        healthcare_medicine: 5
+        tech_engineering: 3
+      sector_ratings:
+        govt: 5
+        private: 2
+        entrepreneurship: 2
+      min_salary: 600000.0
+      max_years_to_income: 5.0
+      relocation_willingness: 0.25
+      risk: 0.20
+    expectations:
+      - rule: "top_fit_careers_contain"
+        target_careers: ["ux_designer", "graphic_designer", "fine_artist"]
+        min_matches: 2
+        description: "Creative careers should dominate the top 5 by student fit"
+      - rule: "career_not_in_top_fit"
+        career_id: "doctor_mbbs"
+        top_k: 5
+        description: "Doctor MBBS should NOT appear in the top 5 by student fit"
+      - rule: "conflict_index_level"
+        expected_level: "high"
+        min_value: 40.0
+        description: "Conflict index should be high due to divergent domain and risk preferences"
+      - rule: "conflict_dimension_driver"
+        dimension: "domain"
+        min_gap: 0.30
+        description: "Domain divergence should be a major driver of the conflict diagnosis"
+      - rule: "expensive_routes_fail_gate"
+        career_id: "software_developer"
+        route_id: "vit_btech_cse"
+        expected_g_fin: 0
+        description: "Expensive private university routes should fail the financial gate"
+
+  - id: "persona_02_investigative_numeric_wealthy_aligned"
+    description: "Strong investigative and numeric profile, wealthy aligned family (easy case, low conflict)"
+    student:
+      student_id: "p02_student"
+      stage: "school"
+      I_s:
+        R: 0.50
+        I: 0.95
+        A: 0.25
+        S: 0.20
+        E: 0.30
+        C: 0.85
+      a_j:
+        logical: 0.90
+        numerical: 0.90
+        verbal: 0.70
+        spatial: 0.65
+      academics:
+        marks: 92.0
+        subjects: ["mathematics", "physics", "computer_science"]
+        exams: ["jee_main"]
+      risk_appetite: 0.45
+      domain_preference:
+        tech_engineering: 5.0
+        sciences: 4.0
+      relocation_willingness: 0.60
+      max_years_to_income: 4.0
+    family:
+      savings: 2500000.0
+      monthly_surplus: 80000.0
+      household_income: 250000.0
+      existing_emis: 0.0
+      loan_max: 3000000.0
+      domain_ratings:
+        tech_engineering: 5
+        sciences: 4
+      sector_ratings:
+        govt: 3
+        private: 5
+        entrepreneurship: 4
+      min_salary: 800000.0
+      max_years_to_income: 4.0
+      relocation_willingness: 0.60
+      risk: 0.45
+    expectations:
+      - rule: "top_fit_careers_contain"
+        target_careers: ["ai_ml_engineer", "data_scientist", "software_developer"]
+        min_matches: 2
+        description: "High tech and analytical careers should dominate student fit"
+      - rule: "conflict_index_level"
+        expected_level: "low"
+        max_value: 15.0
+        description: "Conflict index should be low (<15) because preferences align closely"
+      - rule: "compromise_zone_non_empty"
+        expected: true
+        description: "Compromise zone should be populated with viable high-fit options"
+      - rule: "financial_gate_cleared"
+        career_id: "software_developer"
+        expected_g_fin: 1
+        description: "Family liquidity easily clears educational route financial gates"
+
+  - id: "persona_03_undecided_flat_riasec"
+    description: "Flat, undecided interest profile (should show low_signal and not a confident ranking)"
+    student:
+      student_id: "p03_student"
+      stage: "school"
+      I_s:
+        R: 0.50
+        I: 0.50
+        A: 0.50
+        S: 0.50
+        E: 0.50
+        C: 0.50
+      a_j:
+        logical: 0.60
+        numerical: 0.60
+        verbal: 0.60
+        spatial: 0.60
+      academics:
+        marks: 72.0
+        subjects: ["mathematics", "english", "science"]
+        exams: []
+      risk_appetite: 0.50
+      domain_preference: {}
+      relocation_willingness: 0.50
+      max_years_to_income: 4.0
+    family:
+      savings: 400000.0
+      monthly_surplus: 10000.0
+      household_income: 70000.0
+      existing_emis: 4000.0
+      loan_max: 600000.0
+      domain_ratings:
+        tech_engineering: 3
+        business_management: 3
+      sector_ratings:
+        govt: 4
+        private: 4
+        entrepreneurship: 3
+      min_salary: 500000.0
+      max_years_to_income: 4.0
+      relocation_willingness: 0.50
+      risk: 0.50
+    expectations:
+      - rule: "low_signal_flag"
+        career_id: "software_developer"
+        expected: true
+        description: "Flat RIASEC vector (std < 0.02) must flag low_signal=True"
+      - rule: "interest_fit_score"
+        career_id: "software_developer"
+        expected_score: 50.0
+        description: "Flat interest profile must return exactly neutral InterestFit = 50.0"
+
+  - id: "persona_04_high_interest_weak_aptitude_stretch"
+    description: "High interest but weak aptitude in a demanding career (stretch flag)"
+    student:
+      student_id: "p04_student"
+      stage: "school"
+      I_s:
+        R: 0.40
+        I: 0.90
+        A: 0.20
+        S: 0.20
+        E: 0.30
+        C: 0.80
+      a_j:
+        logical: 0.30
+        numerical: 0.30
+        verbal: 0.55
+        spatial: 0.45
+      academics:
+        marks: 70.0
+        subjects: ["computer_science"]
+        exams: []
+      risk_appetite: 0.50
+      domain_preference:
+        tech_engineering: 5.0
+      relocation_willingness: 0.60
+      max_years_to_income: 4.0
+    family:
+      savings: 500000.0
+      monthly_surplus: 15000.0
+      household_income: 80000.0
+      existing_emis: 3000.0
+      loan_max: 800000.0
+      domain_ratings:
+        tech_engineering: 5
+      sector_ratings:
+        govt: 3
+        private: 4
+        entrepreneurship: 3
+      min_salary: 600000.0
+      max_years_to_income: 4.0
+      relocation_willingness: 0.60
+      risk: 0.50
+    expectations:
+      - rule: "stretch_flag_present"
+        career_id: "software_developer"
+        expected_stretch: true
+        description: "Severe shortfall in required cognitive aptitude must trigger stretch=True"
+      - rule: "stretch_reasons_contain"
+        career_id: "software_developer"
+        keywords: ["logical", "numerical"]
+        description: "Stretch diagnostic reasons must specify the deficit aptitudes"
+      - rule: "career_not_blocked"
+        career_id: "software_developer"
+        description: "Stretch careers are not blocked by academic gates and retain their scores"
+
+  - id: "persona_05_missing_academic_prerequisites"
+    description: "Missing mandatory subject or marks band (academic gate blocks, reason shown)"
+    student:
+      student_id: "p05_student"
+      stage: "school"
+      I_s:
+        R: 0.30
+        I: 0.80
+        A: 0.20
+        S: 0.60
+        E: 0.30
+        C: 0.40
+      a_j:
+        logical: 0.70
+        numerical: 0.65
+        verbal: 0.70
+        spatial: 0.60
+      academics:
+        marks: 42.0
+        subjects: ["history", "sociology"]
+        exams: []
+      risk_appetite: 0.40
+      domain_preference:
+        healthcare_medicine: 5.0
+      relocation_willingness: 0.50
+      max_years_to_income: 5.0
+    family:
+      savings: 600000.0
+      monthly_surplus: 12000.0
+      household_income: 65000.0
+      existing_emis: 2000.0
+      loan_max: 700000.0
+      domain_ratings:
+        healthcare_medicine: 5
+      sector_ratings:
+        govt: 4
+        private: 3
+        entrepreneurship: 2
+      min_salary: 500000.0
+      max_years_to_income: 5.0
+      relocation_willingness: 0.50
+      risk: 0.40
+    custom_career:
+      career_id: "doctor_mbbs_gated"
+      career_name: "Doctor MBBS (Strict Gate)"
+      domain_id: "healthcare_medicine"
+      academic_requirements:
+        min_marks: 60.0
+        required_subjects: ["biology", "chemistry"]
+        required_exams: ["neet"]
+    expectations:
+      - rule: "academic_gate_blocked"
+        career_id: "doctor_mbbs_gated"
+        expected_g_acad: 0
+        description: "Student with 42% marks and missing biology/NEET fails academic gate"
+      - rule: "academic_blocked_reasons_contain"
+        career_id: "doctor_mbbs_gated"
+        keywords: ["marks", "subject", "exam"]
+        description: "Failure diagnostic must state insufficient marks and missing prerequisites"
+
+  - id: "persona_06_zero_savings_high_loan_reluctance"
+    description: "Family savings near zero and high loan reluctance (financial gate fails for expensive routes, cheaper routes suggested)"
+    student:
+      student_id: "p06_student"
+      stage: "school"
+      I_s:
+        R: 0.40
+        I: 0.85
+        A: 0.20
+        S: 0.30
+        E: 0.30
+        C: 0.70
+      a_j:
+        logical: 0.75
+        numerical: 0.75
+        verbal: 0.60
+        spatial: 0.55
+      academics:
+        marks: 85.0
+        subjects: ["mathematics", "physics"]
+        exams: []
+      risk_appetite: 0.40
+      domain_preference:
+        tech_engineering: 5.0
+      relocation_willingness: 0.50
+      max_years_to_income: 4.0
+    family:
+      savings: 5000.0
+      monthly_surplus: 800.0
+      household_income: 18000.0
+      existing_emis: 500.0
+      loan_max: 30000.0
+      domain_ratings:
+        tech_engineering: 4
+      sector_ratings:
+        govt: 5
+        private: 1
+        entrepreneurship: 1
+      min_salary: 300000.0
+      max_years_to_income: 4.0
+      relocation_willingness: 0.40
+      risk: 0.20
+    expectations:
+      - rule: "expensive_routes_fail_gate"
+        career_id: "software_developer"
+        route_id: "vit_btech_cse"
+        expected_g_fin: 0
+        description: "Costly private university route must fail G_fin due to lack of liquidity"
+      - rule: "blocked_suggestions_contain"
+        career_id: "software_developer"
+        route_id: "vit_btech_cse"
+        keywords: ["cheaper", "grant", "scholarship"]
+        description: "Blocked route report must provide actionable suggestions for cheaper routes or grants"
+
+  - id: "persona_07_fully_aligned_family"
+    description: "Student and parent fully aligned (conflict index near zero)"
+    student:
+      student_id: "p07_student"
+      stage: "school"
+      I_s:
+        R: 0.40
+        I: 0.80
+        A: 0.30
+        S: 0.30
+        E: 0.40
+        C: 0.60
+      a_j:
+        logical: 0.70
+        numerical: 0.70
+        verbal: 0.60
+        spatial: 0.50
+      academics:
+        marks: 80.0
+        subjects: ["mathematics", "physics"]
+        exams: []
+      risk_appetite: 0.40
+      domain_preference:
+        tech_engineering: 5.0
+        sciences: 4.0
+      relocation_willingness: 0.50
+      max_years_to_income: 4.0
+    family:
+      savings: 500000.0
+      monthly_surplus: 15000.0
+      household_income: 80000.0
+      existing_emis: 2000.0
+      loan_max: 800000.0
+      domain_ratings:
+        tech_engineering: 5
+        sciences: 4
+      sector_ratings:
+        govt: 4
+        private: 4
+        entrepreneurship: 3
+      min_salary: 500000.0
+      max_years_to_income: 4.0
+      relocation_willingness: 0.50
+      risk: 0.40
+    expectations:
+      - rule: "conflict_index_level"
+        expected_level: "low"
+        max_value: 5.0
+        description: "Conflict index should be under 5.0 for perfectly matched dimensions"
+      - rule: "all_dimension_gaps_near_zero"
+        max_gap: 0.05
+        description: "Individual dimension gaps (risk, domain, relocation, time) must all be <= 0.05"
+      - rule: "high_conflict_flag"
+        expected: false
+        description: "Family must not be flagged as high conflict"
+
+  - id: "persona_08_fully_opposed_family"
+    description: "Student and parent opposed on every dimension (very high conflict, check decomposition)"
+    student:
+      student_id: "p08_student"
+      stage: "school"
+      I_s:
+        R: 0.10
+        I: 0.20
+        A: 0.95
+        S: 0.40
+        E: 0.85
+        C: 0.10
+      a_j:
+        logical: 0.60
+        numerical: 0.50
+        verbal: 0.85
+        spatial: 0.80
+      academics:
+        marks: 80.0
+        subjects: ["arts"]
+        exams: []
+      risk_appetite: 1.00
+      domain_preference:
+        design_creative: 5.0
+        media_entertainment: 5.0
+      relocation_willingness: 1.00
+      max_years_to_income: 8.0
+    family:
+      savings: 300000.0
+      monthly_surplus: 5000.0
+      household_income: 45000.0
+      existing_emis: 2000.0
+      loan_max: 300000.0
+      domain_ratings:
+        tech_engineering: 5
+        healthcare_medicine: 5
+      sector_ratings:
+        govt: 5
+        private: 1
+        entrepreneurship: 1
+      min_salary: 600000.0
+      max_years_to_income: 2.0
+      relocation_willingness: 0.00
+      risk: 0.00
+    expectations:
+      - rule: "conflict_index_level"
+        expected_level: "high"
+        min_value: 65.0
+        description: "Conflict index should exceed 65.0 when dimensions are diametrically opposed"
+      - rule: "high_conflict_flag"
+        expected: true
+        description: "Family must be classified as high conflict requiring mediation"
+      - rule: "dimension_decomposition_all_high"
+        min_gap: 0.50
+        description: "All individual dimension gaps (risk, relocation, time, domain) should exceed 0.50"
+
+  - id: "persona_09_missing_salary_insufficient_data"
+    description: "A career with NOT FOUND salary (must return insufficient_data, excluded from compromise zone)"
+    student:
+      student_id: "p09_student"
+      stage: "school"
+      I_s:
+        R: 0.30
+        I: 0.85
+        A: 0.30
+        S: 0.20
+        E: 0.30
+        C: 0.70
+      a_j:
+        logical: 0.75
+        numerical: 0.75
+        verbal: 0.60
+        spatial: 0.50
+      academics:
+        marks: 85.0
+        subjects: ["mathematics", "computer_science"]
+        exams: []
+      risk_appetite: 0.50
+      domain_preference:
+        tech_engineering: 5.0
+      relocation_willingness: 0.50
+      max_years_to_income: 4.0
+    family:
+      savings: 500000.0
+      monthly_surplus: 15000.0
+      household_income: 80000.0
+      existing_emis: 0.0
+      loan_max: 800000.0
+      domain_ratings:
+        tech_engineering: 5
+      sector_ratings:
+        govt: 4
+        private: 4
+        entrepreneurship: 3
+      min_salary: 500000.0
+      max_years_to_income: 4.0
+      relocation_willingness: 0.50
+      risk: 0.50
+    custom_route:
+      career_id: "software_developer"
+      route_id: "unverified_salary_route"
+      tuition: 300000.0
+      starting_salary: null
+      domain: "tech_engineering"
+    expectations:
+      - rule: "route_financial_status"
+        career_id: "software_developer"
+        route_id: "unverified_salary_route"
+        expected_status: "insufficient_data"
+        description: "Missing starting salary must return status insufficient_data"
+      - rule: "route_f_family_zero"
+        career_id: "software_developer"
+        route_id: "unverified_salary_route"
+        expected_f_family: 0.0
+        description: "Missing starting salary sets f_family to 0.0"
+      - rule: "route_g_fin_zero"
+        career_id: "software_developer"
+        route_id: "unverified_salary_route"
+        expected_g_fin: 0
+        description: "Missing starting salary fails financial gate (g_fin=0)"
+
+  - id: "persona_10_scholarship_flips_financial_gate"
+    description: "Same student as persona 1 but with a large scholarship (financial gate should flip)"
+    student:
+      student_id: "p10_student"
+      stage: "school"
+      I_s:
+        R: 0.15
+        I: 0.20
+        A: 0.95
+        S: 0.35
+        E: 0.40
+        C: 0.15
+      a_j:
+        logical: 0.60
+        numerical: 0.50
+        verbal: 0.85
+        spatial: 0.85
+      academics:
+        marks: 88.0
+        subjects: ["english", "fine_arts", "design"]
+        exams: []
+      risk_appetite: 0.65
+      domain_preference:
+        design_creative: 5.0
+      relocation_willingness: 0.70
+      max_years_to_income: 4.0
+    family:
+      savings: 80000.0
+      monthly_surplus: 2500.0
+      household_income: 28000.0
+      existing_emis: 1500.0
+      loan_max: 150000.0
+      domain_ratings:
+        design_creative: 5
+      sector_ratings:
+        govt: 4
+        private: 3
+        entrepreneurship: 3
+      min_salary: 500000.0
+      max_years_to_income: 4.0
+      relocation_willingness: 0.70
+      risk: 0.40
+    custom_route_no_scholarship:
+      career_id: "ux_designer"
+      route_id: "pvt_design_school"
+      tuition: 800000.0
+      living: 200000.0
+      exam_equipment: 20000.0
+      grant: 0.0
+      starting_salary: 800000.0
+      duration_years: 4.0
+      domain: "design_creative"
+    custom_route_with_scholarship:
+      career_id: "ux_designer"
+      route_id: "pvt_design_school_scholarship"
+      tuition: 800000.0
+      living: 200000.0
+      exam_equipment: 20000.0
+      grant: 950000.0
+      starting_salary: 800000.0
+      duration_years: 4.0
+      domain: "design_creative"
+    expectations:
+      - rule: "financial_gate_without_grant_fails"
+        route_id: "pvt_design_school"
+        expected_g_fin: 0
+        description: "Without grant, 10L net cost exceeds low-income family borrowing capacity"
+      - rule: "financial_gate_with_grant_passes"
+        route_id: "pvt_design_school_scholarship"
+        expected_g_fin: 1
+        description: "Large 9.5L scholarship reduces net cost, flipping G_fin from 0 to 1"
+      - rule: "family_viability_improves"
+        route_without: "pvt_design_school"
+        route_with: "pvt_design_school_scholarship"
+        description: "Family viability score must substantially increase with scholarship funding"
+
+  - id: "persona_11_type_c_creator_risk_averse_parent"
+    description: "Type C (independent creator) interest with a risk-averse parent"
+    student:
+      student_id: "p11_student"
+      stage: "school"
+      I_s:
+        R: 0.20
+        I: 0.20
+        A: 0.95
+        S: 0.30
+        E: 0.85
+        C: 0.15
+      a_j:
+        logical: 0.60
+        numerical: 0.50
+        verbal: 0.85
+        spatial: 0.80
+      academics:
+        marks: 75.0
+        subjects: ["arts", "media"]
+        exams: []
+      risk_appetite: 0.85
+      domain_preference:
+        design_creative: 5.0
+        media_entertainment: 5.0
+      relocation_willingness: 0.80
+      max_years_to_income: 5.0
+    family:
+      savings: 350000.0
+      monthly_surplus: 8000.0
+      household_income: 50000.0
+      existing_emis: 2000.0
+      loan_max: 400000.0
+      domain_ratings:
+        business_management: 4
+      sector_ratings:
+        govt: 5
+        private: 2
+        entrepreneurship: 1
+      min_salary: 500000.0
+      max_years_to_income: 3.0
+      relocation_willingness: 0.25
+      risk: 0.15
+    expectations:
+      - rule: "top_fit_careers_creator"
+        target_careers: ["graphic_designer", "fine_artist", "ux_designer"]
+        min_matches: 2
+        description: "Creative design pathways lead student fit"
+      - rule: "high_conflict_flag"
+        expected: true
+        description: "High conflict flagged due to risk tolerance and domain misalignment"
+      - rule: "fit_gap_large"
+        career_id: "fine_artist"
+        min_gap: 20.0
+        description: "Fine artist has large fit_gap (|Fit - Family|) reflecting family hesitation"
+
+  - id: "persona_12_compromise_zone_boundary_case"
+    description: "Boundary case: Fit and Family both just above and just below the compromise cutoff (two near-identical careers on opposite sides)"
+    student:
+      student_id: "p12_student"
+      stage: "school"
+      I_s:
+        R: 0.40
+        I: 0.70
+        A: 0.40
+        S: 0.40
+        E: 0.50
+        C: 0.50
+      a_j:
+        logical: 0.70
+        numerical: 0.70
+        verbal: 0.60
+        spatial: 0.50
+      academics:
+        marks: 75.0
+        subjects: []
+        exams: []
+      risk_appetite: 0.50
+      domain_preference: {}
+      relocation_willingness: 0.50
+      max_years_to_income: 4.0
+    family:
+      savings: 500000.0
+      monthly_surplus: 15000.0
+      household_income: 80000.0
+      existing_emis: 0.0
+      loan_max: 800000.0
+      domain_ratings: {}
+      sector_ratings:
+        govt: 4
+        private: 4
+        entrepreneurship: 3
+      min_salary: 500000.0
+      max_years_to_income: 4.0
+      relocation_willingness: 0.50
+      risk: 0.50
+    boundary_candidates:
+      - career_id: "boundary_career_alpha"
+        career_name: "Career Alpha (Above Cutoff)"
+        route_id: "route_alpha"
+        student_fit: 0.53
+        family_viability: 0.53
+        market_score: 0.70
+        is_financially_viable: true
+      - career_id: "boundary_career_beta"
+        career_name: "Career Beta (Below Cutoff)"
+        route_id: "route_beta"
+        student_fit: 0.47
+        family_viability: 0.53
+        market_score: 0.70
+        is_financially_viable: true
+    expectations:
+      - rule: "career_in_compromise_zone"
+        career_id: "boundary_career_alpha"
+        expected: true
+        description: "Career Alpha (Fit=53%, Family=53% >= 50% cutoff) must enter the Compromise Zone"
+      - rule: "career_in_compromise_zone"
+        career_id: "boundary_career_beta"
+        expected: false
+        description: "Career Beta (Fit=47% < 50% cutoff) must be excluded from the Compromise Zone"
