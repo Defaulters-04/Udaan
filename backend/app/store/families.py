@@ -197,6 +197,29 @@ class FamilyStore:
             partner = next((m for m in fam.members if m.token != token), None)
             return "ok", fam, you, partner
 
+    # --- Member (Either Role) Authentication ---
+    def authenticate_member(
+        self, raw_code: str, token: Optional[str]
+    ) -> tuple[str, Optional[FamilyRecord], Optional[MemberRecord]]:
+        if not token:
+            return "invalid_token", None, None
+
+        code = normalize_family_code(raw_code)
+        with self._lock:
+            now = now_utc()
+            fam = self._families.get(code)
+            if fam is None:
+                return "family_not_found", None, None
+            if fam.expires_at <= now:
+                del self._families[code]
+                return "family_not_found", None, None
+
+            member = fam.get_member_by_token(token)
+            if member is None:
+                return "invalid_token", None, None
+
+            return "ok", fam, member
+
     # --- Student Assessment Operations ---
     def authenticate_student(
         self, raw_code: str, token: Optional[str]

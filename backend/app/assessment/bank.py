@@ -6,6 +6,8 @@ from typing import Any, Optional
 from app.shared_questions import (
     CAREER_DOMAINS,
     InternalOption,
+    PREF_RISK_3_PROMPT_EN,
+    PREF_RISK_3_PROMPT_HI,
     RELOCATION_OPTIONS,
     RISK_1_OPTIONS,
     RISK_2_OPTIONS,
@@ -451,8 +453,8 @@ PREFERENCES_QUESTIONS: list[InternalQuestion] = [
     InternalQuestion(
         id="pref_risk_3",
         type="single_choice",
-        prompt_en="Imagine a higher guaranteed offer vs the same variable opportunity. Which would you choose?",
-        prompt_hi="मान लें कि एक अधिक सुरक्षित विकल्प और वही अनिश्चित अवसर सामने है। आप क्या चुनेंगे?",
+        prompt_en=PREF_RISK_3_PROMPT_EN,
+        prompt_hi=PREF_RISK_3_PROMPT_HI,
         required=True,
         tag="risk",
         options=RISK_3_OPTIONS,

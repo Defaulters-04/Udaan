@@ -9,6 +9,7 @@ from app.routers.assessment import router as assessment_router
 from app.routers.families import router as families_router
 from app.routers.health import router as health_router
 from app.routers.intake import router as intake_router
+from app.routers.mirror import router as mirror_router
 
 
 def create_app() -> FastAPI:
@@ -101,6 +102,7 @@ def create_app() -> FastAPI:
     app.include_router(families_router)
     app.include_router(assessment_router)
     app.include_router(intake_router)
+    app.include_router(mirror_router)
 
     return app
 
