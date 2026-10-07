@@ -2,6 +2,8 @@
 
 FastAPI backend service for Udaan.
 
+> **Note on Question Bank**: Hardcoded stand-in for the ML question generator.
+
 ## Installation
 
 ```bash
@@ -22,6 +24,7 @@ cp .env.example .env
 
 Available environment variables:
 - `CORS_ORIGINS`: Comma-separated list of allowed origins (default: `http://localhost:3000`).
+- `FAMILY_TTL_MINUTES`: Sliding session TTL in minutes (default: `120`).
 
 ## Running the Server
 
