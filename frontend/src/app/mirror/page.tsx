@@ -571,9 +571,16 @@ export default function FamilyMirrorPage() {
 
                         {/* Perception line (omitted if parent_guess is null) */}
                         {dim.parent_guess && (
-                          <p className="text-sm text-midnight/70 font-normal leading-relaxed pt-2 border-t border-cloud/60">
-                            {getPicksPerceptionSentence(dim)}
-                          </p>
+                          <div className="pt-3 border-t border-cloud/60 space-y-1">
+                            <span className="block text-xs font-semibold text-midnight/60">
+                              {t.domain_guessLabel
+                                .replace('{parent}', parentDisplayName)
+                                .replace('{student}', studentDisplayName)}
+                            </span>
+                            <p className="text-sm text-midnight/80 font-normal leading-relaxed">
+                              {getPicksPerceptionSentence(dim)}
+                            </p>
+                          </div>
                         )}
                       </div>
                     )}
@@ -583,6 +590,17 @@ export default function FamilyMirrorPage() {
             </div>
           </div>
         )}
+
+        {/* Next step to Explorer */}
+        <div className="mt-10 flex justify-center">
+          <button
+            type="button"
+            onClick={() => router.push('/explorer')}
+            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-ocean text-white font-semibold text-base shadow-sm hover:bg-ocean/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ocean transition-all cursor-pointer"
+          >
+            {t.seeYourOptions} →
+          </button>
+        </div>
 
         {/* Footer Note */}
         <footer className="mt-12 pt-6 border-t border-cloud/60 text-center">

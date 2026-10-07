@@ -249,3 +249,63 @@ Example (shortened):
       "options": [ ...7... ], "student_picks": ["tech_engineering"],
       "parent_picks": ["tech_engineering"], "parent_guess": "tech_engineering" },
     ...relocation, time... ] }
+
+## Explorer (Page 6: negotiation explorer). Both roles.
+
+- Both members must have submitted (status "done" true for both), else 409 explorer_not_ready.
+- Error codes: invalid_token, family_not_found, explorer_not_ready.
+- Same body for both roles. Deterministic: the same answers always give the same body, including the
+  order of tied careers (ties are broken by the engine, stably, by career id).
+- Derived values only. Never raw answers, money bands, family savings, surplus, EMIs, income or loan
+  figures, interest/aptitude/SWOT breakdowns, route costs or EMI amounts, or the engine's explanation text.
+- Every score is 0..100, one decimal, from the engine. Neither backend nor frontend computes scores,
+  ranks, the frontier or compromise membership. They read and pass them on.
+- Computed on request; may be cached in the in-memory family record; never logged.
+
+### GET /families/{family_code}/explorer
+Header: X-Member-Token (student or parent).
+200:
+{
+  "slider": { "positions": int[], "default": int },   // positions ascending, 0..100 step 5 (21 values)
+  "careers": Career[],                                // all careers, blocked ones included
+  "frontier": string[],                               // Pareto frontier ids (non-blocked), ordered by viability ascending
+  "compromise": { "min_fit": number, "min_viability": number } | null   // thresholds from the engine config
+}
+
+Slider meaning: position 0 = decide only by what the student would love, 100 = decide only by what the
+family can afford. (The backend sends the engine alpha = 1 - position/100.)
+
+Career:
+{
+  "id": string,
+  "name": LocalizedText,
+  "domain": string,
+  "fit": number | null,                // blocked careers keep their fit
+  "viability": number | null,          // null whenever the money gate blocks (the engine's 0 is a gate artifact)
+  "market": number | null,             // null unless real market data exists. The engine's neutral 50.0 default is never sent
+  "years_to_income": number | null,
+  "conflict": number,
+  "in_compromise": boolean,
+  "blend": BlendPoint[] | null,
+  "blocked": null | {
+    "gates": ("money"|"academic")[],
+    "cause": "no_route_data" | "cost" | "academic" | "other",
+    "remedies": Remedy[]
+  },
+  "data_gaps": string[]
+}
+
+Rules
+- Blocked careers are always present, never dropped or ranked: blend null, in_compromise false, not in the frontier.
+- cause "no_route_data" = the data has no educational pathway for this career, so affordability cannot be
+  judged. It must never be described as unaffordable, and its remedies are always []. "cost" = pathways exist
+  but exceed the family's capacity. "academic" = academic gate.
+- The blend score, the shown fit, viability and conflict must all come from the SAME route (the engine's best
+  route for that career), so the numbers reconcile when a user looks at them side by side.
+- Ties are ordered by blend score descending, then id ascending, so rank is stable.
+- With no viable careers: careers all blocked, frontier [], compromise null. That is valid, not an error.
+- frontier may have 0, 1 or more ids. compromise thresholds come from the engine config (x100).
+- Counting careers by category (verified, blocked by cause) is allowed on the frontend. Computing scores, ranks
+  or blends is not.
+- Remedy.text.hi null => the frontend shows English with an "English only" note.
+- null means "not supplied": hide it, never default it.
