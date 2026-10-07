@@ -84,3 +84,37 @@ Merges into stored answers (partial updates, overwrites per question id).
 
 ### Change to GET /families/{family_code}/status (additive)
 "you" and "partner" each gain "done": boolean = "has finished their part" (the student's assessment now, the parent's intake later). Existing fields are unchanged.
+
+## Intake (Page 4: parent form). Parent only.
+
+Same shapes as Assessment (LocalizedText, Question, answer values per type), with these differences:
+- Question gains an optional field: max_select?: int (multi_choice only). More ids than max_select gives 422 validation_error.
+- Section ids for intake: "money" | "risk" | "plans" | "hopes" | "perception".
+- All calls need X-Member-Token. Only the parent member may call them; a student gets 403 wrong_role.
+- An answer that is an empty array or an empty string counts as unanswered (applies to Assessment too).
+- Answers are never returned to the other member and never written to logs.
+- Questions never include internal tags, scoring dimensions or hints.
+- Error codes used: invalid_token, family_not_found, wrong_role, validation_error, intake_incomplete, already_submitted.
+
+### GET /families/{family_code}/intake/questions
+200: { "version": string, "sections": Section[] }
+
+### GET /families/{family_code}/intake/progress
+200: { "answers": { "<question_id>": value }, "submitted": boolean }
+Only the caller's own answers.
+
+### PUT /families/{family_code}/intake/answers
+Body: { "answers": { "<question_id>": value } }
+Merges into stored answers (partial updates, overwrites per question id).
+200: { "answered": int, "total": int }
+422 validation_error: unknown question id, wrong value type, option id not in that question, too many ids for max_select.
+409 already_submitted: after submit.
+
+### POST /families/{family_code}/intake/submit
+200: { "submitted": true }  (idempotent)
+422 intake_incomplete: { "error": { "code": "intake_incomplete", "message": string, "missing": string[] } }
+  missing = ids of required questions with no answer.
+  "assessment_incomplete" and "intake_incomplete" are the only errors that carry "missing".
+
+### Status (no shape change)
+For a parent, "done" in GET /families/{family_code}/status means the intake is submitted.

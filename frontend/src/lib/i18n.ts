@@ -71,6 +71,15 @@ export interface Translations {
   retry: string;
   page5Next: string;
   answeredOf: string;
+
+  // Page 4 Intake strings
+  intakeReviewTitle: string;
+  intakeReviewBody: string;
+  confirmSubmit: string;
+  skippedAnswer: string;
+  maxSelectHint: string;
+  privacyIntake: string;
+  waitingStudentDone: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -145,6 +154,15 @@ export const translations: Record<Language, Translations> = {
     retry: "Try again",
     page5Next: "Page 5 comes next",
     answeredOf: "{answered} of {total}",
+
+    // Page 4 Intake
+    intakeReviewTitle: "Please check your answers",
+    intakeReviewBody: "These are the answers we'll use. Change anything that isn't right, then confirm.",
+    confirmSubmit: "Confirm and submit",
+    skippedAnswer: "Skipped",
+    maxSelectHint: "Choose up to {n}.",
+    privacyIntake: "Your exact money answers are never shown to your child.",
+    waitingStudentDone: "Waiting for your child to finish…",
   },
   hi: {
     tagline: "ऐसा करियर, जिस पर पूरा परिवार सहमत हो।",
@@ -217,6 +235,15 @@ export const translations: Record<Language, Translations> = {
     retry: "फिर कोशिश करें",
     page5Next: "पेज 5 आगे आएगा",
     answeredOf: "{answered} / {total}",
+
+    // Page 4 Intake
+    intakeReviewTitle: "कृपया अपने जवाब जाँच लें",
+    intakeReviewBody: "यही जवाब इस्तेमाल होंगे। जो सही न हो उसे बदलें, फिर पक्का करें।",
+    confirmSubmit: "पक्का करें और सबमिट करें",
+    skippedAnswer: "छोड़ा गया",
+    maxSelectHint: "ज़्यादा से ज़्यादा {n} चुनें।",
+    privacyIntake: "पैसों से जुड़े आपके सटीक जवाब आपके बच्चे को कभी नहीं दिखाए जाते।",
+    waitingStudentDone: "आपके बच्चे के पूरा करने का इंतज़ार है…",
   },
 };
 
