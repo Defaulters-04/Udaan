@@ -217,22 +217,47 @@ def per_career_scores(
         m_rep = m_evals.get(cid)
         f_market = (m_rep.market_score / 100.0) if m_rep else 0.5
 
-        # Career conflict
         target_route = route_map.get((cid, best_r.route_id)) if best_r else None
-        if target_route:
-            c_conf_rep = compute_career_conflict(student, parent, target_route, CONFLICT_CONFIG)
-            c_conflict = c_conf_rep.career_conflict
-        else:
-            c_conflict = 0.5
 
-        # Composite score
-        comp = compute_composite_score(f_student, f_family, f_market, c_conflict, CONFLICT_CONFIG)
+        # Fit-Family gap (Fix 2: per-career |Fit - Family|)
+        fit_gap = round(abs(f_student - f_family) * 100.0, 1)
+
+        # Composite score (Fix 1: conflict does not penalize composite score)
+        comp = compute_composite_score(f_student, f_family, f_market, fit_gap / 100.0, CONFLICT_CONFIG)
 
         is_complete, missing_fields = check_career_data_completeness(cid)
 
         # Career name and domain
         c_name = s_res.career_name if s_res else (target_route.career_id if target_route else cid)
         domain_id = target_route.domain if target_route else "tech_engineering"
+
+        # Stretch evaluation (Fix 3)
+        stretch = s_res.stretch if s_res else False
+        stretch_reasons = s_res.stretch_reasons if s_res else []
+        stretch_shortfall_ratio = round(s_res.stretch_shortfall_ratio, 4) if s_res else 0.0
+
+        # Data confidence (Fix 4)
+        conf_order = {"low": 0, "medium": 1, "high": 2}
+        s_conf = getattr(s_res, "data_confidence", "high")
+        p_conf = getattr(best_r, "data_confidence", "high") if best_r else "low"
+        combined_conf = min([s_conf, p_conf], key=lambda x: conf_order.get(x, 1))
+
+        # Financial solver status (Fix 4)
+        financial_status = getattr(best_r, "status", "normal") if best_r else "insufficient_data"
+
+        # Market tiers (Fix 5)
+        market_tier = (
+            {
+                "demand_tier": m_rep.demand_tier,
+                "velocity_tier": m_rep.velocity_tier,
+                "disruption_tier": m_rep.disruption_tier,
+                "tier_points": m_rep.market_tier_points,
+                "confidence": m_rep.overall_confidence,
+                "evidence_level": m_rep.evidence_level,
+            }
+            if m_rep
+            else None
+        )
 
         results.append({
             "career_id": cid,
@@ -241,13 +266,20 @@ def per_career_scores(
             "student_fit": round(f_student * 100.0, 1),
             "family_viability": round(f_family * 100.0, 1),
             "market_score": round(f_market * 100.0, 1),
-            "career_conflict": round(c_conflict * 100.0, 1),
+            "fit_gap": fit_gap,
+            "career_conflict": fit_gap,  # alias for backward compat
             "composite_score": round(comp * 100.0, 1),
             "g_acad": g_acad,
             "g_fin": g_fin,
             "is_viable": is_viable,
             "data_complete": is_complete,
             "missing_data_fields": missing_fields,
+            "stretch": stretch,
+            "stretch_reasons": stretch_reasons,
+            "stretch_shortfall_ratio": stretch_shortfall_ratio,
+            "data_confidence": combined_conf,
+            "financial_status": financial_status,
+            "market_tier": market_tier,
         })
 
     return results
@@ -326,6 +358,10 @@ def negotiate(
             "negotiated_score": round(c.negotiated_score * 100.0, 1),
             "student_fit": round(c.student_fit * 100.0, 1),
             "family_viability": round(c.family_viability * 100.0, 1),
+            "fit_gap": round(c.fit_gap * 100.0, 1),
+            "stretch": getattr(c, "stretch", False),
+            "stretch_reasons": getattr(c, "stretch_reasons", []),
+            "data_confidence": getattr(c, "data_confidence", "high"),
             "is_in_compromise_zone": c.is_in_compromise_zone,
             "is_pareto_optimal": c.is_pareto_optimal,
         }
@@ -342,6 +378,17 @@ def negotiate(
         "compromise_zone_career_ids": compromise_ids,
         "pareto_optimal_career_ids": pareto_ids,
         "recommended_career_id": recommended_id,
+        "balanced_pick_career_id": neg_res.balanced_pick_career_id,
+        "balanced_pick": (
+            {
+                "career_id": neg_res.balanced_pick.career_id,
+                "student_fit": round(neg_res.balanced_pick.student_fit * 100.0, 1),
+                "family_viability": round(neg_res.balanced_pick.family_viability * 100.0, 1),
+                "fit_gap": round(neg_res.balanced_pick.fit_gap * 100.0, 1),
+            }
+            if neg_res.balanced_pick
+            else None
+        ),
     }
 
 

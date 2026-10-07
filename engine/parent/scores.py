@@ -1,6 +1,6 @@
 """Scoring functions and portfolio evaluation for PRISM Parent Machine."""
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from collections import defaultdict
 
 from .config import ParentSolverConfig, DEFAULT_CONFIG
@@ -88,26 +88,40 @@ def score_payback(payback_years: float, config: ParentSolverConfig = DEFAULT_CON
 
 
 def score_financial(
-    f_budget: float,
-    f_repay_p: float,
-    f_dsr: float,
-    f_payback: float,
+    f_budget: Optional[float],
+    f_repay_p: Optional[float],
+    f_dsr: Optional[float],
+    f_payback: Optional[float],
     config: ParentSolverConfig = DEFAULT_CONFIG,
-) -> float:
-    """F_financial = 100 * (0.35*F_budget + 0.25*F_repay_p + 0.25*F_dsr + 0.15*F_payback)."""
-    composite = (
-        config.w_budget * float(f_budget)
-        + config.w_repay_p * float(f_repay_p)
-        + config.w_dsr * float(f_dsr)
-        + config.w_payback * float(f_payback)
-    )
-    return clamp(composite * 100.0, 0.0, 100.0)
+    return_dropped_fraction: bool = False,
+) -> Any:
+    """F_financial with missing-data weight rescaling (Fix 4)."""
+    components = [
+        (config.w_budget, f_budget),
+        (config.w_repay_p, f_repay_p),
+        (config.w_dsr, f_dsr),
+        (config.w_payback, f_payback),
+    ]
+    active = [(w, v) for w, v in components if v is not None and v != "NOT FOUND"]
+    total_w = sum(w for w, _ in components)
+    kept_w = sum(w for w, _ in active)
+    dropped_fraction = (total_w - kept_w) / total_w if total_w > 0 else 0.0
+
+    if kept_w <= 0.0:
+        score = 0.0
+    else:
+        weighted_sum = sum((w / kept_w) * float(v) for w, v in active)
+        score = clamp(weighted_sum * 100.0, 0.0, 100.0)
+
+    if return_dropped_fraction:
+        return score, dropped_fraction
+    return score
 
 
-def score_domain(rating: Optional[float], config: ParentSolverConfig = DEFAULT_CONFIG) -> Tuple[float, Optional[str]]:
+def score_domain(rating: Optional[float], config: ParentSolverConfig = DEFAULT_CONFIG) -> Tuple[Optional[float], Optional[str]]:
     """f_domain = (rating of route's domain - 1)/4."""
-    if rating is None:
-        return 0.5, "Domain rating missing in parent profile; defaulted to 3 (f_domain=0.5)"
+    if rating is None or rating == "NOT FOUND":
+        return None, "Domain rating missing in parent profile"
 
     r = float(rating)
     span = config.rating_max - config.rating_min
@@ -118,10 +132,10 @@ def score_domain(rating: Optional[float], config: ParentSolverConfig = DEFAULT_C
     return clamp(normalized, 0.0, 1.0), None
 
 
-def score_sector(rating: Optional[float], config: ParentSolverConfig = DEFAULT_CONFIG) -> Tuple[float, Optional[str]]:
+def score_sector(rating: Optional[float], config: ParentSolverConfig = DEFAULT_CONFIG) -> Tuple[Optional[float], Optional[str]]:
     """f_sector = (rating of route's sector - 1)/4."""
-    if rating is None:
-        return 0.5, "Sector rating missing or unmapped; defaulted to 3 (f_sector=0.5)"
+    if rating is None or rating == "NOT FOUND":
+        return None, "Sector rating missing or unmapped"
 
     r = float(rating)
     span = config.rating_max - config.rating_min
@@ -132,8 +146,11 @@ def score_sector(rating: Optional[float], config: ParentSolverConfig = DEFAULT_C
     return clamp(normalized, 0.0, 1.0), None
 
 
-def score_salary(starting_salary: float, min_salary: float) -> Tuple[float, Optional[str]]:
+def score_salary(starting_salary: Any, min_salary: float) -> Tuple[Optional[float], Optional[str]]:
     """f_salary = min(1, Y1 / Sal_p)."""
+    if starting_salary is None or starting_salary == "NOT FOUND":
+        return None, "starting_salary missing"
+
     y1 = float(starting_salary)
     sal_p = float(min_salary)
 
@@ -170,22 +187,36 @@ def score_location(relocation_need: float, relocation_willingness: float) -> flo
 
 
 def score_aspiration(
-    f_domain: float,
-    f_sector: float,
-    f_salary: float,
-    f_time: float,
-    f_location: float,
+    f_domain: Optional[float],
+    f_sector: Optional[float],
+    f_salary: Optional[float],
+    f_time: Optional[float],
+    f_location: Optional[float],
     config: ParentSolverConfig = DEFAULT_CONFIG,
-) -> float:
-    """F_aspiration = 100 * (0.30*f_domain + 0.15*f_sector + 0.20*f_salary + 0.20*f_time + 0.15*f_location)."""
-    composite = (
-        config.w_domain * float(f_domain)
-        + config.w_sector * float(f_sector)
-        + config.w_salary * float(f_salary)
-        + config.w_time * float(f_time)
-        + config.w_location * float(f_location)
-    )
-    return clamp(composite * 100.0, 0.0, 100.0)
+    return_dropped_fraction: bool = False,
+) -> Any:
+    """F_aspiration with missing-data weight rescaling (Fix 4)."""
+    components = [
+        (config.w_domain, f_domain),
+        (config.w_sector, f_sector),
+        (config.w_salary, f_salary),
+        (config.w_time, f_time),
+        (config.w_location, f_location),
+    ]
+    active = [(w, v) for w, v in components if v is not None and v != "NOT FOUND"]
+    total_w = sum(w for w, _ in components)
+    kept_w = sum(w for w, _ in active)
+    dropped_fraction = (total_w - kept_w) / total_w if total_w > 0 else 0.0
+
+    if kept_w <= 0.0:
+        score = 0.0
+    else:
+        weighted_sum = sum((w / kept_w) * float(v) for w, v in active)
+        score = clamp(weighted_sum * 100.0, 0.0, 100.0)
+
+    if return_dropped_fraction:
+        return score, dropped_fraction
+    return score
 
 
 def score_risk(career_risk: float, parent_risk: float) -> float:
@@ -195,20 +226,34 @@ def score_risk(career_risk: float, parent_risk: float) -> float:
 
 
 def score_family(
-    f_financial: float,
-    f_aspiration: float,
-    f_risk: float,
+    f_financial: Optional[float],
+    f_aspiration: Optional[float],
+    f_risk: Optional[float],
     gate: int,
     config: ParentSolverConfig = DEFAULT_CONFIG,
-) -> float:
-    """F_family(route) = G_fin * (0.50*F_financial + 0.30*F_aspiration + 0.20*F_risk)."""
+    return_dropped_fraction: bool = False,
+) -> Any:
+    """F_family(route) with missing-data weight rescaling (Fix 4)."""
     g_val = 1 if gate == 1 else 0
-    composite = (
-        config.w_financial * float(f_financial)
-        + config.w_aspiration * float(f_aspiration)
-        + config.w_risk * float(f_risk)
-    )
-    return clamp(float(g_val) * composite, 0.0, 100.0)
+    components = [
+        (config.w_financial, f_financial),
+        (config.w_aspiration, f_aspiration),
+        (config.w_risk, f_risk),
+    ]
+    active = [(w, v) for w, v in components if v is not None and v != "NOT FOUND"]
+    total_w = sum(w for w, _ in components)
+    kept_w = sum(w for w, _ in active)
+    dropped_fraction = (total_w - kept_w) / total_w if total_w > 0 else 0.0
+
+    if kept_w <= 0.0:
+        score = 0.0
+    else:
+        weighted_sum = sum((w / kept_w) * float(v) for w, v in active)
+        score = clamp(float(g_val) * weighted_sum, 0.0, 100.0)
+
+    if return_dropped_fraction:
+        return score, dropped_fraction
+    return score
 
 
 def evaluate_route(
@@ -216,6 +261,43 @@ def evaluate_route(
 ) -> ViabilityReport:
     """Evaluate full financial viability, sub-scores, and composite family fit for a route."""
     warnings: List[str] = []
+
+    # Check for missing salary or route cost (Fix 4)
+    sal_raw = getattr(route, "starting_salary", None)
+    cost_raw = getattr(route, "tuition", None)
+    is_missing_financial_data = (
+        sal_raw is None or sal_raw == "NOT FOUND"
+        or cost_raw is None or cost_raw == "NOT FOUND"
+    )
+    if is_missing_financial_data:
+        sub = SubScores(
+            f_budget=0.0, f_repay_p=0.0, f_dsr=0.0, f_payback=0.0,
+            f_domain=0.0, f_sector=0.0, f_salary=0.0, f_time=0.0, f_location=0.0
+        )
+        return ViabilityReport(
+            career_id=route.career_id,
+            route_id=route.route_id,
+            cost_net=0.0,
+            cash_available=0.0,
+            loan_needed=0.0,
+            emi=0.0,
+            repayment_burden=0.0,
+            debt_service_ratio=0.0,
+            payback_years=0.0,
+            g_fin=0,
+            g_acad=route.g_acad,
+            gate_cleared=0,
+            sub_scores=sub,
+            f_financial=0.0,
+            f_aspiration=0.0,
+            f_risk=0.0,
+            f_family=0.0,
+            funding_gap=0.0,
+            status="insufficient_data",
+            data_confidence="low",
+            block_reasons=["insufficient_data: missing starting salary or route cost"],
+            warnings=["Financial solver returned status 'insufficient_data' due to missing salary or route cost."],
+        )
 
     # 1. Financial Solver
     net_cost = calculate_net_cost(route.tuition, route.living, route.exam_equipment, route.grant)
@@ -257,7 +339,9 @@ def evaluate_route(
         warnings.append(w_pb)
     f_payback = score_payback(payback_years, config)
 
-    f_financial = score_financial(f_budget, f_repay_p, f_dsr, f_payback, config)
+    f_financial, fin_dropped = score_financial(
+        f_budget, f_repay_p, f_dsr, f_payback, config, return_dropped_fraction=True
+    )
 
     # 3. Aspirational Sub-scores
     dom_rating = profile.domain_ratings.get(route.domain)
@@ -284,24 +368,37 @@ def evaluate_route(
 
     f_location = score_location(route.relocation_need, profile.relocation_willingness)
 
-    f_aspiration = score_aspiration(f_domain, f_sector, f_salary, f_time, f_location, config)
+    f_aspiration, asp_dropped = score_aspiration(
+        f_domain, f_sector, f_salary, f_time, f_location, config, return_dropped_fraction=True
+    )
 
     # 4. Risk Score
     f_risk = score_risk(route.career_risk, profile.risk)
 
     # 5. Composite Family Score gated by G = G_fin * g_acad
-    f_family = score_family(f_financial, f_aspiration, f_risk, gate_cleared, config)
+    f_family, fam_dropped = score_family(
+        f_financial, f_aspiration, f_risk, gate_cleared, config, return_dropped_fraction=True
+    )
+
+    # Data confidence determination based on dropped weights
+    total_dropped = max(fin_dropped, asp_dropped, fam_dropped)
+    if total_dropped <= 0.15:
+        data_confidence = "high"
+    elif total_dropped <= 0.40:
+        data_confidence = "medium"
+    else:
+        data_confidence = "low"
 
     sub_scores = SubScores(
-        f_budget=f_budget,
-        f_repay_p=f_repay_p,
-        f_dsr=f_dsr,
-        f_payback=f_payback,
-        f_domain=f_domain,
-        f_sector=f_sector,
-        f_salary=f_salary,
-        f_time=f_time,
-        f_location=f_location,
+        f_budget=f_budget if f_budget is not None else 0.0,
+        f_repay_p=f_repay_p if f_repay_p is not None else 0.0,
+        f_dsr=f_dsr if f_dsr is not None else 0.0,
+        f_payback=f_payback if f_payback is not None else 0.0,
+        f_domain=f_domain if f_domain is not None else 0.0,
+        f_sector=f_sector if f_sector is not None else 0.0,
+        f_salary=f_salary if f_salary is not None else 0.0,
+        f_time=f_time if f_time is not None else 0.0,
+        f_location=f_location if f_location is not None else 0.0,
     )
 
     return ViabilityReport(
@@ -323,9 +420,12 @@ def evaluate_route(
         f_risk=round(f_risk, 2),
         f_family=round(f_family, 2),
         funding_gap=round(funding_gap, 2),
+        status="ok",
+        data_confidence=data_confidence,
         block_reasons=block_reasons,
         warnings=warnings,
     )
+
 
 
 def evaluate_parent_portfolio(

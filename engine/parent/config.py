@@ -3,12 +3,14 @@
 from dataclasses import dataclass, asdict
 from typing import Dict, Any
 
+from engine.config import DEFAULT_CONFIG as MASTER_CONFIG, ParentSolverConfig as MasterParentConfig
+
 
 @dataclass(frozen=True)
 class ParentSolverConfig:
     """Configurable parameters for PRISM financial constraint solver and family scores.
 
-    All constants are parameterised here to facilitate sensitivity analyses (+/-20%)
+    All constants are parameterised here to facilitate sensitivity analyses (+/-10%, +/-20%)
     and avoid hardcoded values anywhere in solver logic.
     """
 
@@ -20,20 +22,20 @@ class ParentSolverConfig:
     annual_loan_rate: float = 0.10
     loan_term_months: int = 84
 
-    # Hard gate thresholds for G_fin
-    rb_gate_max: float = 0.50
-    dsr_gate_max: float = 0.20
+    # Hard gate thresholds for G_fin (Fix 7)
+    rb_gate_max: float = 0.50  # design assumption, unsourced, verify against bank lending norms
+    dsr_gate_max: float = 0.20  # design assumption, unsourced, verify against bank lending norms
 
-    # Soft repayment scoring thresholds
-    rb_comfort_threshold: float = 0.30
-    rb_penalty_range: float = 0.20
+    # Soft repayment scoring thresholds (Fix 7)
+    rb_comfort_threshold: float = 0.30  # design assumption, unsourced, verify against bank lending norms
+    rb_penalty_range: float = 0.20  # design assumption, unsourced, verify against bank lending norms
 
-    dsr_comfort_threshold: float = 0.10
-    dsr_penalty_range: float = 0.10
+    dsr_comfort_threshold: float = 0.10  # design assumption, unsourced, verify against bank lending norms
+    dsr_penalty_range: float = 0.10  # design assumption, unsourced, verify against bank lending norms
 
-    # Payback parameters
-    payback_income_share: float = 0.20
-    payback_horizon_years: float = 8.0
+    # Payback parameters (Fix 7)
+    payback_income_share: float = 0.20  # design assumption, unsourced, verify against bank lending norms
+    payback_horizon_years: float = 8.0  # design assumption, unsourced, verify against bank lending norms
 
     # Weights for F_financial (sum to 1.00)
     w_budget: float = 0.35

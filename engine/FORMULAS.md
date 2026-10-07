@@ -24,15 +24,25 @@ $$G_{acad} = \begin{cases} 1 & \text{if marks } \ge min\_marks \text{ AND all re
 | **College** | `0.40` | `0.30` | `0.20` | `0.10` |
 
 ### 1.4 Sub-Component Scoring Formulas
-- **Interest Fit ($InterestFit$):**
-  Uses Pearson correlation $r$ between student RIASEC vector $I_s$ and career benchmark $I_c$:
-  $$r = \frac{\sum (I_s - \bar{I}_s)(I_c - \bar{I}_c)}{\sqrt{\sum (I_s - \bar{I}_s)^2 \sum (I_c - \bar{I}_c)^2}}$$
-  $$InterestFit = 50.0 \cdot (1.0 + r)$$
-  *(If either profile has zero variance, $InterestFit = 50.0$ neutral).*
+- **Interest Fit ($InterestFit$):** (Fix 6)
+  Blends Pearson correlation and Top-3 RIASEC code overlap:
+  $$interest\_term = 50.0 \cdot (1.0 + r)$$
+  $$overlap\_term = 100.0 \cdot \frac{|\text{top3}(I_s) \cap \text{top3}(I_c)|}{3}$$
+  $$InterestFit = w_{pearson} \cdot interest\_term + w_{overlap} \cdot overlap\_term$$
+  *(Weights in config: $w_{pearson} = 0.50, w_{overlap} = 0.50$).*
+  *If student RIASEC standard deviation is below config cutoff (`std_dev < 0.02`), returns $InterestFit = 50.0$ and sets `low_signal = True`.*
 
 - **Aptitude Fit ($AptitudeFit$):**
   Penalizes only cognitive shortfalls below required threshold $c_j$:
   $$AptitudeFit = 100 \cdot \left[ 1.0 - \frac{\sum_j u_j \cdot \max(0, c_j - a_j)}{\sum_j u_j \cdot c_j} \right]$$
+
+- **Stretch Flag:** (Fix 3)
+  Computed via weighted aptitude shortfall ratio:
+  $$\text{shortfall\_ratio} = \frac{\sum_j u_j \cdot \max(0, c_j - a_j)}{\sum_j u_j \cdot c_j}$$
+  If $\text{shortfall\_ratio} > \text{stretch\_shortfall\_ratio}$ (config: 0.20, design assumption), sets `stretch = True` and attaches the specific aptitude shortfall reasons. Stretch careers are **NOT** blocked and retain their full score.
+
+- **Missing Data Handling:** (Fix 4)
+  Any input or sub-score that is `None` or `"NOT FOUND"` is dropped from the weighted sum, and the remaining weights are rescaled to total 1.0. Never substitutes a default number. Careers receive `data_confidence` ("high", "medium", "low") based on the fraction of dropped weight.
 
 - **Skill Fit ($SkillFit$):**
   $$SkillFit = 100 \cdot \left[ 1.0 - \frac{\sum_k s_k \cdot \max(0, R_k - P_k)}{\sum_k s_k \cdot R_k} \right]$$
@@ -52,134 +62,91 @@ $$G_{acad} = \begin{cases} 1 & \text{if marks } \ge min\_marks \text{ AND all re
 $$F_{family} = G \cdot \left[ w_{fin} \cdot f_{financial} + w_{asp} \cdot f_{aspiration} + w_{risk} \cdot f_{risk} \right] \times 100$$
 Where:
 - $G = G_{fin} \cdot g_{acad}$
-- Component weights: $w_{fin} = 0.50, \quad w_{asp} = 0.35, \quad w_{risk} = 0.15$
+- Component weights: $w_{fin} = 0.50, \quad w_{asp} = 0.30, \quad w_{risk} = 0.20$
 
-### 2.2 Financial Gate ($G_{fin}$)
-$G_{fin} = 1$ if and only if ALL four conditions hold:
+### 2.2 Financial Gate ($G_{fin}$) & Explicit Configured Thresholds (Fix 7)
+All financial thresholds are parameterised in `ParentSolverConfig` with the comment `design assumption, unsourced, verify against bank lending norms`:
 1. $L_{needed} \le L_{max}$ (Required educational loan within borrowing willingness)
 2. $Cost_{net} \le Cash_{avail} + L_{max}$ (Total net educational cost within combined liquidity)
-3. $RB \le 0.30$ (Monthly repayment burden $\le 30\%$ of monthly household income)
-4. $DSR \le 0.40$ (Total debt service ratio $\le 40\%$ of monthly household income)
+3. $RB \le rb\_gate\_max$ (`0.50`, Repayment burden gate max)
+4. $DSR \le dsr\_gate\_max$ (`0.20`, Total debt service ratio gate max)
 
-### 2.3 Financial Sub-Scores ($f_{financial}$)
-$$f_{financial} = 0.35 \cdot f_{budget} + 0.25 \cdot f_{repay\_p} + 0.25 \cdot f_{dsr} + 0.15 \cdot f_{payback}$$
+**Missing Salary / Route Cost Behavior (Fix 4):**
+If route tuition or starting salary is missing (`None` or `"NOT FOUND"`), the financial solver returns status `"insufficient_data"` and $F_{family} = 0.0, G_{fin} = 0$. The career is excluded from the compromise zone with the missing data reason stated.
+
+### 2.3 Financial Sub-Scores ($f_{financial}$) with Weight Rescaling (Fix 4)
+$$f_{financial} = \frac{\sum_{i \in \text{available}} w_i \cdot f_i}{\sum_{i \in \text{available}} w_i}$$
 Where:
 - $f_{budget} = \max\left(0, 1 - \frac{\text{funding\_gap}}{Cost_{net}}\right)$
-- $f_{repay\_p} = \max\left(0, 1 - \frac{RB}{0.30}\right)$
-- $f_{dsr} = \max\left(0, 1 - \frac{DSR}{0.40}\right)$
-- $f_{payback} = \max\left(0, 1 - \frac{\text{Payback}}{8.0}\right)$
-
-### 2.4 Aspiration Sub-Scores ($f_{aspiration}$)
-$$f_{aspiration} = 0.30 \cdot f_{domain} + 0.15 \cdot f_{sector} + 0.20 \cdot f_{salary} + 0.20 \cdot f_{time} + 0.15 \cdot f_{location}$$
-Where:
-- $f_{domain} = \frac{\text{rating} - 1.0}{4.0}$
-- $f_{sector} = \frac{\text{sector\_rating} - 1.0}{4.0}$
-- $f_{salary} = \min\left(1.0, \frac{Y_1}{Sal_p}\right)$
-- $f_{time} = 1.0 \text{ if } t_r \le T_p \text{ else } \max\left(0, 1 - \frac{t_r - T_p}{3.0}\right)$
-- $f_{location} = 1.0 - \max(0, \rho_c - \rho_p)$
-
-### 2.5 Risk Sub-Score ($f_{risk}$)
-$$f_{risk} = 1.0 - |R_c - R_p|$$
+- $f_{repay\_p} = \text{clamp}\left(1 - \frac{\max(0, RB - rb\_comfort\_threshold)}{rb\_penalty\_range}\right)$
+- $f_{dsr} = \text{clamp}\left(1 - \frac{\max(0, DSR - dsr\_comfort\_threshold)}{dsr\_penalty\_range}\right)$
+- $f_{payback} = \text{clamp}\left(1 - \frac{\text{Payback}}{payback\_horizon\_years}\right)$
 
 ---
 
 ## 3. Payback Period Figure
 
-**Source:** `engine/parent/scores.py` (lines 62–85)
+**Source:** `engine/parent/scores.py`
 
 ### 3.1 Point Estimate
-The payback figure is a **deterministic point estimate** (single scalar in years):
-$$\text{Payback} = \frac{N_r}{0.20 \cdot Y_1}$$
-Where:
-- $N_r = \text{net\_cost}$ (Total tuition + living + exam fees after grants)
-- $Y_1 = \text{starting\_salary}$ (Annual gross entry salary)
-- `payback_income_share` = `0.20` (assumes 20% of graduate starting salary allocated to debt service)
-
-**Boundary conditions:**
-- If $N_r \le 0$: $\text{Payback} = 0.0$ years.
-- If $Y_1 \le 0$: $\text{Payback} = 99.0$ years (unbounded horizon).
-- Clamped for scoring to `payback_horizon_years` = `8.0` years:
-  $$F_{payback} = \max\left(0.0, 1.0 - \frac{\text{Payback}}{8.0}\right)$$
+$$\text{Payback} = \frac{N_r}{payback\_income\_share \cdot Y_1}$$
+Where `payback_income_share` = `0.20` and `payback_horizon_years` = `8.0` (design assumptions in config).
 
 ---
 
-## 4. Conflict Index ($C_{family}, C_{route}$)
+## 4. Conflict Index ($C_{family}$) vs Per-Career Fit Gap ($fit\_gap$) (Fix 1 & Fix 2)
 
 **Source:** `engine/conflict/scores.py`, `engine/conflict/config.py`
 
-### 4.1 Overall Family Conflict Index
+### 4.1 Overall Family Conflict Index (Diagnostic Only)
 $$C_{family} = 0.25 \cdot Gap_{risk} + 0.25 \cdot Gap_{domain} + 0.25 \cdot Gap_{relocation} + 0.25 \cdot Gap_{time}$$
-Where each gap is normalized to $[0.0, 1.0]$:
-- $Gap_{risk} = |R_s - R_p|$
-- $Gap_{domain} = \frac{1}{|D|} \sum_{d \in D} \frac{|s(d) - p(d)|}{4.0}$
-- $Gap_{relocation} = |\rho_s - \rho_p|$
-- $Gap_{time} = \frac{|T_s - T_p|}{10.0}$
+- **Fix 1:** Conflict Index is strictly diagnostic. It **never** alters scores or rankings. The old composite multiplier $(1 - 0.10 \cdot conflict / 100)$ is completely deleted.
+- **Fix 2:** The term "conflict" refers solely to the student-vs-parent Conflict Index. The per-career $|Fit - Family|$ divergence is renamed everywhere to $fit\_gap$.
 
-A family is classified as **High Conflict** iff $C_{family} \ge 0.50$ (50%).
-
-### 4.2 Route-Specific Conflict ($C_{route}$)
-$$C_{route} = 0.25 \cdot Gap_{risk}(c) + 0.25 \cdot Gap_{domain}(c) + 0.25 \cdot Gap_{reloc}(c) + 0.25 \cdot Gap_{time}(c)$$
+### 4.2 Per-Career Fit Gap ($fit\_gap$)
+$$fit\_gap = |F_{student} - F_{family}|$$
 
 ---
 
-## 5. Composite Score ($S_{comp}$)
+## 5. Market Machine Tiers (Fix 5)
 
-**Source:** `engine/conflict/scores.py` (lines 472–500)
+**Source:** `engine/market/components.py`, `engine/market/config.py`
 
-$$base = \frac{w_{student} \cdot F_{student} + w_{family} \cdot F_{family} + w_{market} \cdot F_{market}}{w_{student} + w_{family} + w_{market}}$$
-$$penalty = conflict\_penalty\_weight \cdot C_{route} \cdot base$$
-$$S_{comp} = \text{clamp}(base - penalty)$$
-
-**Weights:**
-- $w_{student} = 0.40$
-- $w_{family} = 0.35$
-- $w_{market} = 0.25$
-- $conflict\_penalty\_weight = 0.20$
+- Percentile rank scoring across the catalogue is replaced with absolute signal tiers:
+  - Demand: `rising`, `stable`, `declining`
+  - Velocity: `rising`, `stable`, `declining`
+  - Disruption: `low`, `medium`, `high`
+- Tiers map to points via a lookup table in config (no shrinkage toward 50).
+- Market is **not** part of any composite and **not** on the slider. It is displayed as a badge (`demand_tier`, `confidence`, `evidence_level`) and used solely as a tiebreaker when two careers have equal ranking score.
 
 ---
 
-## 6. Negotiation Explorer Slider & Ranking
+## 6. Negotiation Explorer Slider & 2-Score Ranking (Fix 8)
 
-**Source:** `engine/conflict/scores.py` (lines 580–584)
+**Source:** `engine/conflict/scores.py`, `engine/synthesis.py`
 
-For slider balance $\alpha \in [0.0, 1.0]$:
-$$base(\alpha) = \alpha \cdot F_{student} + (1.0 - \alpha) \cdot F_{family}$$
-$$penalty = conflict\_penalty\_weight \cdot C_{route}$$
-$$S_{negotiated}(\alpha) = \text{clamp}(base(\alpha) - penalty)$$
+Final ranking uses exactly two scores: Fit ($F_{student}$) and Family ($F_{family}$):
+$$\text{Ranking}(\lambda) = \lambda \cdot F_{student} + (1 - \lambda) \cdot F_{family}, \quad \lambda \in [0.0, 1.0]$$
 
-**Slider Anchor Positions:**
-- $\alpha = 0.0$: 100% Parent Priority
-- $\alpha = 0.5$: Balanced / Compromise Priority
-- $\alpha = 1.0$: 100% Student Priority
-- Conflict Penalty: $conflict\_penalty\_weight = 0.20$
+- Tiebreaker: When two careers have identical negotiated scores, higher Market tier points break the tie.
+- All alternative formulas (the 0.45/0.25/0.15/0.15 Fit variant, 6-component Family variant, and composite multiplier) are deleted.
 
 ---
 
-## 7. Compromise Zone Definition
+## 7. Balanced Pick & Compromise Zone (Fix 8)
 
-**Source:** `engine/conflict/scores.py` (line 585), `engine/conflict/config.py`
+**Source:** `engine/conflict/scores.py`
 
-A career qualifies in the **Compromise Zone** if and only if ALL three conditions hold:
-$$F_{student} \ge \tau_{student} \quad \text{AND} \quad F_{family} \ge \tau_{family} \quad \text{AND} \quad is\_financially\_viable == \text{True}$$
+### 7.1 Balanced Pick
+$$\text{Balanced Pick} = \arg\max_{c \in \text{viable}} \min(F_{student}(c), F_{family}(c))$$
 
-**Configured Thresholds:**
-- $\tau_{student} = 0.50$ (Student Fit $\ge 50\%$)
-- $\tau_{family} = 0.50$ (Family Viability $\ge 50\%$)
-- $G_{fin} == 1$ (Feasible educational route within family borrowing/repayment capacity)
+### 7.2 Compromise Zone
+The Compromise Zone is the **Pareto frontier** among careers satisfying:
+1. $F_{student} \ge \tau_{student}$ (`0.50`, default cutoff in config, design assumption)
+2. $F_{family} \ge \tau_{family}$ (`0.50`, default cutoff in config, design assumption)
+3. Financial gate passed ($G_{fin} == 1$, status $\ne$ `"insufficient_data"`)
 
----
-
-## 8. Pareto Optimality Rule
-
-**Source:** `engine/conflict/scores.py` (lines 503–523)
-
-In the two-objective optimization space $(F_{student}, F_{family})$:
-A career $A$ is **Pareto Dominated** by career $B$ if and only if:
-$$F_{student}(B) \ge F_{student}(A) \quad \text{AND} \quad F_{family}(B) \ge F_{family}(A)$$
-with at least one strict inequality:
-$$F_{student}(B) > F_{student}(A) \quad \text{OR} \quad F_{family}(B) > F_{family}(A)$$
-
-A career is classified as **Pareto Optimal** ($is\_pareto\_optimal = \text{True}$) if and only if no other viable career dominates it.
+A career in this candidate set is included in the Compromise Zone iff it is non-dominated by any other candidate in the $(F_{student}, F_{family})$ space.
 
 ---
 

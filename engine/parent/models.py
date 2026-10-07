@@ -156,17 +156,17 @@ class Route(BaseModel):
 
     career_id: str = Field(..., description="Unique identifier of target career")
     route_id: str = Field(..., description="Unique identifier of route/college pathway")
-    tuition: float = Field(..., ge=0.0, description="T: Total tuition fee across duration (INR)")
-    living: float = Field(..., ge=0.0, description="L: Total living and hostel cost across duration (INR)")
+    tuition: Any = Field(default=0.0, description="T: Total tuition fee across duration (INR)")
+    living: float = Field(default=0.0, ge=0.0, description="L: Total living and hostel cost across duration (INR)")
     exam_equipment: float = Field(default=0.0, ge=0.0, description="E_exam: Exam, prep, and equipment fees (INR)")
     grant: float = Field(default=0.0, ge=0.0, description="G: Scholarships and grants received (INR)")
-    duration_years: float = Field(..., ge=0.0, description="Y: Duration of educational pathway in years")
-    starting_salary: float = Field(..., description="Y1: Expected annual gross starting salary (INR)")
-    years_to_first_income: float = Field(..., description="t_r: Years until student earns first income")
-    career_risk: float = Field(..., ge=0.0, le=1.0, description="R_c: Career pathway risk index (0-1)")
-    relocation_need: float = Field(..., ge=0.0, le=1.0, description="rho_c: Relocation requirement index (0-1)")
-    domain: str = Field(..., description="Domain/discipline name")
-    sector: str = Field(..., description="Sector {govt, private, entrepreneurship}")
+    duration_years: float = Field(default=4.0, ge=0.0, description="Y: Duration of educational pathway in years")
+    starting_salary: Any = Field(default=0.0, description="Y1: Expected annual gross starting salary (INR)")
+    years_to_first_income: float = Field(default=4.0, description="t_r: Years until student earns first income")
+    career_risk: float = Field(default=0.5, ge=0.0, le=1.0, description="R_c: Career pathway risk index (0-1)")
+    relocation_need: float = Field(default=0.5, ge=0.0, le=1.0, description="rho_c: Relocation requirement index (0-1)")
+    domain: str = Field(default="tech_engineering", description="Domain/discipline name")
+    sector: str = Field(default="private", description="Sector {govt, private, entrepreneurship}")
     g_acad: int = Field(default=1, ge=0, le=1, description="Academic gate eligibility flag (0 or 1)")
 
     @model_validator(mode="before")
@@ -264,6 +264,8 @@ class ViabilityReport(BaseModel):
     funding_gap: float = Field(default=0.0, ge=0.0, description="max(0, L_need - L_max), shown when blocked")
     block_reasons: List[str] = Field(default_factory=list, description="Specific gate failures and deficits")
     warnings: List[str] = Field(default_factory=list, description="Diagnostic and edge-case warnings")
+    status: str = Field(default="ok", description="Status: 'ok' or 'insufficient_data'")
+    data_confidence: str = Field(default="high", description="Data confidence: 'high', 'medium', or 'low'")
 
     # Shorthand properties matching specification
     @property

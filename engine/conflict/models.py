@@ -205,14 +205,23 @@ class CompromiseCareer(BaseModel):
     career_name: Optional[str] = None
     student_fit: float
     family_viability: float
-    market_score: float
-    career_conflict: float
+    market_score: float = 0.50
+    fit_gap: float = Field(default=0.0, description="Per-career |Fit - Family| gap (Fix 2)")
     negotiated_score: float
     is_in_compromise_zone: bool
     is_pareto_optimal: bool
     is_financially_viable: bool
-    conflict_flag: bool
+    conflict_flag: bool = False
+    stretch: bool = False
+    stretch_reasons: List[str] = Field(default_factory=list)
+    market_tier: str = "stable"
+    data_confidence: str = "high"
     summary_reason: str
+
+    @property
+    def career_conflict(self) -> float:
+        """Alias for backward compatibility."""
+        return self.fit_gap
 
 
 class NegotiationRequest(BaseModel):
@@ -238,3 +247,5 @@ class NegotiationResponse(BaseModel):
     ranked_careers: List[CompromiseCareer]
     compromise_zone_careers: List[CompromiseCareer]
     family_diagnosis: str
+    balanced_pick_career_id: Optional[str] = None
+    balanced_pick: Optional[CompromiseCareer] = None

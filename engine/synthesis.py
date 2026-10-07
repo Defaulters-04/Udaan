@@ -18,6 +18,7 @@ from engine.student_fit.models import Student, Career as StudentCareer, Result a
 from engine.student_fit.scoring import calculate_student_fit
 from engine.parent.models import ParentProfile, Route
 from engine.parent.scores import evaluate_parent_portfolio
+from engine.parent.config import DEFAULT_CONFIG as PARENT_CONFIG, ParentSolverConfig
 from engine.market.models import CareerMarketRecord, MarketReport
 from engine.market.scores import evaluate_market_catalogue
 from engine.market.config import DEFAULT_CONFIG as MARKET_CONFIG
@@ -45,13 +46,24 @@ class RoadmapItem(BaseModel):
     student_fit: float = Field(..., description="Student Fit F_student (0-100)")
     family_viability: float = Field(..., description="Family Viability F_family (0-100)")
     market_score: float = Field(..., description="Job Market Viability F_market (0-100)")
-    career_conflict: float = Field(..., description="Parent-student route conflict (0-100)")
+    fit_gap: float = Field(default=0.0, description="Per-career |Fit - Family| gap (0-100) (Fix 2)")
+
+    @property
+    def career_conflict(self) -> float:
+        """Alias for backward compatibility."""
+        return self.fit_gap
 
     # Composite & Negotiation Scores
-    composite_score: float = Field(..., description="Blended composite score (0-100)")
+    composite_score: float = Field(..., description="Blended score (0-100)")
     negotiated_score: float = Field(..., description="Slider-adjusted score (0-100)")
     is_in_compromise_zone: bool = Field(..., description="Qualifies in family compromise zone")
     is_pareto_optimal: bool = Field(..., description="Non-dominated Pareto solution")
+
+    # Guidance & Attributes
+    stretch: bool = Field(default=False, description="Whether career is an aptitude stretch (Fix 3)")
+    stretch_reasons: List[str] = Field(default_factory=list, description="Specific aptitude shortfalls if stretch")
+    market_tier: str = Field(default="stable", description="Market demand/growth tier (Fix 5)")
+    data_confidence: str = Field(default="high", description="Data confidence: high, medium, low (Fix 4)")
 
     # Financial Roadmap Details
     starting_salary: float = Field(..., description="Expected starting salary Y1 (INR)")
@@ -105,6 +117,8 @@ class FullRoadmapReport(BaseModel):
     compromise_zone_careers: List[RoadmapItem]
     blocked_careers: List[BlockedRoadmapItem]
     recommended_compromise: Optional[RoadmapItem] = None
+    balanced_pick: Optional[RoadmapItem] = None
+    balanced_pick_career_id: Optional[str] = None
 
 
 def generate_unified_roadmap(
@@ -115,6 +129,7 @@ def generate_unified_roadmap(
     market_records: Optional[List[CareerMarketRecord]] = None,
     student_region: Optional[str] = None,
     alpha: float = 0.50,
+    parent_config: Optional[ParentSolverConfig] = None,
 ) -> FullRoadmapReport:
     """Execute the end-to-end PRISM Engine pipeline and synthesize the unified family roadmap.
 
@@ -135,7 +150,7 @@ def generate_unified_roadmap(
         student_evaluations[sc.career_id] = res
 
     # Step 3: Parent Machine Evaluation across all routes
-    parent_eval = evaluate_parent_portfolio(parent, routes)
+    parent_eval = evaluate_parent_portfolio(parent, routes, config=parent_config or PARENT_CONFIG)
     # Group viability reports by career_id
     reports_by_career: Dict[str, List[Any]] = {}
     for r in parent_eval.reports:
@@ -229,24 +244,28 @@ def generate_unified_roadmap(
         best_route_report = max(feasible_routes, key=lambda x: x.f_family)
         target_route = routes_dict.get((cid, best_route_report.route_id))
 
-        # Conflict calculation for this specific route
-        route_conflict_report = compute_career_conflict(student, parent, target_route, CONFLICT_CONFIG)
-        c_conflict_val = route_conflict_report.career_conflict  # in [0, 1]
-
         f_student_val = (s_eval.F_student if s_eval else 60.0) / 100.0  # normalized to [0, 1]
         f_family_val = best_route_report.f_family / 100.0  # normalized to [0, 1]
-        f_market_val = (m_eval.f_market if m_eval else 70.0) / 100.0  # normalized to [0, 1]
+        f_market_val = (m_eval.F_market if m_eval else 70.0) / 100.0  # normalized to [0, 1]
 
-        comp_score_val = compute_composite_score(
-            student_fit=f_student_val,
-            family_viability=f_family_val,
-            market_score=f_market_val,
-            career_conflict=c_conflict_val,
-            config=CONFLICT_CONFIG,
-        )
+        # Fix 2: Fit gap = |Fit - Family|
+        fit_gap_val = round(abs(f_student_val - f_family_val) * 100.0, 1)
+
+        # Fix 1 & 8: Scoring uses two scores (Fit & Family). No conflict penalty!
+        comp_score_val = round((0.5 * f_student_val + 0.5 * f_family_val) * 100.0, 1)
 
         strengths_list = [item.get("trait", str(item)) if isinstance(item, dict) else str(item) for item in s_eval.strengths] if (s_eval and s_eval.strengths) else []
         weaknesses_list = [item.get("trait", str(item)) if isinstance(item, dict) else str(item) for item in s_eval.weaknesses] if (s_eval and s_eval.weaknesses) else []
+
+        # Fix 3: Stretch attributes
+        is_stretch = getattr(s_eval, "stretch", False)
+        stretch_reasons = getattr(s_eval, "stretch_reasons", [])
+
+        # Fix 4: Data confidence
+        data_conf = getattr(best_route_report, "data_confidence", "high")
+
+        # Fix 5: Market tier badge
+        m_tier = getattr(m_eval, "velocity_tier", "stable") if m_eval else "stable"
 
         feasible_items.append({
             "career_id": cid,
@@ -256,8 +275,8 @@ def generate_unified_roadmap(
             "student_fit": round(f_student_val * 100.0, 1),
             "family_viability": round(f_family_val * 100.0, 1),
             "market_score": round(f_market_val * 100.0, 1),
-            "career_conflict": round(c_conflict_val * 100.0, 1),
-            "composite_score": round(comp_score_val * 100.0, 1),
+            "fit_gap": fit_gap_val,
+            "composite_score": comp_score_val,
             "starting_salary": getattr(target_route, "starting_salary", 0.0),
             "net_cost": best_route_report.cost_net,
             "monthly_emi": best_route_report.emi,
@@ -269,7 +288,11 @@ def generate_unified_roadmap(
             "f_student_norm": f_student_val,
             "f_family_norm": f_family_val,
             "f_market_norm": f_market_val,
-            "conflict_norm": c_conflict_val,
+            "stretch": is_stretch,
+            "stretch_reasons": stretch_reasons,
+            "market_tier": m_tier,
+            "data_confidence": data_conf,
+            "status": getattr(best_route_report, "status", "ok"),
         })
 
     # Step 6: Negotiation Explorer ranking on feasible options
@@ -285,7 +308,7 @@ def generate_unified_roadmap(
             domain=item["domain"],
             relocation_need=getattr(item["target_route"], "relocation_need", 0.5),
             years_to_first_income=getattr(item["target_route"], "years_to_first_income", 4.0),
-            is_financially_viable=True,
+            is_financially_viable=(item["status"] != "insufficient_data"),
             estimated_cost=item["net_cost"],
         )
         for item in feasible_items
@@ -298,8 +321,6 @@ def generate_unified_roadmap(
         alpha=alpha,
         config=CONFLICT_CONFIG,
     )
-
-    neg_lookup = {c.career_id: c for c in neg_res.ranked_careers}
 
     # Build final ranked items
     final_ranked: List[RoadmapItem] = []
@@ -325,11 +346,15 @@ def generate_unified_roadmap(
                 student_fit=raw["student_fit"],
                 family_viability=raw["family_viability"],
                 market_score=raw["market_score"],
-                career_conflict=raw["career_conflict"],
+                fit_gap=raw["fit_gap"],
                 composite_score=raw["composite_score"],
                 negotiated_score=round(neg_c.negotiated_score * 100.0, 1),
                 is_in_compromise_zone=neg_c.is_in_compromise_zone,
                 is_pareto_optimal=neg_c.is_pareto_optimal,
+                stretch=raw["stretch"],
+                stretch_reasons=raw["stretch_reasons"],
+                market_tier=raw["market_tier"],
+                data_confidence=raw["data_confidence"],
                 starting_salary=raw["starting_salary"],
                 net_cost=raw["net_cost"],
                 monthly_emi=raw["monthly_emi"],
@@ -347,6 +372,7 @@ def generate_unified_roadmap(
 
     compromise_zone = [item for item in final_ranked if item.is_in_compromise_zone]
     recommended_compromise = compromise_zone[0] if compromise_zone else (final_ranked[0] if final_ranked else None)
+    balanced_pick_item = next((item for item in final_ranked if item.career_id == neg_res.balanced_pick_career_id), None)
 
     return FullRoadmapReport(
         student_id=getattr(student, "student_id", "student_1"),
@@ -359,4 +385,7 @@ def generate_unified_roadmap(
         compromise_zone_careers=compromise_zone,
         blocked_careers=blocked_items,
         recommended_compromise=recommended_compromise,
+        balanced_pick=balanced_pick_item,
+        balanced_pick_career_id=neg_res.balanced_pick_career_id,
     )
+

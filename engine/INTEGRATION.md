@@ -63,13 +63,18 @@ def per_career_scores(
 - `student_fit`: float (`F_student` in `[0, 100]`)
 - `family_viability`: float (`F_family` in `[0, 100]`)
 - `market_score`: float (`F_market` in `[0, 100]`)
-- `career_conflict`: float (route conflict in `[0, 100]`)
-- `composite_score`: float (blended composite score in `[0, 100]`)
+- `fit_gap`: float (per-career `|Fit - Family|` gap in `[0, 100]`, Fix 2)
+- `career_conflict`: float (alias for backward compatibility)
+- `composite_score`: float (blended score in `[0, 100]`, Fix 1: no conflict penalty)
 - `g_acad`: int (`1` if passed, `0` if blocked)
 - `g_fin`: int (`1` if passed, `0` if blocked)
 - `is_viable`: bool (`True` iff `g_acad == 1 and g_fin == 1`)
 - `data_complete`: bool (`True` if verified cost, salary, and demand exist)
 - `missing_data_fields`: `List[str]` (e.g. `["verified_route_costs"]`)
+- `stretch`: bool (`True` if weighted aptitude shortfall exceeds threshold, Fix 3)
+- `stretch_reasons`: `List[str]` (specific aptitude shortfalls, Fix 3)
+- `data_confidence`: str (`"high"`, `"medium"`, `"low"` based on dropped weight fraction, Fix 4)
+- `market_tier`: dict (`demand_tier`, `velocity_tier`, `disruption_tier`, `tier_points`, `confidence`, Fix 5)
 
 ```python
 def negotiate(
@@ -85,10 +90,12 @@ def negotiate(
 ```
 **Return structure:**
 - `alpha`: float (`0.0 = parent priority`, `1.0 = student priority`, `0.5 = balanced`)
-- `ranked_careers`: List of dicts (`rank`, `career_id`, `negotiated_score`, `student_fit`, `family_viability`, `is_in_compromise_zone`, `is_pareto_optimal`)
-- `compromise_zone_career_ids`: List of career IDs qualifying in compromise zone
+- `ranked_careers`: List of dicts (`rank`, `career_id`, `negotiated_score`, `student_fit`, `family_viability`, `fit_gap`, `stretch`, `data_confidence`, `is_in_compromise_zone`, `is_pareto_optimal`)
+- `compromise_zone_career_ids`: List of career IDs qualifying in compromise zone (Pareto optimal among `Fit >= 50, Family >= 50`, viable)
 - `pareto_optimal_career_ids`: List of non-dominated Pareto career IDs
 - `recommended_career_id`: Top compromise career ID, or top ranked career ID
+- `balanced_pick_career_id`: Career ID maximizing `min(Fit, Family)` (Fix 8)
+- `balanced_pick`: Dict with `career_id`, `student_fit`, `family_viability`, `fit_gap` (Fix 8)
 
 ```python
 def unified_roadmap(

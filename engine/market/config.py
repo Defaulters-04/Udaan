@@ -1,15 +1,17 @@
 """Configuration parameters for the PRISM Market Machine engine."""
 
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, field, asdict
 from typing import Dict, Any
+
+from engine.config import DEFAULT_CONFIG as MASTER_CONFIG, MarketTiersConfig as MasterMarketConfig
 
 
 @dataclass(frozen=True)
 class MarketSolverConfig:
-    """Configurable parameters for PRISM Market Machine scoring and forecasting.
+    """Configurable parameters for PRISM Market Machine scoring, tiers, and forecasting.
 
     All constants live in this dataclass and are passed into pure functions,
-    never hardcoded. Supports +/-20% sensitivity perturbations.
+    never hardcoded.
     """
 
     # Component weights (sum to 1.00 when all 5 available)
@@ -23,6 +25,40 @@ class MarketSolverConfig:
     g_min: float = -0.30
     g_max: float = 0.30
 
+    # Tier thresholds (Fix 5)
+    velocity_rising_threshold: float = 0.05  # design assumption, unsourced
+    velocity_declining_threshold: float = -0.05  # design assumption, unsourced
+    demand_rising_threshold: float = 500.0  # design assumption, unsourced
+    demand_declining_threshold: float = 100.0  # design assumption, unsourced
+    disruption_low_threshold: float = 0.35  # design assumption, unsourced
+    disruption_high_threshold: float = 0.65  # design assumption, unsourced
+
+    # Points lookup table for tiers (Fix 5)
+    tier_points: dict[str, dict[str, float]] = field(
+        default_factory=lambda: {
+            "demand": {
+                "rising": 100.0,   # design assumption, unsourced
+                "stable": 60.0,    # design assumption, unsourced
+                "declining": 20.0, # design assumption, unsourced
+            },
+            "velocity": {
+                "rising": 100.0,   # design assumption, unsourced
+                "stable": 60.0,    # design assumption, unsourced
+                "declining": 20.0, # design assumption, unsourced
+            },
+            "disruption": {
+                "low": 100.0,      # design assumption, unsourced
+                "medium": 60.0,    # design assumption, unsourced
+                "high": 20.0,      # design assumption, unsourced
+            },
+        }
+    )
+
+    # Weights for aggregating tier points into tiebreaker score (Fix 5)
+    w_tier_demand: float = 0.40  # design assumption, unsourced
+    w_tier_velocity: float = 0.35  # design assumption, unsourced
+    w_tier_disruption: float = 0.25  # design assumption, unsourced
+
     # Forecast settings
     prediction_interval_level: float = 0.80  # 80% interval (alpha = 0.20)
     forecast_horizon_months: int = 12
@@ -35,7 +71,7 @@ class MarketSolverConfig:
     cost_floor: float = 50000.0  # INR minimum cost floor to prevent division blowup
 
     # Local demand settings
-    lq_cap: float = 2.0  # Location quotient cap (LQ=1 -> 0.5, LQ>=2 -> 1.0)
+    lq_cap: float = 2.0  # Location quotient cap
     local_min_postings: int = 30  # Threshold below which local confidence is flagged low
 
     # Risk proxy & volatility settings
@@ -49,11 +85,11 @@ class MarketSolverConfig:
     confidence_medium_threshold: float = 0.50
     min_careers_percentile: int = 5
 
-    # Hand-off composite settings
-    w_handoff_student: float = 0.45
-    w_handoff_family: float = 0.35
-    w_handoff_market: float = 0.20
-    conflict_penalty: float = 0.10
+    # Hand-off composite settings (Fix 1: conflict_penalty is deleted / 0.0)
+    w_handoff_student: float = 0.50
+    w_handoff_family: float = 0.50
+    w_handoff_market: float = 0.00
+    conflict_penalty: float = 0.00
 
     # Sensitivity analysis defaults
     sensitivity_perturbation: float = 0.20

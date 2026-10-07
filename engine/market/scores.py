@@ -294,6 +294,14 @@ def evaluate_market_career(
         student_region,
     )
 
+    # Fix 5: Tiers mapping from raw signals
+    raw_demand = comp_demand.raw
+    demand_tier = map_demand_to_tier(raw_demand, config)
+    velocity_tier = map_velocity_to_tier(g_cen, config)
+    disruption_tier = map_disruption_to_tier(d_score, config)
+    tier_pts = calculate_tier_points(demand_tier, velocity_tier, disruption_tier, config)
+    evidence_lvl = getattr(career_record, "evidence_level", "career") or "career"
+
     return MarketReport(
         career_id=career_record.career_id,
         name=career_record.name,
@@ -314,6 +322,11 @@ def evaluate_market_career(
         source_labels=sources,
         fetched_at=fetched_at,
         explanation=explanation,
+        demand_tier=demand_tier,
+        velocity_tier=velocity_tier,
+        disruption_tier=disruption_tier,
+        market_tier_points=tier_pts,
+        evidence_level=evidence_lvl,
     )
 
 
@@ -324,11 +337,11 @@ def evaluate_market_catalogue(
     config: MarketSolverConfig = DEFAULT_CONFIG,
     ref_date: Optional[date] = None,
 ) -> MarketCatalogueResult:
-    """Evaluate market scores for an entire catalogue of careers."""
+    """Evaluate market scores for an entire catalogue of careers using tiers (Fix 5)."""
     if not careers:
         return MarketCatalogueResult(reports=[], sorted_careers=[], low_confidence_careers=[])
 
-    # 1. Collect catalogue-level metrics for percentile ranking
+    # 1. Collect catalogue-level metrics
     base_levels: List[Optional[float]] = []
     log_pays: List[Optional[float]] = []
     pay_qualities: List[str] = []
@@ -367,8 +380,13 @@ def evaluate_market_catalogue(
             log_pays.append(None)
             pay_qualities.append("none")
 
-    # 2. Percentile ranking across catalogue
-    demand_scaled_list, d_rank_flags = calculate_percentile_ranks(base_levels, config)
+    # 2. Fix 5: Replace catalogue percentile ranking with absolute tiers
+    # A declining-demand career cannot gain points from other careers being worse
+    demand_scaled_list = [
+        (config.tier_points["demand"][map_demand_to_tier(b, config)] / 100.0)
+        if b is not None else None
+        for b in base_levels
+    ]
     pay_scaled_list, p_rank_flags = calculate_percentile_ranks(log_pays, config)
 
     # 3. Evaluate each career
@@ -385,14 +403,13 @@ def evaluate_market_catalogue(
             config,
             ref_date,
         )
-        if d_rank_flags:
-            rep.flags.extend(d_rank_flags)
         if p_rank_flags:
             rep.flags.extend(p_rank_flags)
         reports.append(rep)
 
-    # 4. Sort reports descending by F_market
+    # 4. Sort reports descending by F_market (or tier points)
     sorted_reports = sorted(reports, key=lambda x: x.F_market, reverse=True)
+
     low_conf_reports = [r for r in sorted_reports if r.overall_confidence == "low"]
 
     return MarketCatalogueResult(

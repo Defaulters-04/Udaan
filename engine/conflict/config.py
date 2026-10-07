@@ -3,6 +3,8 @@
 from dataclasses import dataclass, asdict
 from typing import Dict, Any
 
+from engine.config import DEFAULT_CONFIG as MASTER_CONFIG, ConflictConfig as MasterConflictConfig
+
 
 @dataclass(frozen=True)
 class ConflictConfig:
@@ -21,18 +23,15 @@ class ConflictConfig:
     # Threshold for flagging high conflict (per dimension or overall)
     conflict_threshold: float = 0.40
 
-    # Composite penalty weight when blending into final career ranking
-    # composite_score = (1 - alpha_conflict) * base_score - alpha_conflict * conflict
-    # or score_with_penalty = base_score * (1.0 - penalty_weight * career_conflict)
-    conflict_penalty_weight: float = 0.15
+    # Fix 1: Conflict index is diagnosis only and does NOT penalize scores or rankings.
+    conflict_penalty_weight: float = 0.0
 
     # Negotiation slider default: 0.50 (equal student & parent balance)
-    # alpha in [0, 1] where alpha=1.0 is 100% student fit, alpha=0.0 is 100% parent viability
     default_negotiation_alpha: float = 0.50
 
-    # Compromise zone thresholds: careers where both sides achieve at least minimum acceptability
-    min_student_fit_compromise: float = 0.50
-    min_parent_viability_compromise: float = 0.50
+    # Compromise zone thresholds (Fix 8)
+    min_student_fit_compromise: float = 0.50  # design assumption, unsourced
+    min_parent_viability_compromise: float = 0.50  # design assumption, unsourced
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary."""
