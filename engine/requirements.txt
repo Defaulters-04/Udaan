@@ -1,0 +1,9 @@
+# Python version requirement: Python >= 3.10 (tested and verified on Python 3.14.3)
+numpy>=2.0.0
+scipy>=1.15.0
+pandas>=2.2.0
+statsmodels>=0.14.0
+pydantic>=2.7.0
+fastapi>=0.110.0
+httpx>=0.27.0
+pytest>=8.0.0
