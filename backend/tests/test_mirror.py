@@ -292,7 +292,7 @@ def test_mirror_exact_key_allowlist_and_no_data_leakage():
     data = res.json()
 
     # Allowed keys specifications
-    TOP_LEVEL_KEYS = {"conflict_index", "dimensions"}
+    TOP_LEVEL_KEYS = {"conflict_index", "high_conflict", "dimensions"}
     SCALE_DIM_KEYS = {"id", "gap", "weight", "kind", "steps", "student_step", "parent_step"}
     PICKS_DIM_KEYS = {"id", "gap", "weight", "kind", "options", "student_picks", "parent_picks", "parent_guess"}
     STEP_KEYS = {"id", "label"}
@@ -300,6 +300,7 @@ def test_mirror_exact_key_allowlist_and_no_data_leakage():
 
     assert set(data.keys()) == TOP_LEVEL_KEYS
     assert isinstance(data["conflict_index"], (int, float))
+    assert isinstance(data["high_conflict"], bool)
     assert isinstance(data["dimensions"], list)
     assert len(data["dimensions"]) == 4
 
@@ -529,3 +530,69 @@ def test_privacy_free_text_absent_and_no_logging(caplog):
         assert "science_math" not in all_logs
         assert "under_5k" not in all_logs
         assert "6_12l" not in all_logs
+
+
+# ---------------------------------------------------------------------------
+# 10. High Conflict Flag Behavior
+# ---------------------------------------------------------------------------
+def test_mirror_high_conflict_flag():
+    code, student_token, parent_token = create_linked_family()
+
+    # Case A: Aligned preferences -> low conflict
+    s_low_ans = default_student_answers(
+        pref_risk_1="safe",
+        pref_risk_2="safe",
+        pref_risk_3="safe",
+        pref_relocation="same_state",
+        pref_time_to_earn="five_six",
+        pref_domain_wish=["business_management", "tech_engineering"],
+    )
+    p_low_ans = default_parent_answers(
+        risk_1="safe",
+        risk_2="safe",
+        risk_3="safe",
+        relocation="same_state",
+        time_to_earn="five_six",
+        domain_wish=["business_management", "tech_engineering"],
+    )
+    submit_student(code, student_token, s_low_ans)
+    submit_parent(code, parent_token, p_low_ans)
+
+    res_low = client.get(
+        f"/families/{code}/mirror",
+        headers={"X-Member-Token": student_token},
+    )
+    assert res_low.status_code == 200
+    data_low = res_low.json()
+    assert data_low["high_conflict"] is False
+
+    # Case B: Opposing preferences across risk, relocation, time, and domains -> high conflict
+    code_high, s_tok_high, p_tok_high = create_linked_family()
+    s_high_ans = default_student_answers(
+        pref_risk_1="gamble",
+        pref_risk_2="gamble",
+        pref_risk_3="gamble",
+        pref_relocation="abroad_ok",
+        pref_time_to_earn="seven_plus",
+        pref_domain_wish=["sciences", "design_creative"],
+    )
+    p_high_ans = default_parent_answers(
+        risk_1="safe",
+        risk_2="safe",
+        risk_3="safe",
+        relocation="home_city",
+        time_to_earn="within_4y",
+        domain_wish=["business_management"],
+        guess_domain="business_management",
+    )
+    submit_student(code_high, s_tok_high, s_high_ans)
+    submit_parent(code_high, p_tok_high, p_high_ans)
+
+    res_high = client.get(
+        f"/families/{code_high}/mirror",
+        headers={"X-Member-Token": s_tok_high},
+    )
+    assert res_high.status_code == 200
+    data_high = res_high.json()
+    assert data_high["high_conflict"] is True
+

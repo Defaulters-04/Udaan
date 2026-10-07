@@ -185,6 +185,7 @@ export type MirrorDimension = MirrorScaleDimension | MirrorPicksDimension;
 
 export interface MirrorResponse {
   conflict_index: number;
+  high_conflict: boolean;
   dimensions: MirrorDimension[];
 }
 
@@ -192,7 +193,7 @@ const getApiBaseUrl = (): string => {
   return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 };
 
-const isMockEnabled = (): boolean => {
+export const isMockEnabled = (): boolean => {
   return process.env.NEXT_PUBLIC_USE_MOCK === 'true';
 };
 
@@ -1898,6 +1899,7 @@ export async function submitIntake(
 // Clearly marked mock response for Family Mirror per API contract
 export const MOCK_MIRROR_RESPONSE: MirrorResponse = {
   conflict_index: 16.5,
+  high_conflict: false,
   dimensions: [
     {
       id: 'risk',
@@ -2648,23 +2650,15 @@ export async function getExplorer(
     return generateMockExplorerResponse(scenario);
   }
 
-  try {
-    return await request<ExplorerResponse>(
-      `/families/${encodeURIComponent(cleanCode)}/explorer`,
-      {
-        method: 'GET',
-        headers: {
-          'X-Member-Token': token,
-        },
-      }
-    );
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      const scenario = process.env.NEXT_PUBLIC_MOCK_SCENARIO || 'normal';
-      return generateMockExplorerResponse(scenario);
+  return await request<ExplorerResponse>(
+    `/families/${encodeURIComponent(cleanCode)}/explorer`,
+    {
+      method: 'GET',
+      headers: {
+        'X-Member-Token': token,
+      },
     }
-    throw err;
-  }
+  );
 }
 
 

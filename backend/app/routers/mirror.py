@@ -146,5 +146,6 @@ def get_family_mirror(
 
     return MirrorResponse(
         conflict_index=conflict_index,
+        high_conflict=conflict_res["is_high_conflict"],
         dimensions=dimensions,
     )
