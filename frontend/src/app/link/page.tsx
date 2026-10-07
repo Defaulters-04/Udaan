@@ -58,17 +58,6 @@ export default function LinkFamilyPage() {
     }
   }, [hasHydrated, storeRole, storeName, router]);
 
-  // Tab visibility tracking
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      isTabVisibleRef.current = document.visibilityState === 'visible';
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-
   // Stop polling helper
   const stopPolling = useCallback(() => {
     if (pollTimerRef.current) {
@@ -116,6 +105,21 @@ export default function LinkFamilyPage() {
     },
     [setPartner, stopPolling, storeRole, storeName, storeLang, setFamily]
   );
+
+  // Tab visibility tracking
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const isVisible = document.visibilityState === 'visible';
+      isTabVisibleRef.current = isVisible;
+      if (isVisible && storeFamily?.code && storeFamily?.token && !storeFamily?.partner) {
+        pollStatus(storeFamily.code, storeFamily.token);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [storeFamily, pollStatus]);
 
   // Initialize or check family on mount
   useEffect(() => {
