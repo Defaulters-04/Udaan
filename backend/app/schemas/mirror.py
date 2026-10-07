@@ -49,4 +49,5 @@ class MirrorResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     conflict_index: float
+    high_conflict: bool
     dimensions: list[Dimension]

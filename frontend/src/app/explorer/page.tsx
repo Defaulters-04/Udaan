@@ -10,6 +10,7 @@ import {
   getExplorer,
   getStatus,
   ApiError,
+  isMockEnabled,
   validateExplorerResponse,
   type ExplorerResponse,
   type ExplorerCareer,
@@ -563,8 +564,8 @@ export default function NegotiationExplorerPage() {
             aria-live="polite"
             className="bg-cloud/30 border border-cloud rounded-2xl p-6 sm:p-8 text-center space-y-4 my-8"
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sky/30 text-ocean mb-2 animate-pulse">
-              ⌛
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-cloud text-ocean mb-2">
+              <span className="w-4 h-4 rounded-full bg-ocean animate-pulse" />
             </div>
             <h2 className={`text-xl sm:text-2xl font-bold text-midnight ${headingFontClass}`}>
               {t.explorerWaitingTitle}
@@ -650,18 +651,26 @@ export default function NegotiationExplorerPage() {
           backLabel={t.back}
         />
 
+        {/* Demo Data Label (when mock data is shown) */}
+        {isMockEnabled() && (
+          <div className="flex items-center gap-2 mt-2 mb-3">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-cloud text-midnight/80 border border-cloud">
+              {t.demoData}
+            </span>
+          </div>
+        )}
+
         {/* V6 Empty State: When no careers fit the budget */}
         {nonBlockedCareers.length === 0 ? (
           <div className="my-8 max-w-3xl mx-auto space-y-8">
-            <div className="bg-white border border-cloud rounded-2xl p-6 sm:p-8 text-center space-y-3 shadow-xs">
-              <span className="text-2xl">🌱</span>
+            <div className="bg-white border border-cloud rounded-2xl p-6 sm:p-8 text-center space-y-3">
               <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
                 {t.emptyStateTitle}
               </h2>
             </div>
 
             {/* Needs a Plan section for blocked careers */}
-            <div className="bg-white border border-cloud rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
+            <div className="bg-white border border-cloud rounded-2xl p-6 sm:p-8 space-y-6">
               <div>
                 <h3 className={`text-lg font-bold text-midnight ${headingFontClass}`}>
                   {t.needsPlanTitle}
@@ -754,7 +763,7 @@ export default function NegotiationExplorerPage() {
               {/* Left Column (Chart & Slider Control Deck) */}
               <div className="lg:col-span-7 space-y-5">
                 {/* Domain Filter Bar & Zoom Controls */}
-                <div className="bg-white border border-cloud/80 rounded-2xl p-3 sm:p-4 shadow-xs flex flex-wrap items-center justify-between gap-2.5">
+                <div className="bg-white border border-cloud/80 rounded-2xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-2.5">
                   <div className="flex flex-wrap items-center gap-1.5">
                     {/* All domains toggle */}
                     <button
@@ -762,7 +771,7 @@ export default function NegotiationExplorerPage() {
                       onClick={() => setActiveDomains(new Set())}
                       className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
                         activeDomains.size === 0
-                          ? 'bg-midnight text-white shadow-xs'
+                          ? 'bg-midnight text-white'
                           : 'bg-cloud/30 text-midnight/70 hover:bg-cloud/60'
                       }`}
                     >
@@ -786,7 +795,7 @@ export default function NegotiationExplorerPage() {
                           }}
                           className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize border transition-all cursor-pointer ${
                             isSelected
-                              ? 'bg-ocean text-white border-ocean shadow-xs'
+                              ? 'bg-ocean text-white border-ocean'
                               : 'bg-white text-midnight/80 border-cloud hover:border-ocean/40'
                           }`}
                         >
@@ -812,7 +821,7 @@ export default function NegotiationExplorerPage() {
 
                 {/* The SVG Chart Container */}
                 <div
-                  className="bg-white border border-cloud/80 rounded-2xl p-2 sm:p-4 shadow-xs relative overflow-visible"
+                  className="bg-white border border-cloud/80 rounded-2xl p-2 sm:p-4 relative overflow-visible"
                   role="group"
                   aria-label={t.chartAriaLabel}
                 >
@@ -826,7 +835,7 @@ export default function NegotiationExplorerPage() {
                         transform: 'translate(-50%, -105%)',
                       }}
                     >
-                      <div className="bg-midnight/95 backdrop-blur-md text-white rounded-xl p-3 shadow-xl border border-white/20 min-w-[210px] max-w-[280px] space-y-1.5 text-xs">
+                      <div className="bg-midnight text-white rounded-xl p-3 border border-cloud/40 min-w-[210px] max-w-[280px] space-y-1.5 text-xs">
                         <div className="flex items-start justify-between gap-2 border-b border-white/15 pb-1.5">
                           <div>
                             <span className="font-bold text-sm leading-tight block">
@@ -906,7 +915,7 @@ export default function NegotiationExplorerPage() {
                         </div>
 
                         {/* Downward pointer triangle */}
-                        <div className="absolute left-1/2 -bottom-1.5 -translate-x-1/2 w-3 h-3 bg-midnight/95 rotate-45 border-r border-b border-white/20" />
+                        <div className="absolute left-1/2 -bottom-1.5 -translate-x-1/2 w-3 h-3 bg-midnight rotate-45 border-r border-b border-cloud/40" />
                       </div>
                     </div>
                   )}
@@ -926,21 +935,6 @@ export default function NegotiationExplorerPage() {
                           rx="10"
                         />
                       </clipPath>
-
-                      {/* Sweet Spot Radiant Gradient */}
-                      <linearGradient id="sweetSpotGrad" x1="0" y1="1" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#7DBEF0" stopOpacity="0.04" />
-                        <stop offset="100%" stopColor="#2D6FB8" stopOpacity="0.16" />
-                      </linearGradient>
-
-                      {/* Filter for Rank 1 Glow */}
-                      <filter id="topPickAura" x="-20%" y="-20%" width="140%" height="140%">
-                        <feDropShadow dx="0" dy="0" stdDeviation="3.5" floodColor="#11284A" floodOpacity="0.3" />
-                      </filter>
-
-                      <filter id="lineGlow" x="-10%" y="-10%" width="120%" height="120%">
-                        <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#2D6FB8" floodOpacity="0.2" />
-                      </filter>
                     </defs>
 
                     {/* Gutter Column Background (V5) */}
@@ -1001,7 +995,8 @@ export default function NegotiationExplorerPage() {
                         y={toY(100)}
                         width={Math.max(0, toX(100) - toX(Math.max(plotMin, 50)))}
                         height={Math.max(0, toY(Math.max(plotMin, 50)) - toY(100))}
-                        fill="url(#sweetSpotGrad)"
+                        fill="#E3EEF8"
+                        fillOpacity="0.4"
                       />
 
                       {/* Sweet Spot Corner Label */}
@@ -1023,7 +1018,7 @@ export default function NegotiationExplorerPage() {
                           textAnchor="end"
                           className="text-[9.5px] font-semibold fill-ocean pointer-events-none"
                         >
-                          ✨ {t.sweetSpotLabel}
+                          {t.sweetSpotLabel}
                         </text>
                       </g>
 
@@ -1095,7 +1090,7 @@ export default function NegotiationExplorerPage() {
 
                       {/* Stepped Pareto Frontier Line (V4) */}
                       {frontierPathD && (
-                        <g filter="url(#lineGlow)">
+                        <g>
                           <path
                             d={frontierPathD}
                             fill="none"
@@ -1364,20 +1359,6 @@ export default function NegotiationExplorerPage() {
                             setHoveredPoint(null);
                           }}
                         >
-                          {/* Pulsing Aura Ring for Rank 1 */}
-                          {rank === 1 && (
-                            <circle
-                              cx={cx}
-                              cy={cy}
-                              r="15"
-                              fill="none"
-                              stroke="#11284A"
-                              strokeWidth="1.5"
-                              strokeDasharray="3 2"
-                              opacity="0.3"
-                            />
-                          )}
-
                           {/* Extra ring when selected */}
                           {isSelected && (
                             <circle
@@ -1399,7 +1380,6 @@ export default function NegotiationExplorerPage() {
                             stroke={isEstimated ? '#2D6FB8' : '#FFFFFF'}
                             strokeWidth={isEstimated ? 2 : 1.5}
                             opacity={opacity}
-                            filter={rank === 1 ? 'url(#topPickAura)' : undefined}
                           />
 
                           {/* Coincident Count Badge (V3) */}
@@ -1482,7 +1462,7 @@ export default function NegotiationExplorerPage() {
                   <div className="mt-3 pt-3 border-t border-cloud/60 text-xs text-midnight/80 space-y-2">
                     <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px]">
                       <div className="flex items-center gap-1.5">
-                        <span className="w-3.5 h-3.5 rounded-full bg-midnight inline-block shadow-2xs" />
+                        <span className="w-3.5 h-3.5 rounded-full bg-midnight inline-block" />
                         <span className="font-medium">{t.legendTopPick}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -1507,11 +1487,10 @@ export default function NegotiationExplorerPage() {
                 </div>
 
                 {/* The Slider Control Deck (Redesigned Heart of the Page) */}
-                <div className="bg-white border border-cloud/80 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
+                <div className="bg-white border border-cloud/80 rounded-2xl p-4 sm:p-6 space-y-4">
                   {/* Dynamic Balance Header */}
                   <div className="flex items-center justify-between text-xs font-bold text-midnight">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-base">🎓</span>
                       <span>
                         {t.sliderBalanceStudent.replace('{student}', studentName)}:
                       </span>
@@ -1531,7 +1510,6 @@ export default function NegotiationExplorerPage() {
                       <span className="font-mono text-midnight text-xs">
                         {sliderPos}%
                       </span>
-                      <span className="text-base">💼</span>
                     </div>
                   </div>
 
@@ -1557,7 +1535,7 @@ export default function NegotiationExplorerPage() {
                       aria-valuetext={t.sliderAriaValue.replace('{val}', sliderPos.toString())}
                       className="w-full h-3 rounded-lg appearance-none cursor-pointer accent-ocean focus-visible:outline-2 focus-visible:outline-ocean"
                       style={{
-                        background: `linear-gradient(to right, #2D6FB8 0%, #11284A 100%)`,
+                        background: '#E3EEF8',
                       }}
                     />
 
@@ -1605,7 +1583,7 @@ export default function NegotiationExplorerPage() {
 
                       {/* Active slider indicator line */}
                       <div
-                        className="absolute top-0 bottom-0 w-1 bg-midnight pointer-events-none transition-all duration-75 shadow-xs"
+                        className="absolute top-0 bottom-0 w-1 bg-midnight pointer-events-none transition-all duration-75"
                         style={{ left: `${sliderPos}%` }}
                       />
                     </div>
@@ -1624,7 +1602,7 @@ export default function NegotiationExplorerPage() {
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5">
                           <span className="px-2 py-0.5 rounded-full bg-midnight text-white text-[10px] font-bold">
-                            👑 {t.heroTopMatch}
+                            {t.heroTopMatch}
                           </span>
                           <span className="text-xs font-semibold text-ocean capitalize">
                             {currentWinner.domain.replace(/_/g, ' ')}
@@ -1677,7 +1655,7 @@ export default function NegotiationExplorerPage() {
                       )}
 
                       <div className="pt-1 border-t border-cloud/60 text-[11px] text-midnight/60">
-                        ℹ️ {t.sliderDisagreementNote}
+                        {t.sliderDisagreementNote}
                       </div>
                     </div>
                   )}
@@ -1696,7 +1674,7 @@ export default function NegotiationExplorerPage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.15 }}
-                      className="bg-white border border-ocean/30 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5"
+                      className="bg-white border border-ocean/30 rounded-2xl p-4 sm:p-5 space-y-3.5"
                     >
                       <div className="flex items-start justify-between gap-2 border-b border-cloud/60 pb-2.5">
                         <div>
@@ -1866,7 +1844,7 @@ export default function NegotiationExplorerPage() {
                 </AnimatePresence>
 
                 {/* Ranked Careers Priority List (Item 11) */}
-                <div className="bg-white border border-cloud/80 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+                <div className="bg-white border border-cloud/80 rounded-2xl p-4 sm:p-5 space-y-3">
                   <div className="flex items-center justify-between border-b border-cloud/60 pb-2.5">
                     <div>
                       <h3 className={`text-base font-bold text-midnight ${headingFontClass}`}>
@@ -1918,7 +1896,7 @@ export default function NegotiationExplorerPage() {
                             }}
                             className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-ocean ${
                               isSelected
-                                ? 'bg-cloud/50 border-midnight/70 shadow-xs ring-1 ring-midnight/30'
+                                ? 'bg-cloud/50 border-midnight/70 ring-1 ring-midnight/30'
                                 : 'bg-paper/40 border-cloud hover:border-ocean/40'
                             }`}
                           >
@@ -2005,10 +1983,9 @@ export default function NegotiationExplorerPage() {
             {blockedCareers.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start mt-8">
                 {/* Left Card: Needs a Plan (Cost & Academic Gates) */}
-                <div className="bg-white border border-cloud/80 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
+                <div className="bg-white border border-cloud/80 rounded-2xl p-4 sm:p-6 space-y-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">📋</span>
                       <h4 className={`text-base font-bold text-midnight ${headingFontClass}`}>
                         {t.needsPlanTitle} ({costAndAcademicBlocked.length})
                       </h4>
@@ -2101,10 +2078,9 @@ export default function NegotiationExplorerPage() {
                 </div>
 
                 {/* Right Card: Not Enough Data Yet (no_route_data) */}
-                <div className="bg-white border border-cloud/80 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
+                <div className="bg-white border border-cloud/80 rounded-2xl p-4 sm:p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">🔍</span>
                       <h4 className={`text-base font-bold text-midnight/90 ${headingFontClass}`}>
                         {t.notEnoughDataTitle} ({noRouteDataBlocked.length})
                       </h4>

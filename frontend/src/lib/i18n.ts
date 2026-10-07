@@ -132,6 +132,7 @@ export interface Translations {
 
   // Page 6 Negotiation Explorer strings
   explorerTitle: string;
+  demoData: string;
   explorerSubtitle: string;
   explorerErrorTitle: string;
   explorerErrorDesc: string;
@@ -347,6 +348,7 @@ export const translations: Record<Language, Translations> = {
 
     // Page 6 Negotiation Explorer
     explorerTitle: "Negotiation Explorer",
+    demoData: "Demo data",
     explorerSubtitle: "Find career paths balancing what {student} loves with what the family can afford.",
     explorerErrorTitle: "Something is off with the data. Please try again.",
     explorerErrorDesc: "Please refresh or try again later.",
@@ -560,6 +562,7 @@ export const translations: Record<Language, Translations> = {
 
     // Page 6 Negotiation Explorer
     explorerTitle: "सहमति और करियर विकल्प",
+    demoData: "डेमो डेटा",
     explorerSubtitle: "ऐसे करियर खोजें जो {student} की पसंद और परिवार के बजट दोनों में सही बैठें।",
     explorerErrorTitle: "डेटा में कुछ गड़बड़ी है। कृपया पुनः प्रयास करें।",
     explorerErrorDesc: "कृपया पेज को रीफ़्रेश करें या थोड़ी देर बाद प्रयास करें।",

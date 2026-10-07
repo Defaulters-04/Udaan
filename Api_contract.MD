@@ -7,7 +7,7 @@ Single source of truth for frontend and backend. Change it before changing code,
 - JSON only. Field names are snake_case on the wire, and the frontend uses the same names.
 - Enums: role = "student" | "parent"; lang = "en" | "hi".
 - Errors always look like: { "error": { "code": "string", "message": "string" } }
-  Validation errors use code "validation_error".
+  Validation errors use code "validation_error". Error codes: validation_error, invalid_token, family_not_found, role_taken, family_full, wrong_role, assessment_incomplete, intake_incomplete, already_submitted, mirror_not_ready, explorer_not_ready.
 
 ## Endpoints
 
@@ -74,7 +74,7 @@ The "preferences" section contains 6 questions (all required: true; English plus
 2. `pref_risk_2`: single_choice. Hypothetical job offer: "Imagine a different set of starting job offers. Which would you choose?" / "अब मान लें कि आपके सामने ये दो विकल्प हैं। आप किसे चुनेंगे?". Options:
    - `safe`: "₹4.5 lakh a year, guaranteed (illustrative)" / "₹4.5 लाख प्रति वर्ष, तय और सुरक्षित (अनुमानित)"
    - `gamble`: "50% chance of ₹10 lakh a year, 50% chance of ₹2 lakh a year (illustrative)" / "50% संभावना ₹10 लाख प्रति वर्ष की, 50% संभावना ₹2 लाख प्रति वर्ष की (अनुमानित)"
-3. `pref_risk_3`: single_choice. Hypothetical job offer: "Imagine a higher guaranteed offer vs the same variable opportunity. Which would you choose?" / "मान लें कि एक अधिक सुरक्षित विकल्प और वही अनिश्चित अवसर सामने है। आप क्या चुनेंगे?". Options:
+3. `pref_risk_3`: single_choice. Hypothetical job offer: "Imagine one more pair of starting job offers. Which would you choose?" / "एक और बार, मान लें कि आपके सामने नौकरी के ये दो विकल्प हैं। आप किसे चुनेंगे?". Options:
    - `safe`: "₹5.5 lakh a year, guaranteed (illustrative)" / "₹5.5 लाख प्रति वर्ष, तय और सुरक्षित (अनुमानित)"
    - `gamble`: "50% chance of ₹10 lakh a year, 50% chance of ₹2 lakh a year (illustrative)" / "50% संभावना ₹10 लाख प्रति वर्ष की, 50% संभावना ₹2 लाख प्रति वर्ष की (अनुमानित)"
 4. `pref_relocation`: single_choice. "How far are you comfortable moving for higher studies or work?" / "पढ़ाई या नौकरी के लिए आप कितनी दूर जाने में सहज हैं?". Options:
@@ -83,9 +83,9 @@ The "preferences" section contains 6 questions (all required: true; English plus
    - `anywhere_india`: "Anywhere in India" / "भारत में कहीं भी"
    - `abroad_ok`: "Abroad / International is fine too" / "विदेश जाने में भी कोई आपत्ति नहीं"
 5. `pref_time_to_earn`: single_choice. "How soon do you expect to start earning after completing school?" / "स्कूल पूरा करने के बाद आप कब तक कमाई शुरू करने की उम्मीद करते हैं?". Options:
-   - `within_4y`: "Within 3 to 4 years (e.g., direct degree or diploma)" / "3 से 4 साल के भीतर (जैसे डिग्री या डिप्लोमा के तुरंत बाद)"
-   - `five_six`: "In 5 to 6 years (e.g., professional degree like B.Tech / MBBS / Masters)" / "5 से 6 साल में (जैसे बी.टेक, एमबीबीएस या मास्टर्स के बाद)"
-   - `seven_plus`: "7+ years is fine (e.g., advanced research or specialization)" / "7 साल या उससे अधिक भी चलेगा (जैसे उच्च शोध या विशेषज्ञता)"
+   - `within_4y`: "About 4 years (e.g., a regular degree, B.Tech or a diploma)" / "लगभग 4 साल (जैसे सामान्य डिग्री, बी.टेक या डिप्लोमा)"
+   - `five_six`: "About 5 to 6 years (e.g., MBBS, 5-year law, or a degree plus a Master's)" / "लगभग 5 से 6 साल (जैसे एमबीबीएस, 5 साल का लॉ, या डिग्री के बाद मास्टर्स)"
+   - `seven_plus`: "7 years or more is fine (e.g., MD/MS or a PhD)" / "7 साल या उससे ज़्यादा भी चलेगा (जैसे एमडी/एमएस या पीएचडी)"
 6. `pref_domain_wish`: multi_choice, max_select: 3. "Which career domains are you most interested in exploring? (Select up to 3)" / "आप किन क्षेत्रों में करियर बनाने के लिए सबसे अधिक उत्सुक हैं? (अधिकतम 3 चुनें)". Options are the 7 canonical domain ids from engine/domains.py:
    - `tech_engineering`: "Technology & Engineering" / "तकनीक और इंजीनियरिंग"
    - `business_management`: "Business & Management" / "बिजनेस और मैनेजमेंट"
@@ -100,7 +100,7 @@ The "preferences" section contains 6 questions (all required: true; English plus
 
 ### GET /families/{family_code}/assessment/progress
 200: { "answers": { "<question_id>": value }, "submitted": boolean }
-Only the caller's own answers.
+Only the caller's own answers. Answers are never returned to the other member and never written to logs. The only exception is GET /families/{family_code}/mirror, which returns the derived values listed there.
 
 ### PUT /families/{family_code}/assessment/answers
 Body: { "answers": { "<question_id>": value } }
@@ -125,7 +125,8 @@ Same shapes as Assessment (LocalizedText, Question, answer values per type), wit
 - Total question count: 16. Version: "starter-2".
 - All calls need X-Member-Token. Only the parent member may call them; a student gets 403 wrong_role.
 - An answer that is an empty array or an empty string counts as unanswered (applies to Assessment too).
-- Answers are never returned to the other member and never written to logs.
+- Answers are never returned to the other member and never written to logs. The only exception is GET /families/{family_code}/mirror, which returns the derived values listed there.
+- The parent's risk_3 prompt matches pref_risk_3 ("Imagine one more pair of starting job offers. Which would you choose?" / "एक और बार, मान लें कि आपके सामने नौकरी के ये दो विकल्प हैं। आप किसे चुनेंगे?"). The parent's time_to_earn uses the same shared options and labels as pref_time_to_earn.
 - Questions never include internal tags, scoring dimensions or hints.
 - Error codes used: invalid_token, family_not_found, wrong_role, validation_error, intake_incomplete, already_submitted.
 
@@ -178,28 +179,6 @@ Merges into stored answers (partial updates, overwrites per question id).
 ### Status (no shape change)
 For a parent, "done" in GET /families/{family_code}/status means the intake is submitted.
 
-EDIT 1 (Assessment, Preferences Section). Replace the pref_risk_3 prompt with:
-"Imagine one more pair of starting job offers. Which would you choose?" /
-"एक और बार, मान लें कि आपके सामने नौकरी के ये दो विकल्प हैं। आप किसे चुनेंगे?"
-(Options unchanged. The parent's risk_3 prompt gets the same fix if it has the old wording.)
-
-EDIT 2 (Assessment, pref_time_to_earn). Replace the three option labels. The parent's
-time_to_earn uses the SAME shared options. Ids unchanged. The old text put B.Tech (4 years)
-in the "5 to 6 years" bucket, which is wrong.
-- within_4y: "About 4 years (e.g., a regular degree, B.Tech or a diploma)" /
-  "लगभग 4 साल (जैसे सामान्य डिग्री, बी.टेक या डिप्लोमा)"
-- five_six: "About 5 to 6 years (e.g., MBBS, 5-year law, or a degree plus a Master's)" /
-  "लगभग 5 से 6 साल (जैसे एमबीबीएस, 5 साल का लॉ, या डिग्री के बाद मास्टर्स)"
-- seven_plus: "7 years or more is fine (e.g., MD/MS or a PhD)" /
-  "7 साल या उससे ज़्यादा भी चलेगा (जैसे एमडी/एमएस या पीएचडी)"
-
-EDIT 3. Wherever the contract says answers are never returned to the other member, add:
-"The only exception is GET /families/{family_code}/mirror, which returns the derived values listed there."
-
-EDIT 4. Add mirror_not_ready to the error codes list in Conventions.
-
-NEW SECTION (append at the end):
-
 ## Mirror (Page 5: family comparison). Both roles.
 
 - Both members must have submitted (status "done" true for both). Otherwise 409 mirror_not_ready.
@@ -214,6 +193,7 @@ Header: X-Member-Token (student or parent). Both get the identical body.
 200:
 {
   "conflict_index": number,       // 0..100, 1 decimal, from the engine
+  "high_conflict": boolean,       // from the engine
   "dimensions": Dimension[]       // order: risk, domain, relocation, time
 }
 
@@ -242,6 +222,7 @@ kind "picks" (domain) adds:
 
 Example (shortened):
 { "conflict_index": 16.5,
+  "high_conflict": false,
   "dimensions": [
     { "id": "risk", "gap": 0.33, "weight": 0.25, "kind": "scale",
       "steps": [ ...4 steps... ], "student_step": 2, "parent_step": 0 },

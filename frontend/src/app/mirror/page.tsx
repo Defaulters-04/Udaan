@@ -254,6 +254,7 @@ export default function FamilyMirrorPage() {
   // Arc length = pi * 75 ~= 235.62
   const arcTotal = 235.62;
   const conflictIndex = mirrorData ? mirrorData.conflict_index : 0;
+  const isHighConflict = mirrorData?.high_conflict ?? false;
   const clampedIndex = Math.min(100, Math.max(0, conflictIndex));
   const strokeDashoffset = arcTotal * (1 - clampedIndex / 100);
 
@@ -361,7 +362,7 @@ export default function FamilyMirrorPage() {
                   <motion.path
                     d="M 25 95 A 75 75 0 0 1 175 95"
                     fill="none"
-                    stroke="#2D6FB8"
+                    stroke={isHighConflict ? '#B45309' : '#2D6FB8'}
                     strokeWidth="12"
                     strokeLinecap="round"
                     strokeDasharray={arcTotal}
