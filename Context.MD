@@ -46,7 +46,7 @@ Udaan is career guidance for the whole family. A student and a parent answer sep
 ## Pages (build order)
 1. Welcome: role, name, language
 2. Link the family: 6-character code, student and parent on separate devices
-3. Student assessment: 5-step stepper with autosave
+3. Student assessment: stepper built from the API's sections with autosave
 4. Parent intake: form, then a confirmation screen where the parent edits values
 5. Family Mirror: overlaid radar charts, Conflict Index gauge, per-dimension bars
 6. Negotiation Explorer: Fit vs Family viability scatter, slider, ranked list, compromise zone
@@ -55,4 +55,4 @@ Udaan is career guidance for the whole family. A student and a parent answer sep
 9. Family brief: one-page PDF with shortlist, costs, exams, SWOT, next steps
 
 ## Status
-Page 1 (Welcome) in progress.
+Pages 1 to 4 built, Page 5 in progress
