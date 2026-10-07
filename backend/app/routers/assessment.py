@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, Header, HTTPException, status
 
-from app.assessment.bank import get_public_sections
+from app.assessment.bank import QUESTION_BANK_VERSION, get_public_sections
 from app.assessment.validate import validate_answers_payload
 from app.schemas.assessment import (
     ProgressResponse,
@@ -35,7 +35,7 @@ def get_assessment_questions(
         raise_api_error(status.HTTP_403_FORBIDDEN, "wrong_role", "Only student members may access this endpoint")
 
     return QuestionsResponse(
-        version="starter-1",
+        version=QUESTION_BANK_VERSION,
         sections=get_public_sections(),
     )
 
