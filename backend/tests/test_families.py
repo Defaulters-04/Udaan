@@ -47,7 +47,7 @@ def test_create_preview_join_and_status_linked_on_both_sides():
     status_data1 = status_res1.json()
     assert status_data1["family_code"] == family_code
     assert status_data1["linked"] is False
-    assert status_data1["you"] == {"role": "student", "name": "Aarav Sharma"}
+    assert status_data1["you"] == {"role": "student", "name": "Aarav Sharma", "done": False}
     assert status_data1["partner"] is None
     assert "member_token" not in status_data1
     assert "member_token" not in status_data1["you"]
@@ -73,8 +73,8 @@ def test_create_preview_join_and_status_linked_on_both_sides():
     assert status_res_student.status_code == 200
     student_status = status_res_student.json()
     assert student_status["linked"] is True
-    assert student_status["you"] == {"role": "student", "name": "Aarav Sharma"}
-    assert student_status["partner"] == {"role": "parent", "name": "Sunita Sharma"}
+    assert student_status["you"] == {"role": "student", "name": "Aarav Sharma", "done": False}
+    assert student_status["partner"] == {"role": "parent", "name": "Sunita Sharma", "done": False}
 
     # 6. Status for parent (now linked)
     status_res_parent = client.get(
@@ -84,8 +84,8 @@ def test_create_preview_join_and_status_linked_on_both_sides():
     assert status_res_parent.status_code == 200
     parent_status = status_res_parent.json()
     assert parent_status["linked"] is True
-    assert parent_status["you"] == {"role": "parent", "name": "Sunita Sharma"}
-    assert parent_status["partner"] == {"role": "student", "name": "Aarav Sharma"}
+    assert parent_status["you"] == {"role": "parent", "name": "Sunita Sharma", "done": False}
+    assert parent_status["partner"] == {"role": "student", "name": "Aarav Sharma", "done": False}
 
     # 7. Preview after both slots are filled
     preview_res2 = client.get(f"/families/{family_code}/preview")

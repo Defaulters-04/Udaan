@@ -73,6 +73,14 @@ class MemberSummary(BaseModel):
     name: str
 
 
+class StatusMemberSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    role: str
+    name: str
+    done: bool
+
+
 class JoinFamilyResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -88,6 +96,6 @@ class FamilyStatusResponse(BaseModel):
 
     family_code: str
     linked: bool
-    you: MemberSummary
-    partner: Optional[MemberSummary] = None
+    you: StatusMemberSummary
+    partner: Optional[StatusMemberSummary] = None
     expires_at: str

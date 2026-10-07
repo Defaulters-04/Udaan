@@ -9,6 +9,8 @@ from app.schemas.families import (
     JoinFamilyRequest,
     JoinFamilyResponse,
     MemberSummary,
+    RoleEnum,
+    StatusMemberSummary,
 )
 from app.store.families import family_store, format_iso8601
 
@@ -90,10 +92,13 @@ def get_family_status(
         raise_api_error(status.HTTP_401_UNAUTHORIZED, "invalid_token", "Invalid member token")
 
     assert family is not None and you is not None
+    you_done = (you.role == RoleEnum.STUDENT and you.submitted)
+    partner_done = (partner.role == RoleEnum.STUDENT and partner.submitted) if partner else False
+
     return FamilyStatusResponse(
         family_code=family.family_code,
         linked=partner is not None,
-        you=MemberSummary(role=you.role.value, name=you.name),
-        partner=MemberSummary(role=partner.role.value, name=partner.name) if partner else None,
+        you=StatusMemberSummary(role=you.role.value, name=you.name, done=you_done),
+        partner=StatusMemberSummary(role=partner.role.value, name=partner.name, done=partner_done) if partner else None,
         expires_at=format_iso8601(family.expires_at),
     )

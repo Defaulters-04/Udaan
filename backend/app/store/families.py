@@ -2,8 +2,9 @@ import secrets
 import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Any, Optional
 
+from app.assessment.bank import REQUIRED_QUESTION_IDS, TOTAL_QUESTIONS_COUNT
 from app.config import settings
 from app.schemas.families import LangEnum, RoleEnum
 
@@ -31,6 +32,8 @@ class MemberRecord:
     name: str
     lang: LangEnum
     joined_at: datetime
+    answers: dict[str, Any] = field(default_factory=dict)
+    submitted: bool = False
 
 
 @dataclass
@@ -182,6 +185,117 @@ class FamilyStore:
 
             partner = next((m for m in fam.members if m.token != token), None)
             return "ok", fam, you, partner
+
+    def authenticate_student(
+        self, raw_code: str, token: Optional[str]
+    ) -> tuple[str, Optional[FamilyRecord], Optional[MemberRecord]]:
+        """
+        Validates access strictly in order: token, family, role.
+        Returns: (status_code, family, student_member)
+        """
+        if not token:
+            return "invalid_token", None, None
+
+        code = normalize_family_code(raw_code)
+        with self._lock:
+            now = now_utc()
+            fam = self._families.get(code)
+            if fam is None:
+                return "family_not_found", None, None
+            if fam.expires_at <= now:
+                del self._families[code]
+                return "family_not_found", None, None
+
+            member = fam.get_member_by_token(token)
+            if member is None:
+                return "invalid_token", None, None
+
+            if member.role != RoleEnum.STUDENT:
+                return "wrong_role", None, None
+
+            return "ok", fam, member
+
+    def update_student_answers(
+        self, raw_code: str, token: Optional[str], updates: dict[str, Any]
+    ) -> tuple[str, int, int]:
+        """
+        Check order: token, family, role; then already_submitted (409).
+        If already submitted: returns ('already_submitted', 0, 0).
+        If ok: applies updates and returns ('ok', answered_count, total_count).
+        """
+        if not token:
+            return "invalid_token", 0, 0
+
+        code = normalize_family_code(raw_code)
+        with self._lock:
+            now = now_utc()
+            fam = self._families.get(code)
+            if fam is None:
+                return "family_not_found", 0, 0
+            if fam.expires_at <= now:
+                del self._families[code]
+                return "family_not_found", 0, 0
+
+            member = fam.get_member_by_token(token)
+            if member is None:
+                return "invalid_token", 0, 0
+
+            if member.role != RoleEnum.STUDENT:
+                return "wrong_role", 0, 0
+
+            if member.submitted:
+                return "already_submitted", 0, 0
+
+            # Apply partial updates (None means removal)
+            for q_id, val in updates.items():
+                if val is None:
+                    member.answers.pop(q_id, None)
+                else:
+                    member.answers[q_id] = val
+
+            return "ok", len(member.answers), TOTAL_QUESTIONS_COUNT
+
+    def submit_student_assessment(
+        self, raw_code: str, token: Optional[str]
+    ) -> tuple[str, Optional[list[str]]]:
+        """
+        Check order: token, family, role.
+        If already submitted: returns ('ok', None) (idempotent).
+        If missing required answers: returns ('assessment_incomplete', missing_ids).
+        If success: sets submitted = True and returns ('ok', None).
+        """
+        if not token:
+            return "invalid_token", None
+
+        code = normalize_family_code(raw_code)
+        with self._lock:
+            now = now_utc()
+            fam = self._families.get(code)
+            if fam is None:
+                return "family_not_found", None
+            if fam.expires_at <= now:
+                del self._families[code]
+                return "family_not_found", None
+
+            member = fam.get_member_by_token(token)
+            if member is None:
+                return "invalid_token", None
+
+            if member.role != RoleEnum.STUDENT:
+                return "wrong_role", None
+
+            if member.submitted:
+                return "ok", None
+
+            missing = [
+                q_id for q_id in REQUIRED_QUESTION_IDS
+                if q_id not in member.answers
+            ]
+            if missing:
+                return "assessment_incomplete", missing
+
+            member.submitted = True
+            return "ok", None
 
     def clear(self) -> None:
         with self._lock:
