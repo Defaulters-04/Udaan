@@ -53,6 +53,7 @@ class FamilyRecord:
     created_at: datetime
     expires_at: datetime
     members: list[MemberRecord] = field(default_factory=list)
+    explorer_cache: Optional[dict[str, Any]] = None
 
     @property
     def creator(self) -> MemberRecord:
