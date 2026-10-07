@@ -29,6 +29,7 @@ from engine.conflict.scores import (
     compute_composite_score,
 )
 from engine.conflict.config import DEFAULT_CONFIG as CONFLICT_CONFIG
+from engine.career_loader import check_career_data_completeness
 
 
 class RoadmapItem(BaseModel):
@@ -66,6 +67,10 @@ class RoadmapItem(BaseModel):
     scholarships: List[str] = Field(default_factory=list, description="Applicable merit/means scholarships")
     explanation: str = Field(..., description="Deterministic plain-language rationale")
 
+    # Additive completeness metadata
+    data_complete: bool = Field(default=True, description="True if verified cost, salary, and demand data exist")
+    missing_data_fields: List[str] = Field(default_factory=list, description="List of unverified/missing data sources")
+
 
 class BlockedRoadmapItem(BaseModel):
     """A career route that failed academic or financial gates, with constructive remedies."""
@@ -80,6 +85,10 @@ class BlockedRoadmapItem(BaseModel):
     cheaper_alternative_routes: List[str] = Field(
         default_factory=list, description="Cheaper pathways to same career"
     )
+
+    # Additive completeness metadata
+    data_complete: bool = Field(default=True, description="True if verified cost, salary, and demand data exist")
+    missing_data_fields: List[str] = Field(default_factory=list, description="List of unverified/missing data sources")
 
 
 class FullRoadmapReport(BaseModel):
@@ -172,6 +181,7 @@ def generate_unified_roadmap(
                 if (s_eval and s_eval.blocked_reasons)
                 else ["Academic prerequisites not met (insufficient marks or missing subjects/exams)."]
             )
+            is_comp, missing_f = check_career_data_completeness(cid)
             blocked_items.append(
                 BlockedRoadmapItem(
                     career_id=cid,
@@ -179,6 +189,8 @@ def generate_unified_roadmap(
                     failed_gates=["G_acad"],
                     reasons=reasons,
                     constructive_remedies=["Focus on qualifying entrance exams or target bridge diploma courses."],
+                    data_complete=is_comp,
+                    missing_data_fields=missing_f,
                 )
             )
             continue
@@ -197,6 +209,7 @@ def generate_unified_roadmap(
                 reasons = ["All available institutional pathways exceed family borrowing capacity or repayment burden."]
 
             alt_routes = [r.route_id for r in c_reports]
+            is_comp, missing_f = check_career_data_completeness(cid)
 
             blocked_items.append(
                 BlockedRoadmapItem(
@@ -206,6 +219,8 @@ def generate_unified_roadmap(
                     reasons=list(set(reasons)),
                     constructive_remedies=list(set(remedies)) or ["Apply for state government merit-cum-means fee waivers."],
                     cheaper_alternative_routes=alt_routes,
+                    data_complete=is_comp,
+                    missing_data_fields=missing_f,
                 )
             )
             continue
@@ -299,6 +314,7 @@ def generate_unified_roadmap(
             f"{neg_c.summary_reason}"
         )
 
+        is_comp, missing_f = check_career_data_completeness(raw["career_id"])
         final_ranked.append(
             RoadmapItem(
                 rank=rank_idx,
@@ -324,6 +340,8 @@ def generate_unified_roadmap(
                 entrance_exams=[],
                 scholarships=[],
                 explanation=exp,
+                data_complete=is_comp,
+                missing_data_fields=missing_f,
             )
         )
 
