@@ -472,21 +472,21 @@ def evaluate_conflict(
 def compute_composite_score(
     student_fit: float,
     family_viability: float,
-    market_score: float = 0.50,
+    market_score: Any = 0.50,
     career_conflict: float = 0.0,
     config: ConflictConfig = DEFAULT_CONFIG,
     w_student: float = 0.50,
     w_family: float = 0.50,
     w_market: float = 0.0,
 ) -> float:
-    """Fix 1 & 8: Deleted composite conflict multiplier. Scoring uses two scores (Fit & Family)."""
+    """Fix 1 & 8: Deleted composite conflict multiplier. Scoring uses two scores (Fit & Family). Unrounded."""
     s = _clamp(student_fit)
     f = _clamp(family_viability)
     w_total = w_student + w_family
     if w_total <= 0:
         w_total = 1.0
     base = (w_student * s + w_family * f) / w_total
-    return round(_clamp(base), 4)
+    return _clamp(base)
 
 
 def _compute_pareto_optimality(
@@ -565,18 +565,29 @@ def evaluate_negotiation_slider(
 
         s_fit = float(getattr(c, "student_fit", None) or (c.get("student_fit") if isinstance(c, dict) else 0.5))
         f_viab = float(getattr(c, "family_viability", None) or (c.get("family_viability") if isinstance(c, dict) else 0.5))
-        m_score = float(getattr(c, "market_score", None) or (c.get("market_score") if isinstance(c, dict) else 0.7))
+        
+        raw_m = getattr(c, "market_score", None) if not isinstance(c, dict) else c.get("market_score")
+        if raw_m == "NOT FOUND":
+            m_score: Any = "NOT FOUND"
+            m_is_default = True
+        elif raw_m is not None:
+            m_score = float(raw_m)
+            m_is_default = bool(getattr(c, "market_is_default", False) if not isinstance(c, dict) else c.get("market_is_default", False))
+        else:
+            m_score = "NOT FOUND"
+            m_is_default = True
+
         fin_ok = bool(getattr(c, "is_financially_viable", True) if not isinstance(c, dict) else c.get("is_financially_viable", True))
         status = getattr(c, "status", "ok") if not isinstance(c, dict) else c.get("status", "ok")
 
         # Conflict report for route (diagnosis only)
         c_report = compute_career_conflict(student, parent, c, config)
 
-        # Fix 2: Rename per-career |Fit - Family| to fit_gap
-        fit_gap_val = round(abs(s_fit - f_viab), 4)
+        # B2: Unrounded fit_gap = |Fit - Family|
+        fit_gap_val = abs(s_fit - f_viab)
 
-        # Fix 1 & 8: Ranking = lambda*Fit + (1 - lambda)*Family. No conflict penalty!
-        negotiated_score = round(_clamp(alpha * s_fit + (1.0 - alpha) * f_viab), 4)
+        # B2: Unrounded negotiated_score = alpha*Fit + (1 - alpha)*Family
+        negotiated_score = _clamp(alpha * s_fit + (1.0 - alpha) * f_viab)
 
         # Check qualification for compromise candidate pool (Fit >= threshold, Family >= threshold, fin_ok)
         qualifies_for_compromise = (s_fit >= th_student) and (f_viab >= th_family) and fin_ok and (status != "insufficient_data")
@@ -591,9 +602,10 @@ def evaluate_negotiation_slider(
             "career_id": str(career_id),
             "route_id": str(route_id),
             "career_name": str(name),
-            "student_fit": round(s_fit, 4),
-            "family_viability": round(f_viab, 4),
-            "market_score": round(m_score, 4),
+            "student_fit": s_fit,
+            "family_viability": f_viab,
+            "market_score": m_score,
+            "market_is_default": m_is_default,
             "fit_gap": fit_gap_val,
             "negotiated_score": negotiated_score,
             "qualifies_for_compromise": qualifies_for_compromise,
@@ -655,6 +667,7 @@ def evaluate_negotiation_slider(
                 student_fit=s_fit,
                 family_viability=f_viab,
                 market_score=item["market_score"],
+                market_is_default=item["market_is_default"],
                 fit_gap=gap,
                 negotiated_score=item["negotiated_score"],
                 is_in_compromise_zone=in_compromise,
@@ -669,14 +682,14 @@ def evaluate_negotiation_slider(
             )
         )
 
-    # 4. Fix 5 & 8: Sort descending by negotiated_score, with Market score as tiebreaker
-    ranked = sorted(results, key=lambda x: (x.negotiated_score, x.market_score), reverse=True)
+    # 4. B2: Tie-break in this exact order: higher score first, then career id ascending (string order)
+    ranked = sorted(results, key=lambda x: (-x.negotiated_score, str(x.career_id)))
     compromise_zone = [c for c in ranked if c.is_in_compromise_zone]
 
-    # Fix 8: Balanced pick = career maximizing min(Fit, Family)
+    # B2: Balanced pick = career maximizing min(Fit, Family), tie-break: higher score first, then career_id ascending
     viable_candidates = [c for c in results if c.is_financially_viable]
     pick_pool = viable_candidates if viable_candidates else results
-    balanced_pick = max(pick_pool, key=lambda c: (min(c.student_fit, c.family_viability), c.market_score)) if pick_pool else None
+    balanced_pick = min(pick_pool, key=lambda c: (-min(c.student_fit, c.family_viability), str(c.career_id))) if pick_pool else None
     balanced_pick_id = balanced_pick.career_id if balanced_pick else None
 
     return NegotiationResponse(

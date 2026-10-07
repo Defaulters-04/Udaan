@@ -110,6 +110,27 @@ $$\text{negotiated\_score} = \alpha \cdot F_{student} + (1 - \alpha) \cdot F_{fa
 }
 ```
 
+### 2.4 Blocked Career Contract (`blocked_careers`)
+Every blocked career output conforms to:
+```json
+{
+  "career_id": "clinical_doctor",
+  "career_name": "Clinical Doctor",
+  "block_cause": "academic",
+  "failed_gates": ["G_acad"],
+  "reasons": ["Academic prerequisites not met (insufficient marks or missing subjects/exams)."],
+  "constructive_remedies": ["Focus on qualifying entrance exams or target bridge diploma courses."],
+  "cheaper_alternative_routes": [],
+  "data_complete": true,
+  "missing_data_fields": []
+}
+```
+**`block_cause` Values & Precedence:**
+- `"academic"`: Candidate failed academic requirements/marks/subjects gates.
+- `"no_route_data"`: No educational routes or cost data exist in the database for this career.
+- `"cost"`: Pathways exist but all exceed borrowing capacity or repayment burden limits.
+- **Priority when multiple apply:** `academic` > `no_route_data` > `cost`.
+
 ---
 
 ## 3. Engine Guarantees & Constraints Summary
@@ -137,3 +158,11 @@ $$\text{negotiated\_score} = \alpha \cdot F_{student} + (1 - \alpha) \cdot F_{fa
    $$\text{Ranking} = \lambda \cdot F_{student} + (1 - \lambda) \cdot F_{family}$$
    $$\text{Balanced Pick} = \arg\max \min(F_{student}, F_{family})$$
    $$\text{Compromise Zone} = \text{Pareto Frontier}(\{c \in \text{viable} \mid F_{student}(c) \ge 0.50 \land F_{family}(c) \ge 0.50\})$$
+9. **Shared Best Route (Fix B1):**
+   `negotiate()` and `unified_roadmap()` invoke the identical shared `select_best_feasible_route()` function, ensuring route alignment across the entire PRISM engine.
+10. **Unrounded Calculations & Deterministic Tie-Breaking (Fix B2):**
+    Intermediate calculations use unrounded raw floats. Output rounding occurs solely at display/JSON serialization. Tie-breaking across rankings, Pareto, and balanced picks strictly follows: **higher score first, then career_id ascending (lexicographical string order)**.
+11. **Structured Block Cause (Fix B3):**
+    Every blocked career exposes `block_cause: Literal["academic", "no_route_data", "cost"]` with strict precedence (`academic` > `no_route_data` > `cost`).
+12. **Explicit Market Defaults (Fix B4):**
+    Market scores never hide behind a generic `50.0`. If a career has real signals in `market_signals.csv`, its tier points are evaluated; otherwise, market returns `"NOT FOUND"` with `market_is_default = true` and `confidence = "low"`, ensuring downstream scoring never treats it as numeric.

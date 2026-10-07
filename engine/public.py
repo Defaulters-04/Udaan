@@ -33,7 +33,15 @@ from engine.conflict.scores import (
     compute_composite_score,
 )
 from engine.conflict.config import DEFAULT_CONFIG as CONFLICT_CONFIG
-from engine.synthesis import generate_unified_roadmap, FullRoadmapReport, RoadmapItem, BlockedRoadmapItem
+from engine.synthesis import (
+    generate_unified_roadmap,
+    FullRoadmapReport,
+    RoadmapItem,
+    BlockedRoadmapItem,
+    select_best_feasible_route,
+    get_market_signal_for_career,
+)
+from engine.config import DEFAULT_CONFIG as MASTER_CONFIG
 from engine.career_loader import (
     load_seed_careers_metadata,
     load_route_costs,
@@ -204,25 +212,84 @@ def per_career_scores(
     for cid in all_cids:
         s_res = s_evals.get(cid)
         c_reports = routes_by_career.get(cid, [])
-        feasible_routes = [r for r in c_reports if r.g_fin == 1]
+
+        # B1: Shared route choice
+        best_r = select_best_feasible_route(c_reports)
+        if best_r is None and c_reports:
+            # Fallback to first report for structural info if non-viable
+            fallback_r = c_reports[0]
+        else:
+            fallback_r = best_r
 
         g_acad = s_res.G_acad if s_res else 1
-        g_fin = 1 if feasible_routes else 0
+        g_fin = 1 if best_r is not None else 0
         is_viable = (g_acad == 1) and (g_fin == 1)
 
+        # B3: Structured block_cause: academic > no_route_data > cost
+        if not is_viable:
+            if g_acad == 0:
+                block_cause = "academic"
+            elif not c_reports:
+                block_cause = "no_route_data"
+            else:
+                block_cause = "cost"
+        else:
+            block_cause = None
+
         f_student = (s_res.F_student / 100.0) if s_res else 0.5
-        best_r = max(feasible_routes, key=lambda x: x.f_family) if feasible_routes else (c_reports[0] if c_reports else None)
         f_family = (best_r.f_family / 100.0) if best_r else 0.0
 
+        # B4: Market score lookup: real catalogue -> real signals -> NOT FOUND
         m_rep = m_evals.get(cid)
-        f_market = (m_rep.market_score / 100.0) if m_rep else 0.5
+        if m_rep:
+            f_market = (m_rep.market_score / 100.0) if hasattr(m_rep, "market_score") else (m_rep.F_market / 100.0)
+            market_score_val: Any = m_rep.market_score if hasattr(m_rep, "market_score") else m_rep.F_market
+            market_is_default = False
+            m_conf = m_rep.overall_confidence
+            market_tier = {
+                "demand_tier": m_rep.demand_tier,
+                "velocity_tier": m_rep.velocity_tier,
+                "disruption_tier": m_rep.disruption_tier,
+                "tier_points": m_rep.market_tier_points,
+                "confidence": m_rep.overall_confidence,
+                "evidence_level": m_rep.evidence_level,
+            }
+        else:
+            sig = get_market_signal_for_career(cid)
+            if sig:
+                d_dir = sig["demand_direction"]
+                if d_dir == "GROWING":
+                    raw_pts = MASTER_CONFIG.market.market_signals_growing_points
+                    tier_str = "rising"
+                elif d_dir in ("STABLE / MIXED", "STABLE"):
+                    raw_pts = MASTER_CONFIG.market.market_signals_stable_points
+                    tier_str = "stable"
+                else:
+                    raw_pts = MASTER_CONFIG.market.market_signals_declining_points
+                    tier_str = "declining"
+                f_market = raw_pts / 100.0
+                market_score_val = raw_pts
+                market_is_default = False
+                m_conf = sig["confidence"]
+                market_tier = {
+                    "demand_tier": tier_str,
+                    "velocity_tier": tier_str,
+                    "disruption_tier": "medium",
+                    "tier_points": raw_pts,
+                    "confidence": m_conf,
+                    "evidence_level": "signals",
+                }
+            else:
+                f_market = 0.50
+                market_score_val = "NOT FOUND"
+                market_is_default = True
+                m_conf = "low"
+                market_tier = None
 
-        target_route = route_map.get((cid, best_r.route_id)) if best_r else None
+        target_route = route_map.get((cid, fallback_r.route_id)) if fallback_r else None
 
-        # Fit-Family gap (Fix 2: per-career |Fit - Family|)
-        fit_gap = round(abs(f_student - f_family) * 100.0, 1)
-
-        # Composite score (Fix 1: conflict does not penalize composite score)
+        # B2: Unrounded fit_gap and composite score inside calculations
+        fit_gap = abs(f_student - f_family) * 100.0
         comp = compute_composite_score(f_student, f_family, f_market, fit_gap / 100.0, CONFLICT_CONFIG)
 
         is_complete, missing_fields = check_career_data_completeness(cid)
@@ -239,35 +306,24 @@ def per_career_scores(
         # Data confidence (Fix 4)
         conf_order = {"low": 0, "medium": 1, "high": 2}
         s_conf = getattr(s_res, "data_confidence", "high")
-        p_conf = getattr(best_r, "data_confidence", "high") if best_r else "low"
-        combined_conf = min([s_conf, p_conf], key=lambda x: conf_order.get(x, 1))
+        p_conf = getattr(fallback_r, "data_confidence", "high") if fallback_r else "low"
+        combined_conf = min([s_conf, p_conf, m_conf], key=lambda x: conf_order.get(x, 1))
 
         # Financial solver status (Fix 4)
         financial_status = getattr(best_r, "status", "normal") if best_r else "insufficient_data"
-
-        # Market tiers (Fix 5)
-        market_tier = (
-            {
-                "demand_tier": m_rep.demand_tier,
-                "velocity_tier": m_rep.velocity_tier,
-                "disruption_tier": m_rep.disruption_tier,
-                "tier_points": m_rep.market_tier_points,
-                "confidence": m_rep.overall_confidence,
-                "evidence_level": m_rep.evidence_level,
-            }
-            if m_rep
-            else None
-        )
 
         results.append({
             "career_id": cid,
             "career_name": c_name,
             "domain_id": normalize_category_to_domain_id(domain_id),
+            "best_route_id": best_r.route_id if best_r else None,
+            "block_cause": block_cause,
             "student_fit": round(f_student * 100.0, 1),
             "family_viability": round(f_family * 100.0, 1),
-            "market_score": round(f_market * 100.0, 1),
-            "fit_gap": fit_gap,
-            "career_conflict": fit_gap,  # alias for backward compat
+            "market_score": market_score_val if market_score_val == "NOT FOUND" else round(float(market_score_val), 1),
+            "market_is_default": market_is_default,
+            "fit_gap": round(fit_gap, 1),
+            "career_conflict": round(fit_gap, 1),  # alias for backward compat
             "composite_score": round(comp * 100.0, 1),
             "g_acad": g_acad,
             "g_fin": g_fin,
@@ -280,6 +336,10 @@ def per_career_scores(
             "data_confidence": combined_conf,
             "financial_status": financial_status,
             "market_tier": market_tier,
+            # B2: Raw unrounded values preserved internally for negotiate()
+            "_f_student_raw": f_student,
+            "_f_family_raw": f_family,
+            "_f_market_raw": f_market,
         })
 
     return results
@@ -322,18 +382,22 @@ def negotiate(
     scored_inputs = []
     for s in viable:
         cid = s["career_id"]
-        # Find first matching route
-        matching_routes = [r for r in route_list if r.career_id == cid]
-        r_inst = matching_routes[0] if matching_routes else None
+        # B1: Use the exact same chosen best route as unified_roadmap
+        best_rid = s.get("best_route_id")
+        r_inst = route_map.get((cid, best_rid)) if best_rid else None
+        if r_inst is None:
+            matching_routes = [r for r in route_list if r.career_id == cid]
+            r_inst = matching_routes[0] if matching_routes else None
 
         scored_inputs.append(
             ScoredCareerInput(
                 career_id=cid,
-                route_id=r_inst.route_id if r_inst else f"{cid}_route",
+                route_id=best_rid if best_rid else (r_inst.route_id if r_inst else f"{cid}_route"),
                 career_name=s["career_name"],
-                student_fit=s["student_fit"] / 100.0,
-                family_viability=s["family_viability"] / 100.0,
-                market_score=s["market_score"] / 100.0,
+                student_fit=s.get("_f_student_raw", s["student_fit"] / 100.0),
+                family_viability=s.get("_f_family_raw", s["family_viability"] / 100.0),
+                market_score=s["market_score"] if s["market_score"] == "NOT FOUND" else s.get("_f_market_raw", 0.50),
+                market_is_default=s.get("market_is_default", False),
                 career_risk=getattr(r_inst, "career_risk", 0.5),
                 domain=s["domain_id"],
                 relocation_need=getattr(r_inst, "relocation_need", 0.5),
@@ -355,9 +419,13 @@ def negotiate(
         {
             "rank": idx,
             "career_id": c.career_id,
+            "route_id": c.route_id,
+            "best_route_id": c.route_id,
             "negotiated_score": round(c.negotiated_score * 100.0, 1),
             "student_fit": round(c.student_fit * 100.0, 1),
             "family_viability": round(c.family_viability * 100.0, 1),
+            "market_score": c.market_score if c.market_score == "NOT FOUND" else round(c.market_score * 100.0, 1),
+            "market_is_default": getattr(c, "market_is_default", False),
             "fit_gap": round(c.fit_gap * 100.0, 1),
             "stretch": getattr(c, "stretch", False),
             "stretch_reasons": getattr(c, "stretch_reasons", []),

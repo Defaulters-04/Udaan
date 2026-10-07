@@ -31,6 +31,73 @@ from engine.conflict.scores import (
 )
 from engine.conflict.config import DEFAULT_CONFIG as CONFLICT_CONFIG
 from engine.career_loader import check_career_data_completeness
+from engine.config import DEFAULT_CONFIG as MASTER_CONFIG
+
+
+# ---------------------------------------------------------------------------
+# B1 & B4: Shared Route Selector and Verified Market Signal Loader
+# ---------------------------------------------------------------------------
+def select_best_feasible_route(reports: List[Any]) -> Optional[Any]:
+    """Select the best feasible route report for a career.
+
+    Shared rule between unified_roadmap and negotiate (Fix B1):
+    1. Filter to reports where g_fin == 1.
+    2. Highest unrounded f_family score first.
+    3. Deterministic tie-breaker: route_id ascending (lexicographical string order).
+    """
+    feasible = [r for r in reports if getattr(r, "g_fin", 0) == 1]
+    if not feasible:
+        return None
+    return min(feasible, key=lambda r: (-float(getattr(r, "f_family", 0.0)), str(getattr(r, "route_id", ""))))
+
+
+_MARKET_SIGNALS_CACHE: Optional[Dict[str, Dict[str, Any]]] = None
+
+
+def get_market_signal_for_career(career_id: str) -> Optional[Dict[str, Any]]:
+    """Look up verified market signals from market_signals.csv / demand_coverage.csv.
+
+    Returns dict with (demand_direction, confidence) or None if no signals exist.
+    """
+    global _MARKET_SIGNALS_CACHE
+    if _MARKET_SIGNALS_CACHE is None:
+        from pathlib import Path
+        import csv
+
+        cache: Dict[str, Dict[str, Any]] = {}
+        processed_dir = Path(__file__).resolve().parents[1] / "data_pipeline" / "processed"
+        ms_file = processed_dir / "market_signals.csv"
+        dc_file = processed_dir / "demand_coverage.csv"
+
+        cids_in_market_signals = set()
+        if ms_file.exists():
+            try:
+                with open(ms_file, "r", encoding="utf-8") as f:
+                    for row in csv.DictReader(f):
+                        cid = row.get("career_id", "").strip()
+                        if cid:
+                            cids_in_market_signals.add(cid)
+            except Exception:
+                pass
+
+        if dc_file.exists():
+            try:
+                with open(dc_file, "r", encoding="utf-8") as f:
+                    for row in csv.DictReader(f):
+                        cid = row.get("career_id", "").strip()
+                        if cid in cids_in_market_signals:
+                            direction = row.get("demand_direction", "").strip()
+                            conf = row.get("confidence_status", "").strip().lower()
+                            if direction and direction != "INSUFFICIENT_EVIDENCE":
+                                cache[cid] = {
+                                    "demand_direction": direction,
+                                    "confidence": conf if conf in ("high", "medium", "low") else "medium",
+                                }
+            except Exception:
+                pass
+        _MARKET_SIGNALS_CACHE = cache
+
+    return _MARKET_SIGNALS_CACHE.get(career_id)
 
 
 class RoadmapItem(BaseModel):
@@ -45,7 +112,8 @@ class RoadmapItem(BaseModel):
     # Component Scores [0, 100] or [0, 1]
     student_fit: float = Field(..., description="Student Fit F_student (0-100)")
     family_viability: float = Field(..., description="Family Viability F_family (0-100)")
-    market_score: float = Field(..., description="Job Market Viability F_market (0-100)")
+    market_score: Any = Field(..., description="Job Market Viability F_market (0-100) or 'NOT FOUND'")
+    market_is_default: bool = Field(default=False, description="True if market score defaulted or NOT FOUND")
     fit_gap: float = Field(default=0.0, description="Per-career |Fit - Family| gap (0-100) (Fix 2)")
 
     @property
@@ -89,6 +157,7 @@ class BlockedRoadmapItem(BaseModel):
 
     career_id: str
     career_name: str
+    block_cause: str = Field(..., description="Structured block cause: 'academic', 'no_route_data', or 'cost'")
     failed_gates: List[str] = Field(..., description="Failed gates (G_fin, G_acad)")
     reasons: List[str] = Field(..., description="Diagnostic reasons why pathway is blocked")
     constructive_remedies: List[str] = Field(
@@ -187,52 +256,51 @@ def generate_unified_roadmap(
         # Check Academic Gate
         g_acad_pass = (s_eval.G_acad == 1 and not s_eval.blocked) if s_eval else True
 
-        # Find best financially feasible route
-        feasible_routes = [r for r in c_reports if r.g_fin == 1]
+        # B1: Shared route choice
+        best_route_report = select_best_feasible_route(c_reports)
 
-        if not g_acad_pass:
-            reasons = (
-                s_eval.blocked_reasons
-                if (s_eval and s_eval.blocked_reasons)
-                else ["Academic prerequisites not met (insufficient marks or missing subjects/exams)."]
-            )
-            is_comp, missing_f = check_career_data_completeness(cid)
-            blocked_items.append(
-                BlockedRoadmapItem(
-                    career_id=cid,
-                    career_name=c_name,
-                    failed_gates=["G_acad"],
-                    reasons=reasons,
-                    constructive_remedies=["Focus on qualifying entrance exams or target bridge diploma courses."],
-                    data_complete=is_comp,
-                    missing_data_fields=missing_f,
+        # B3: Structured block_cause check with strict priority: academic > no_route_data > cost
+        if not g_acad_pass or not best_route_report:
+            if not g_acad_pass:
+                block_cause = "academic"
+                failed_gates = ["G_acad"]
+                reasons = (
+                    s_eval.blocked_reasons
+                    if (s_eval and s_eval.blocked_reasons)
+                    else ["Academic prerequisites not met (insufficient marks or missing subjects/exams)."]
                 )
-            )
-            continue
+                remedies = ["Focus on qualifying entrance exams or target bridge diploma courses."]
+                alt_routes = [r.route_id for r in c_reports]
+            elif not c_reports:
+                block_cause = "no_route_data"
+                failed_gates = ["G_fin"]
+                reasons = ["No institutional pathways or route cost data available for this career."]
+                remedies = ["Identify educational pathways and accredited institutions offering this curriculum."]
+                alt_routes = []
+            else:
+                block_cause = "cost"
+                failed_gates = ["G_fin"]
+                blocked_infos = [b for b in parent_eval.blocked_list if b.career_id == cid]
+                reasons = []
+                remedies = []
+                for b in blocked_infos:
+                    reasons.extend(b.block_reasons)
+                    if b.suggestion:
+                        remedies.append(b.suggestion)
+                if not reasons:
+                    reasons = ["All available institutional pathways exceed family borrowing capacity or repayment burden."]
+                remedies = remedies or ["Apply for state government merit-cum-means fee waivers."]
+                alt_routes = [r.route_id for r in c_reports]
 
-        if not feasible_routes:
-            # All routes for this career failed G_fin
-            blocked_infos = [b for b in parent_eval.blocked_list if b.career_id == cid]
-            reasons = []
-            remedies = []
-            for b in blocked_infos:
-                reasons.extend(b.block_reasons)
-                if b.suggestion:
-                    remedies.append(b.suggestion)
-
-            if not reasons:
-                reasons = ["All available institutional pathways exceed family borrowing capacity or repayment burden."]
-
-            alt_routes = [r.route_id for r in c_reports]
             is_comp, missing_f = check_career_data_completeness(cid)
-
             blocked_items.append(
                 BlockedRoadmapItem(
                     career_id=cid,
                     career_name=c_name,
-                    failed_gates=["G_fin"],
+                    block_cause=block_cause,
+                    failed_gates=failed_gates,
                     reasons=list(set(reasons)),
-                    constructive_remedies=list(set(remedies)) or ["Apply for state government merit-cum-means fee waivers."],
+                    constructive_remedies=list(set(remedies)),
                     cheaper_alternative_routes=alt_routes,
                     data_complete=is_comp,
                     missing_data_fields=missing_f,
@@ -240,19 +308,45 @@ def generate_unified_roadmap(
             )
             continue
 
-        # Choose the best feasible route (highest F_family)
-        best_route_report = max(feasible_routes, key=lambda x: x.f_family)
         target_route = routes_dict.get((cid, best_route_report.route_id))
 
-        f_student_val = (s_eval.F_student if s_eval else 60.0) / 100.0  # normalized to [0, 1]
-        f_family_val = best_route_report.f_family / 100.0  # normalized to [0, 1]
-        f_market_val = (m_eval.F_market if m_eval else 70.0) / 100.0  # normalized to [0, 1]
+        f_student_val = (s_eval.F_student if s_eval else 60.0) / 100.0  # unrounded [0, 1]
+        f_family_val = best_route_report.f_family / 100.0  # unrounded [0, 1]
 
-        # Fix 2: Fit gap = |Fit - Family|
-        fit_gap_val = round(abs(f_student_val - f_family_val) * 100.0, 1)
+        # B4: Market score lookup: real catalogue -> real signals -> NOT FOUND
+        if m_eval:
+            f_market_val = m_eval.F_market / 100.0
+            market_score_val: Any = m_eval.F_market
+            market_is_default = False
+            m_conf = m_eval.overall_confidence
+            m_tier = getattr(m_eval, "velocity_tier", "stable")
+        else:
+            sig = get_market_signal_for_career(cid)
+            if sig:
+                d_dir = sig["demand_direction"]
+                if d_dir == "GROWING":
+                    raw_pts = MASTER_CONFIG.market.market_signals_growing_points
+                    m_tier = "rising"
+                elif d_dir in ("STABLE / MIXED", "STABLE"):
+                    raw_pts = MASTER_CONFIG.market.market_signals_stable_points
+                    m_tier = "stable"
+                else:
+                    raw_pts = MASTER_CONFIG.market.market_signals_declining_points
+                    m_tier = "declining"
+                f_market_val = raw_pts / 100.0
+                market_score_val = raw_pts
+                market_is_default = False
+                m_conf = sig["confidence"]
+            else:
+                f_market_val = 0.50
+                market_score_val = "NOT FOUND"
+                market_is_default = True
+                m_conf = "low"
+                m_tier = "stable"
 
-        # Fix 1 & 8: Scoring uses two scores (Fit & Family). No conflict penalty!
-        comp_score_val = round((0.5 * f_student_val + 0.5 * f_family_val) * 100.0, 1)
+        # B2: Unrounded intermediate calculations
+        fit_gap_val = abs(f_student_val - f_family_val) * 100.0
+        comp_score_val = (0.5 * f_student_val + 0.5 * f_family_val) * 100.0
 
         strengths_list = [item.get("trait", str(item)) if isinstance(item, dict) else str(item) for item in s_eval.strengths] if (s_eval and s_eval.strengths) else []
         weaknesses_list = [item.get("trait", str(item)) if isinstance(item, dict) else str(item) for item in s_eval.weaknesses] if (s_eval and s_eval.weaknesses) else []
@@ -264,24 +358,22 @@ def generate_unified_roadmap(
         # Fix 4: Data confidence
         data_conf = getattr(best_route_report, "data_confidence", "high")
 
-        # Fix 5: Market tier badge
-        m_tier = getattr(m_eval, "velocity_tier", "stable") if m_eval else "stable"
-
         feasible_items.append({
             "career_id": cid,
             "career_name": c_name,
             "domain": getattr(target_route, "domain", "General"),
             "best_route_id": best_route_report.route_id,
-            "student_fit": round(f_student_val * 100.0, 1),
-            "family_viability": round(f_family_val * 100.0, 1),
-            "market_score": round(f_market_val * 100.0, 1),
+            "student_fit": f_student_val * 100.0,
+            "family_viability": f_family_val * 100.0,
+            "market_score": market_score_val,
+            "market_is_default": market_is_default,
             "fit_gap": fit_gap_val,
             "composite_score": comp_score_val,
             "starting_salary": getattr(target_route, "starting_salary", 0.0),
             "net_cost": best_route_report.cost_net,
             "monthly_emi": best_route_report.emi,
-            "repayment_burden": round(best_route_report.repayment_burden, 4),
-            "payback_period_years": round(best_route_report.payback_years, 1),
+            "repayment_burden": best_route_report.repayment_burden,
+            "payback_period_years": best_route_report.payback_years,
             "swot_strengths": strengths_list,
             "swot_weaknesses": weaknesses_list,
             "target_route": target_route,
@@ -303,7 +395,8 @@ def generate_unified_roadmap(
             career_name=item["career_name"],
             student_fit=item["f_student_norm"],
             family_viability=item["f_family_norm"],
-            market_score=item["f_market_norm"],
+            market_score=item["f_market_norm"] if item["market_score"] != "NOT FOUND" else "NOT FOUND",
+            market_is_default=item["market_is_default"],
             career_risk=getattr(item["target_route"], "career_risk", 0.5),
             domain=item["domain"],
             relocation_need=getattr(item["target_route"], "relocation_need", 0.5),
@@ -322,7 +415,7 @@ def generate_unified_roadmap(
         config=CONFLICT_CONFIG,
     )
 
-    # Build final ranked items
+    # Build final ranked items with deterministic order and final display rounding
     final_ranked: List[RoadmapItem] = []
     for rank_idx, neg_c in enumerate(neg_res.ranked_careers, 1):
         raw = next(item for item in feasible_items if item["career_id"] == neg_c.career_id)
@@ -343,11 +436,12 @@ def generate_unified_roadmap(
                 career_name=raw["career_name"],
                 domain=raw["domain"],
                 best_route_id=raw["best_route_id"],
-                student_fit=raw["student_fit"],
-                family_viability=raw["family_viability"],
-                market_score=raw["market_score"],
-                fit_gap=raw["fit_gap"],
-                composite_score=raw["composite_score"],
+                student_fit=round(raw["student_fit"], 1),
+                family_viability=round(raw["family_viability"], 1),
+                market_score=raw["market_score"] if raw["market_score"] == "NOT FOUND" else round(float(raw["market_score"]), 1),
+                market_is_default=raw["market_is_default"],
+                fit_gap=round(raw["fit_gap"], 1),
+                composite_score=round(raw["composite_score"], 1),
                 negotiated_score=round(neg_c.negotiated_score * 100.0, 1),
                 is_in_compromise_zone=neg_c.is_in_compromise_zone,
                 is_pareto_optimal=neg_c.is_pareto_optimal,
@@ -358,8 +452,8 @@ def generate_unified_roadmap(
                 starting_salary=raw["starting_salary"],
                 net_cost=raw["net_cost"],
                 monthly_emi=raw["monthly_emi"],
-                repayment_burden=raw["repayment_burden"],
-                payback_period_years=raw["payback_period_years"],
+                repayment_burden=round(raw["repayment_burden"], 4),
+                payback_period_years=round(raw["payback_period_years"], 1),
                 swot_strengths=raw["swot_strengths"],
                 swot_weaknesses=raw["swot_weaknesses"],
                 entrance_exams=[],
