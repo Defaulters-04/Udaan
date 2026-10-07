@@ -47,6 +47,30 @@ export interface Translations {
   page3Next: string;
   page4Next: string;
   joining: string;
+
+  // Page 3 Assessment strings
+  questionOf: string;
+  back: string;
+  skip: string;
+  required: string;
+  saving: string;
+  saved: string;
+  saveFailed: string;
+  sectionDone: string;
+  nextUp: string;
+  reviewTitle: string;
+  reviewBody: string;
+  edit: string;
+  submit: string;
+  submitting: string;
+  doneTitle: string;
+  waitingParentDone: string;
+  bothDone: string;
+  compare: string;
+  loadFailed: string;
+  retry: string;
+  page5Next: string;
+  answeredOf: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -97,6 +121,30 @@ export const translations: Record<Language, Translations> = {
     page3Next: "Page 3 comes next",
     page4Next: "Page 4 comes next",
     joining: "Joining…",
+
+    // Page 3 Assessment
+    questionOf: "{n} of {total}",
+    back: "Back",
+    skip: "Skip",
+    required: "Please answer this to continue.",
+    saving: "Saving…",
+    saved: "Saved",
+    saveFailed: "Couldn't save. Retrying…",
+    sectionDone: "{section} done.",
+    nextUp: "Next: {section}",
+    reviewTitle: "Almost done",
+    reviewBody: "Check your answers, then submit. You can change any of them.",
+    edit: "Edit",
+    submit: "Submit",
+    submitting: "Submitting…",
+    doneTitle: "Thanks, {name}. You're done.",
+    waitingParentDone: "Waiting for your parent to finish…",
+    bothDone: "You're both done.",
+    compare: "Compare answers",
+    loadFailed: "Couldn't load the questions.",
+    retry: "Try again",
+    page5Next: "Page 5 comes next",
+    answeredOf: "{answered} of {total}",
   },
   hi: {
     tagline: "ऐसा करियर, जिस पर पूरा परिवार सहमत हो।",
@@ -145,6 +193,30 @@ export const translations: Record<Language, Translations> = {
     page3Next: "पेज 3 आगे आएगा",
     page4Next: "पेज 4 आगे आएगा",
     joining: "जुड़ रहे हैं…",
+
+    // Page 3 Assessment
+    questionOf: "{n} / {total}",
+    back: "वापस",
+    skip: "छोड़ें",
+    required: "आगे बढ़ने के लिए इसका जवाब दें।",
+    saving: "सेव हो रहा है…",
+    saved: "सेव हो गया",
+    saveFailed: "सेव नहीं हो पाया। दोबारा कोशिश हो रही है…",
+    sectionDone: "{section} पूरा हुआ।",
+    nextUp: "आगे: {section}",
+    reviewTitle: "बस थोड़ा और",
+    reviewBody: "अपने जवाब देख लें, फिर सबमिट करें। आप कोई भी जवाब बदल सकते हैं।",
+    edit: "बदलें",
+    submit: "सबमिट करें",
+    submitting: "सबमिट हो रहा है…",
+    doneTitle: "धन्यवाद {name}। आपका हिस्सा पूरा हुआ।",
+    waitingParentDone: "आपके अभिभावक के पूरा करने का इंतज़ार है…",
+    bothDone: "आप दोनों का हिस्सा पूरा हुआ।",
+    compare: "जवाब मिलाकर देखें",
+    loadFailed: "प्रश्न लोड नहीं हो पाए।",
+    retry: "फिर कोशिश करें",
+    page5Next: "पेज 5 आगे आएगा",
+    answeredOf: "{answered} / {total}",
   },
 };
 
