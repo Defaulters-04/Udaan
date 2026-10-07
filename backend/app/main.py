@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import settings
+from app.routers.families import router as families_router
 from app.routers.health import router as health_router
 
 
@@ -21,7 +22,8 @@ def create_app() -> FastAPI:
         allow_origins=settings.cors_origins_list,
         allow_credentials=True,
         allow_methods=["*"],
-        allow_headers=["*"],
+        allow_headers=["*", "X-Member-Token"],
+        expose_headers=["*"],
     )
 
     @app.exception_handler(RequestValidationError)
@@ -84,6 +86,7 @@ def create_app() -> FastAPI:
         )
 
     app.include_router(health_router)
+    app.include_router(families_router)
 
     return app
 

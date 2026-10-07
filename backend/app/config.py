@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
+    family_ttl_minutes: int = 120
 
     model_config = SettingsConfigDict(
         env_file=".env",
