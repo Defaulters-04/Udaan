@@ -146,6 +146,48 @@ export interface SubmitAssessmentResponse {
   done?: boolean;
 }
 
+// ==========================================
+// Mirror (Page 5: Family Comparison) Types
+// ==========================================
+export interface MirrorStep {
+  id: string;
+  label: LocalizedText;
+}
+
+export interface MirrorOption {
+  id: string;
+  label: LocalizedText;
+}
+
+export interface MirrorDimensionBase {
+  id: 'risk' | 'domain' | 'relocation' | 'time' | string;
+  gap: number;
+  weight: number;
+  kind: 'scale' | 'picks';
+}
+
+export interface MirrorScaleDimension extends MirrorDimensionBase {
+  kind: 'scale';
+  steps: MirrorStep[];
+  student_step: number;
+  parent_step: number;
+}
+
+export interface MirrorPicksDimension extends MirrorDimensionBase {
+  kind: 'picks';
+  options: MirrorOption[];
+  student_picks: string[];
+  parent_picks: string[];
+  parent_guess: string | null;
+}
+
+export type MirrorDimension = MirrorScaleDimension | MirrorPicksDimension;
+
+export interface MirrorResponse {
+  conflict_index: number;
+  dimensions: MirrorDimension[];
+}
+
 const getApiBaseUrl = (): string => {
   return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 };
@@ -1848,3 +1890,168 @@ export async function submitIntake(
     throw err;
   }
 }
+
+// ==========================================
+// Mirror (Page 5) API Functions & Mock Data
+// ==========================================
+
+// Clearly marked mock response for Family Mirror per API contract
+export const MOCK_MIRROR_RESPONSE: MirrorResponse = {
+  conflict_index: 16.5,
+  dimensions: [
+    {
+      id: 'risk',
+      gap: 0.33,
+      weight: 0.25,
+      kind: 'scale',
+      steps: [
+        {
+          id: 'risk_0',
+          label: {
+            en: 'Chose the guaranteed offer every time',
+            hi: 'हर बार पक्की कमाई वाला विकल्प चुना',
+          },
+        },
+        {
+          id: 'risk_1',
+          label: {
+            en: 'Chose the gamble once',
+            hi: 'एक बार जोखिम वाला विकल्प चुना',
+          },
+        },
+        {
+          id: 'risk_2',
+          label: {
+            en: 'Chose the gamble twice',
+            hi: 'दो बार जोखिम वाला विकल्प चुना',
+          },
+        },
+        {
+          id: 'risk_3',
+          label: {
+            en: 'Chose the gamble every time',
+            hi: 'हर बार जोखिम वाला विकल्प चुना',
+          },
+        },
+      ],
+      student_step: 1,
+      parent_step: 0,
+    },
+    {
+      id: 'domain',
+      gap: 0.0,
+      weight: 0.25,
+      kind: 'picks',
+      options: CANONICAL_CAREER_DOMAIN_OPTIONS,
+      student_picks: ['tech_engineering'],
+      parent_picks: ['tech_engineering'],
+      parent_guess: 'tech_engineering',
+    },
+    {
+      id: 'relocation',
+      gap: 0.33,
+      weight: 0.25,
+      kind: 'scale',
+      steps: [
+        {
+          id: 'home_city',
+          label: {
+            en: 'Within our home city / town',
+            hi: 'अपने शहर / कस्बे में',
+          },
+        },
+        {
+          id: 'same_state',
+          label: {
+            en: 'Within our state',
+            hi: 'अपने राज्य में',
+          },
+        },
+        {
+          id: 'anywhere_india',
+          label: {
+            en: 'Anywhere in India',
+            hi: 'भारत में कहीं भी',
+          },
+        },
+        {
+          id: 'abroad_ok',
+          label: {
+            en: 'Abroad / International is fine too',
+            hi: 'विदेश जाने में भी कोई आपत्ति नहीं',
+          },
+        },
+      ],
+      student_step: 0,
+      parent_step: 1,
+    },
+    {
+      id: 'time',
+      gap: 0.0,
+      weight: 0.25,
+      kind: 'scale',
+      steps: [
+        {
+          id: 'within_4y',
+          label: {
+            en: 'About 4 years (e.g., a regular degree, B.Tech or a diploma)',
+            hi: 'लगभग 4 साल (जैसे सामान्य डिग्री, बी.टेक या डिप्लोमा)',
+          },
+        },
+        {
+          id: 'five_six',
+          label: {
+            en: 'About 5 to 6 years (e.g., MBBS, 5-year law, or a degree plus a Master\'s)',
+            hi: 'लगभग 5 से 6 साल (जैसे एमबीबीएस, 5 साल का लॉ, या डिग्री के बाद मास्टर्स)',
+          },
+        },
+        {
+          id: 'seven_plus',
+          label: {
+            en: '7 years or more is fine (e.g., MD/MS or a PhD)',
+            hi: '7 साल या उससे ज़्यादा भी चलेगा (जैसे एमडी/एमएस या पीएचडी)',
+          },
+        },
+      ],
+      student_step: 0,
+      parent_step: 0,
+    },
+  ],
+};
+
+export async function getMirror(
+  familyCode: string,
+  token: string
+): Promise<MirrorResponse> {
+  const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
+
+  if (isMockEnabled()) {
+    if (cleanCode === 'NOTFND') {
+      throw new ApiError('family_not_found', 'Family not found', 404);
+    }
+    const map = getMockFamilies();
+    const existing = map[cleanCode];
+    if (existing && (!existing.studentSubmitted || !existing.parentSubmitted)) {
+      throw new ApiError('mirror_not_ready', 'Both members must submit before viewing mirror', 409);
+    }
+    return MOCK_MIRROR_RESPONSE;
+  }
+
+  try {
+    return await request<MirrorResponse>(
+      `/families/${encodeURIComponent(cleanCode)}/mirror`,
+      {
+        method: 'GET',
+        headers: {
+          'X-Member-Token': token,
+        },
+      }
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      return MOCK_MIRROR_RESPONSE;
+    }
+    throw err;
+  }
+}
+

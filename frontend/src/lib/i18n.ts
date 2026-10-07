@@ -81,6 +81,50 @@ export interface Translations {
   maxSelectHint: string;
   privacyIntake: string;
   waitingStudentDone: string;
+
+  // Page 5 Mirror strings
+  mirrorTitle: string;
+  mirrorSubtitle: string;
+  gaugeOutOf100: string;
+  gaugeCaption: string;
+  gaugeAria: string;
+  diffPercent: string;
+  weightPercent: string;
+  chipStudent: string;
+  chipParent: string;
+  chipBoth: string;
+  mirrorWaitingTitle: string;
+  mirrorWaitingDesc: string;
+  mirrorWaitingBadge: string;
+  mirrorErrorTitle: string;
+  mirrorErrorDesc: string;
+  mirrorFooterNote: string;
+
+  // Scale dimension titles
+  dim_risk: string;
+  dim_domain: string;
+  dim_relocation: string;
+  dim_time: string;
+
+  // Scale templates
+  risk_same: string;
+  risk_studentHigher: string;
+  risk_parentHigher: string;
+  relocation_same: string;
+  relocation_studentHigher: string;
+  relocation_parentHigher: string;
+  time_same: string;
+  time_studentHigher: string;
+  time_parentHigher: string;
+  scale_same: string;
+  scale_studentHigher: string;
+  scale_parentHigher: string;
+
+  // Picks templates
+  domain_shared: string;
+  domain_none: string;
+  domain_guessMatch: string;
+  domain_guessMismatch: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -165,6 +209,50 @@ export const translations: Record<Language, Translations> = {
     maxSelectHint: "Choose up to {n}.",
     privacyIntake: "Your exact money answers are never shown to your child.",
     waitingStudentDone: "Waiting for your child to finish…",
+
+    // Page 5 Mirror
+    mirrorTitle: "Family Mirror",
+    mirrorSubtitle: "Where your answers align and where you see things differently.",
+    gaugeOutOf100: "out of 100",
+    gaugeCaption: "How far apart the two sets of answers are, averaged across the areas below.",
+    gaugeAria: "Conflict index: {score} out of 100",
+    diffPercent: "Difference: {n}%",
+    weightPercent: "Counts for {n}% of the score",
+    chipStudent: "Student",
+    chipParent: "Parent",
+    chipBoth: "Both",
+    mirrorWaitingTitle: "Waiting for {partner} to finish…",
+    mirrorWaitingDesc: "Your answers are saved. Once {partner} submits, your Family Mirror will appear here automatically.",
+    mirrorWaitingBadge: "Checking automatically…",
+    mirrorErrorTitle: "Couldn't load Family Mirror",
+    mirrorErrorDesc: "Please check your connection and try again.",
+    mirrorFooterNote: "This is a screening tool, not a diagnosis. The job-offer amounts are illustrative.",
+
+    dim_risk: "Risk tolerance",
+    dim_domain: "Career areas of interest",
+    dim_relocation: "Relocation willingness",
+    dim_time: "Time before earning",
+
+    risk_same: "{student} and {parent} have the same comfort with risk.",
+    risk_studentHigher: "{student} is more comfortable taking risks than {parent}.",
+    risk_parentHigher: "{parent} is more comfortable taking risks than {student}.",
+
+    relocation_same: "{student} and {parent} agree on relocation distance.",
+    relocation_studentHigher: "{student} is more open to moving far than {parent}.",
+    relocation_parentHigher: "{parent} is more open to moving far than {student}.",
+
+    time_same: "{student} and {parent} agree on the time to start earning.",
+    time_studentHigher: "{student} is okay waiting longer to start earning than {parent}.",
+    time_parentHigher: "{parent} is okay waiting longer to start earning than {student}.",
+
+    scale_same: "{student} and {parent} are on the same step.",
+    scale_studentHigher: "{student} is on a higher step than {parent}.",
+    scale_parentHigher: "{parent} is on a higher step than {student}.",
+
+    domain_shared: "{student} and {parent} both picked {domains}.",
+    domain_none: "No domain appears in both lists.",
+    domain_guessMatch: "{parent} guessed {domain}, which is one of {student}'s picks.",
+    domain_guessMismatch: "{parent} guessed {domain}; {student} picked {list}.",
   },
   hi: {
     tagline: "ऐसा करियर, जिस पर पूरा परिवार सहमत हो।",
@@ -247,6 +335,50 @@ export const translations: Record<Language, Translations> = {
     maxSelectHint: "ज़्यादा से ज़्यादा {n} चुनें।",
     privacyIntake: "पैसों से जुड़े आपके सटीक जवाब आपके बच्चे को कभी नहीं दिखाए जाते।",
     waitingStudentDone: "आपके बच्चे के पूरा करने का इंतज़ार है…",
+
+    // Page 5 Mirror
+    mirrorTitle: "फ़ैमिली मिरर",
+    mirrorSubtitle: "जानिए कहाँ आपके विचार मिलते हैं और कहाँ आपकी सोच में फ़र्क है।",
+    gaugeOutOf100: "100 में से",
+    gaugeCaption: "नीचे दिए गए सभी क्षेत्रों के आधार पर दोनों के विचारों में कुल अंतर का औसत।",
+    gaugeAria: "कॉन्फ्लिक्ट इंडेक्स: 100 में से {score}",
+    diffPercent: "अंतर: {n}%",
+    weightPercent: "स्कोर में {n}% महत्व",
+    chipStudent: "विद्यार्थी",
+    chipParent: "अभिभावक",
+    chipBoth: "दोनों",
+    mirrorWaitingTitle: "{partner} के पूरा करने का इंतज़ार है…",
+    mirrorWaitingDesc: "आपके जवाब सहेजे जा चुके हैं। {partner} के सबमिट करते ही फ़ैमिली मिरर यहाँ अपने आप दिखने लगेगा।",
+    mirrorWaitingBadge: "स्वचालित रूप से जाँच हो रही है…",
+    mirrorErrorTitle: "फ़ैमिली मिरर लोड नहीं हो पाया",
+    mirrorErrorDesc: "कृपया अपना इंटरनेट कनेक्शन जाँचें और दोबारा कोशिश करें।",
+    mirrorFooterNote: "यह केवल एक आरंभिक आकलन है, कोई अंतिम निदान नहीं। नौकरी के प्रस्तावों की राशियाँ केवल समझाने के लिए अनुमानित हैं।",
+
+    dim_risk: "जोखिम उठाने की क्षमता",
+    dim_domain: "पसंदीदा करियर क्षेत्र",
+    dim_relocation: "बाहर जाने की इच्छा",
+    dim_time: "कमाई शुरू करने का समय",
+
+    risk_same: "{student} और {parent} दोनों का जोखिम उठाने का नज़रिया एक जैसा है।",
+    risk_studentHigher: "{student}, {parent} की तुलना में जोखिम उठाने में ज़्यादा सहज है।",
+    risk_parentHigher: "{parent}, {student} की तुलना में जोखिम उठाने में ज़्यादा सहज है।",
+
+    relocation_same: "{student} और {parent} दोनों बाहर जाने की दूरी पर सहमत हैं।",
+    relocation_studentHigher: "{student}, {parent} की तुलना में दूर जाने के लिए ज़्यादा तैयार है।",
+    relocation_parentHigher: "{parent}, {student} की तुलना में दूर जाने के लिए ज़्यादा तैयार है।",
+
+    time_same: "{student} और {parent} दोनों कमाई शुरू करने के समय पर सहमत हैं।",
+    time_studentHigher: "{student}, {parent} की तुलना में कमाई शुरू करने के लिए लंबा इंतज़ार करने को तैयार है।",
+    time_parentHigher: "{parent}, {student} की तुलना में कमाई शुरू करने के लिए लंबा इंतज़ार करने को तैयार है।",
+
+    scale_same: "{student} और {parent} एक ही पायदान पर हैं।",
+    scale_studentHigher: "{student}, {parent} से आगे के पायदान पर है।",
+    scale_parentHigher: "{parent}, {student} से आगे के पायदान पर है।",
+
+    domain_shared: "{student} और {parent} दोनों ने {domains} चुना है।",
+    domain_none: "दोनों की पसंद में कोई भी क्षेत्र समान नहीं है।",
+    domain_guessMatch: "{parent} ने {domain} का अनुमान लगाया था, और यह {student} की पसंद में शामिल है।",
+    domain_guessMismatch: "{parent} ने {domain} का अनुमान लगाया था; {student} ने {list} चुना।",
   },
 };
 
