@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #F5F8FB;
+  --color-cloud: #E3EEF8;
+  --color-sky: #7DBEF0;
+  --color-ocean: #2D6FB8;
+  --color-midnight: #11284A;
+
+  --font-bricolage: var(--font-bricolage), sans-serif;
+  --font-hind: var(--font-hind), sans-serif;
+}
+
+:root {
+  --paper: #F5F8FB;
+  --cloud: #E3EEF8;
+  --sky: #7DBEF0;
+  --ocean: #2D6FB8;
+  --midnight: #11284A;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--paper);
+  color: var(--midnight);
+  font-family: var(--font-hind), sans-serif;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--midnight);
+  font-family: var(--font-hind), sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Explicit color utilities */
+.bg-paper { background-color: var(--paper); }
+.bg-cloud { background-color: var(--cloud); }
+.bg-sky { background-color: var(--sky); }
+.bg-sky-tint { background-color: rgba(125, 190, 240, 0.18); }
+.bg-ocean { background-color: var(--ocean); }
+.bg-midnight { background-color: var(--midnight); }
+
+.text-paper { color: var(--paper); }
+.text-cloud { color: var(--cloud); }
+.text-sky { color: var(--sky); }
+.text-ocean { color: var(--ocean); }
+.text-midnight { color: var(--midnight); }
+
+.border-paper { border-color: var(--paper); }
+.border-cloud { border-color: var(--cloud); }
+.border-sky { border-color: var(--sky); }
+.border-ocean { border-color: var(--ocean); }
+.border-midnight { border-color: var(--midnight); }
+
+/* Left-to-right wipe in place animation for Step 2 */
+@keyframes wipeInPlace {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.wipe-reveal {
+  animation: wipeInPlace 500ms ease-out forwards;
+}
+
+/* Simple fade-in for Step 3 */
+@keyframes simpleFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.fade-in-reveal {
+  animation: simpleFadeIn 300ms ease-out forwards;
+}
+
+/* Accessible focus outline */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--ocean);
+  outline-offset: 2px;
+}
+
+/* Prefers reduced motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  .wipe-reveal {
+    animation: none !important;
+    clip-path: inset(0) !important;
+  }
+  .fade-in-reveal {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
