@@ -108,6 +108,7 @@ export interface AssessmentQuestion {
   max_label?: LocalizedText;
   max_length?: number;
   placeholder?: LocalizedText;
+  max_select?: number;
 }
 
 export interface AssessmentSection {
@@ -165,6 +166,8 @@ interface MockFamilyRecord {
   joinedName?: string;
   studentSubmitted?: boolean;
   parentSubmitted?: boolean;
+  studentSubmittedAt?: number;
+  parentSubmittedAt?: number;
 }
 
 const inMemoryMockFamilies: Record<string, MockFamilyRecord> = {};
@@ -212,6 +215,31 @@ const saveMockProgress = (code: string, prog: AssessmentProgressResponse) => {
   if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
     try {
       sessionStorage.setItem(`udaan_mock_progress_${code}`, JSON.stringify(prog));
+    } catch {
+      // fallback
+    }
+  }
+};
+
+const inMemoryMockIntakeProgress: Record<string, AssessmentProgressResponse> = {};
+
+const getMockIntakeProgress = (code: string): AssessmentProgressResponse => {
+  if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+    try {
+      const raw = sessionStorage.getItem(`udaan_mock_intake_progress_${code}`);
+      if (raw) return JSON.parse(raw);
+    } catch {
+      // fallback
+    }
+  }
+  return inMemoryMockIntakeProgress[code] || { answers: {}, submitted: false };
+};
+
+const saveMockIntakeProgress = (code: string, prog: AssessmentProgressResponse) => {
+  inMemoryMockIntakeProgress[code] = prog;
+  if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+    try {
+      sessionStorage.setItem(`udaan_mock_intake_progress_${code}`, JSON.stringify(prog));
     } catch {
       // fallback
     }
@@ -409,6 +437,27 @@ export async function getStatus(
 
     const elapsed = existing ? Date.now() - existing.createdAt : 7000;
     const isLinked = elapsed >= 6000 || !!existing?.joinedName;
+
+    // In mock mode the partner becomes done about 6 seconds after submission
+    if (
+      existing?.parentSubmitted &&
+      existing.parentSubmittedAt &&
+      Date.now() - existing.parentSubmittedAt >= 6000 &&
+      !existing.studentSubmitted
+    ) {
+      existing.studentSubmitted = true;
+      saveMockFamily(existing);
+    }
+
+    if (
+      existing?.studentSubmitted &&
+      existing.studentSubmittedAt &&
+      Date.now() - existing.studentSubmittedAt >= 6000 &&
+      !existing.parentSubmitted
+    ) {
+      existing.parentSubmitted = true;
+      saveMockFamily(existing);
+    }
 
     const mySubmitted = myRole === 'student' ? existing?.studentSubmitted : existing?.parentSubmitted;
     const partnerSubmitted = partnerRole === 'student' ? existing?.studentSubmitted : existing?.parentSubmitted;
@@ -808,6 +857,7 @@ export async function submitAssessment(
     const fams = getMockFamilies();
     if (fams[cleanCode]) {
       fams[cleanCode].studentSubmitted = true;
+      fams[cleanCode].studentSubmittedAt = Date.now();
       saveMockFamily(fams[cleanCode]);
     }
 
@@ -827,4 +877,484 @@ export async function submitAssessment(
       body: JSON.stringify({}),
     }
   );
+}
+
+// ==========================================
+// Mock Parent Intake Bank
+// (5 sections: money, risk, plans, hopes, perception)
+// ==========================================
+export const MOCK_INTAKE_SECTIONS: AssessmentSection[] = [
+  {
+    id: 'money',
+    title: { en: 'Financial Planning', hi: 'वित्तीय योजना' },
+    description: { en: 'Budget, funding sources, and financial priorities', hi: 'बजट, साधन और वित्तीय प्राथमिकताएँ' },
+    questions: [
+      {
+        id: 'q_money_budget',
+        section_id: 'money',
+        type: 'single_choice',
+        prompt: {
+          en: 'What is your comfortable annual budget for your child’s higher education?',
+          hi: 'अपने बच्चे की उच्च शिक्षा के लिए आपका सहज वार्षिक बजट क्या है?'
+        },
+        required: true,
+        options: [
+          { id: 'opt_b1', label: { en: 'Under ₹3 Lakhs / year', hi: '₹3 लाख / वर्ष से कम' } },
+          { id: 'opt_b2', label: { en: '₹3 - ₹7 Lakhs / year', hi: '₹3 - ₹7 लाख / वर्ष' } },
+          { id: 'opt_b3', label: { en: '₹7 - ₹15 Lakhs / year', hi: '₹7 - ₹15 लाख / वर्ष' } },
+          { id: 'opt_b4', label: { en: 'Above ₹15 Lakhs / year', hi: '₹15 लाख / वर्ष से अधिक' } },
+        ]
+      },
+      {
+        id: 'q_money_source',
+        section_id: 'money',
+        type: 'single_choice',
+        prompt: {
+          en: 'What will be the primary source for funding college fees and living costs?',
+          hi: 'कॉलेज फीस और रहने के खर्च का प्राथमिक साधन क्या होगा?'
+        },
+        required: true,
+        options: [
+          { id: 'opt_s1', label: { en: 'Family savings and ongoing income', hi: 'पारिवारिक बचत और नियमित आय' } },
+          { id: 'opt_s2', label: { en: 'Education loan with manageable EMI', hi: 'आसान किस्तों वाला शिक्षा ऋण (Education Loan)' } },
+          { id: 'opt_s3', label: { en: 'Combination of scholarships and family support', hi: 'छात्रवृत्ति (Scholarships) और पारिवारिक सहयोग' } },
+          { id: 'opt_s4', label: { en: 'Selling or leveraging assets / investments', hi: 'निवेश या संपत्ति का उपयोग' } },
+        ]
+      },
+      {
+        id: 'q_money_priority',
+        section_id: 'money',
+        type: 'single_choice',
+        prompt: {
+          en: 'What is your primary financial priority when selecting a college program?',
+          hi: 'कॉलेज या कोर्स चुनते समय आपकी प्राथमिक वित्तीय प्राथमिकता क्या है?'
+        },
+        required: true,
+        options: [
+          { id: 'opt_p1', label: { en: 'Quick return on investment (high early starting salary)', hi: 'लागत की जल्द भरपाई (शुरुआती अच्छा वेतन)' } },
+          { id: 'opt_p2', label: { en: 'Minimizing debt and keeping upfront expenses low', hi: 'कर्ज से बचना और शुरुआती खर्च कम रखना' } },
+          { id: 'opt_p3', label: { en: 'Institutional prestige and brand value regardless of cost', hi: 'संस्थान की प्रतिष्ठा और ब्रांड वैल्यू, चाहे लागत जो भी हो' } },
+          { id: 'opt_p4', label: { en: 'Long-term career ceiling rather than short-term payback', hi: 'दीर्घकालिक करियर विकास, न कि सिर्फ़ तात्कालिक लाभ' } },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'risk',
+    title: { en: 'Risk & Stability', hi: 'स्थिरता और जोखिम' },
+    description: { en: 'Career security, relocation, and preparation timelines', hi: 'करियर सुरक्षा, स्थानांतरण और तैयारी की अवधि' },
+    questions: [
+      {
+        id: 'q_risk_security',
+        section_id: 'risk',
+        type: 'single_choice',
+        prompt: {
+          en: 'How important is job stability versus rapid financial growth in your child’s career?',
+          hi: 'बच्चे के करियर में नौकरी की स्थिरता बनाम तेज़ वित्तीय तरक्की कितनी महत्वपूर्ण है?'
+        },
+        required: true,
+        options: [
+          { id: 'opt_sec1', label: { en: 'Stability is essential (Govt, PSU, or established enterprise)', hi: 'स्थिरता सबसे ज़रूरी है (सरकारी, PSU या स्थापित संस्थान)' } },
+          { id: 'opt_sec2', label: { en: 'Balanced (stable industry with good corporate promotion track)', hi: 'संतुलित (स्थिर उद्योग और अच्छी पदोन्नति के अवसर)' } },
+          { id: 'opt_sec3', label: { en: 'Growth-first (open to startups, tech, and fast-changing sectors)', hi: 'विकास प्राथमिकता (स्टार्टअप्स, तकनीक और नए क्षेत्र)' } },
+          { id: 'opt_sec4', label: { en: 'Entrepreneurial (fully comfortable with high risk / reward)', hi: 'उद्यमिता (उच्च जोखिम और बड़े अवसरों के लिए तैयार)' } },
+        ]
+      },
+      {
+        id: 'q_risk_location',
+        section_id: 'risk',
+        type: 'single_choice',
+        prompt: {
+          en: 'What is your stance on your child relocating for higher studies or work?',
+          hi: 'उच्च शिक्षा या नौकरी के लिए बच्चे के बाहर जाने पर आपका क्या विचार है?'
+        },
+        required: true,
+        options: [
+          { id: 'opt_loc1', label: { en: 'Prefer staying within our home city / region', hi: 'अपने शहर या आसपास के क्षेत्र में रहना पसंद करेंगे' } },
+          { id: 'opt_loc2', label: { en: 'Any major metropolitan hub across India is welcome', hi: 'भारत के किसी भी बड़े शहर में जाने के लिए पूरी सहमति है' } },
+          { id: 'opt_loc3', label: { en: 'Open to studies and careers abroad if feasible', hi: 'यदि संभव हो तो विदेश जाकर पढ़ाई या काम करने के लिए तैयार' } },
+        ]
+      },
+      {
+        id: 'q_risk_gap',
+        section_id: 'risk',
+        type: 'single_choice',
+        prompt: {
+          en: 'How comfortable are you with a drop year (gap year) for competitive exam prep?',
+          hi: 'प्रतियोगी परीक्षा की तैयारी के लिए ड्रॉप ईयर (गैप ईयर) लेने पर आपकी क्या राय है?'
+        },
+        required: true,
+        options: [
+          { id: 'opt_gap1', label: { en: 'Strictly no gap year; continuous admission is preferred', hi: 'ड्रॉप ईयर नहीं लेना चाहिए; सीधे प्रवेश बेहतर है' } },
+          { id: 'opt_gap2', label: { en: 'One dedicated drop year is acceptable for top tier exams', hi: 'शीर्ष परीक्षाओं के लिए एक साल का ड्रॉप स्वीकार्य है' } },
+          { id: 'opt_gap3', label: { en: 'Flexible if there is a structured coaching plan and discipline', hi: 'यदि सुनियोजित तैयारी और अनुशासन हो तो कोई आपत्ति नहीं' } },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'plans',
+    title: { en: 'Academic Path & Timeline', hi: 'शैक्षणिक योजना और समय' },
+    description: { en: 'Degree structures and postgraduate expectations', hi: 'डिग्री का स्वरूप और स्नातकोत्तर की उम्मीदें' },
+    questions: [
+      {
+        id: 'q_plans_degree',
+        section_id: 'plans',
+        type: 'single_choice',
+        prompt: {
+          en: 'What degree path do you envision for your child right after school?',
+          hi: 'स्कूल के बाद आप अपने बच्चे के लिए किस प्रकार की डिग्री की उम्मीद करते हैं?'
+        },
+        required: true,
+        options: [
+          { id: 'opt_deg1', label: { en: 'Standard 3-4 year Bachelor’s (B.Tech, B.Sc, B.Com, BA)', hi: 'पारंपरिक 3-4 वर्षीय स्नातक डिग्री (B.Tech, B.Sc, B.Com, BA)' } },
+          { id: 'opt_deg2', label: { en: 'Integrated 5-year Dual Degree (B.Tech+M.Tech, BBA+MBA, Law)', hi: '5 वर्षीय एकीकृत दोहरी डिग्री (B.Tech+M.Tech, BBA+MBA, लॉ)' } },
+          { id: 'opt_deg3', label: { en: 'Professional certification / vocational specialization', hi: 'व्यावसायिक या विशेष सर्टिफिकेशन कार्यक्रम' } },
+        ]
+      },
+      {
+        id: 'q_plans_postgrad',
+        section_id: 'plans',
+        type: 'single_choice',
+        prompt: {
+          en: 'What is your expectation regarding postgraduate studies (Masters / MBA)?',
+          hi: 'स्नातकोत्तर (Masters / MBA) की पढ़ाई को लेकर आपकी क्या अपेक्षा है?'
+        },
+        required: true,
+        options: [
+          { id: 'opt_pg1', label: { en: 'Should start working immediately after graduation', hi: 'स्नातक पूरा होते ही नौकरी शुरू करनी चाहिए' } },
+          { id: 'opt_pg2', label: { en: 'Work 2-3 years first, then pursue a specialized Masters / MBA', hi: 'पहले 2-3 साल काम करे, फिर मास्टर्स या एमबीए करे' } },
+          { id: 'opt_pg3', label: { en: 'Complete Masters / higher degrees back-to-back before work', hi: 'नौकरी से पहले मास्टर्स या उच्च शिक्षा पूरी करे' } },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'hopes',
+    title: { en: 'Aspirations & Hopes', hi: 'उम्मीदें और आकांक्षाएँ' },
+    description: { en: 'Fields of pride, family involvement, and personal wishes', hi: 'पसंदीदा क्षेत्र, पारिवारिक सहयोग और व्यक्तिगत उम्मीदें' },
+    questions: [
+      {
+        id: 'q_hopes_fields',
+        section_id: 'hopes',
+        type: 'multi_choice',
+        max_select: 3,
+        prompt: {
+          en: 'Which sectors or career paths would you be proudest to see your child pursue? (Select up to 3)',
+          hi: 'किन क्षेत्रों या करियर में बच्चे को आगे बढ़ते देख आपको सबसे ज़्यादा गर्व होगा? (अधिकतम 3 चुनें)'
+        },
+        required: true,
+        options: [
+          { id: 'fld_tech', label: { en: 'Engineering, AI & Technology', hi: 'इंजीनियरिंग, एआई और तकनीक' } },
+          { id: 'fld_med', label: { en: 'Medicine, Surgery & Healthcare', hi: 'चिकित्सा और स्वास्थ्य सेवा' } },
+          { id: 'fld_gov', label: { en: 'Civil Services, Defense & Public Administration', hi: 'सिविल सेवा, रक्षा और लोक प्रशासन' } },
+          { id: 'fld_biz', label: { en: 'Business Management, Consulting & Finance', hi: 'बिजनेस मैनेजमेंट, कंसल्टिंग और फाइनेंस' } },
+          { id: 'fld_law', label: { en: 'Law, Judiciary & Legal Practice', hi: 'कानून और न्यायपालिका' } },
+          { id: 'fld_art', label: { en: 'Design, Architecture & Creative Media', hi: 'डिजाइन, वास्तुकला और मीडिया' } },
+          { id: 'fld_sci', label: { en: 'Academic Research & Pure Sciences', hi: 'शोध और वैज्ञानिक अनुसंधान' } },
+        ]
+      },
+      {
+        id: 'q_hopes_support',
+        section_id: 'hopes',
+        type: 'multi_choice',
+        prompt: {
+          en: 'How are you most excited to support them on this journey? (Optional)',
+          hi: 'इस यात्रा में आप किस प्रकार उनका सहयोग करने के लिए सबसे उत्सुक हैं? (वैकल्पिक)'
+        },
+        required: false,
+        options: [
+          { id: 'sup_mentor', label: { en: 'Mentorship, industry guidance and professional network', hi: 'मार्गदर्शन और व्यावसायिक नेटवर्क से जोड़ना' } },
+          { id: 'sup_moral', label: { en: 'Unconditional emotional and motivational encouragement', hi: 'सकारात्मक माहौल और भावनात्मक संबल' } },
+          { id: 'sup_finance', label: { en: 'Financial backup and safety cushion', hi: 'आर्थिक सहयोग और सुरक्षा' } },
+          { id: 'sup_indep', label: { en: 'Giving full autonomy to make and learn from their choices', hi: 'स्वतंत्रता और अपने निर्णय खुद लेने का अवसर' } },
+        ]
+      },
+      {
+        id: 'q_hopes_personal',
+        section_id: 'hopes',
+        type: 'long_text',
+        max_length: 300,
+        prompt: {
+          en: 'What is your biggest personal hope or message for your child’s future? (Optional)',
+          hi: 'अपने बच्चे के भविष्य के लिए आपकी सबसे बड़ी व्यक्तिगत उम्मीद या संदेश क्या है? (वैकल्पिक)'
+        },
+        required: false,
+        placeholder: {
+          en: 'Share your hopes for their happiness, independence, resilience...',
+          hi: 'उनकी खुशी, आत्मनिर्भरता और सफलता को लेकर अपनी भावनाएँ साझा करें...'
+        }
+      }
+    ]
+  },
+  {
+    id: 'perception',
+    title: { en: 'Strengths & Perception', hi: 'क्षमता और समझ' },
+    description: { en: 'Observed strengths and natural inclinations', hi: 'बच्चे की ताकत और स्वाभाविक प्रवृत्तियाँ' },
+    questions: [
+      {
+        id: 'q_perc_strength',
+        section_id: 'perception',
+        type: 'single_choice',
+        prompt: {
+          en: 'Where do you observe your child naturally shining the brightest?',
+          hi: 'आपके अनुसार आपका बच्चा स्वाभाविक रूप से किस चीज़ में सबसे बेहतर है?'
+        },
+        required: true,
+        options: [
+          { id: 'str_logic', label: { en: 'Logical reasoning, quantitative calculations and problem-solving', hi: 'तार्किक सोच, गणितीय गणना और समस्याओं का हल' } },
+          { id: 'str_people', label: { en: 'Communication, empathy and connecting with people', hi: 'संवाद, सहानुभूति और लोगों से जुड़ाव' } },
+          { id: 'str_creative', label: { en: 'Artistic creativity, innovative design and out-of-box ideas', hi: 'रचनात्मकता, कला और नए विचार' } },
+          { id: 'str_practical', label: { en: 'Practical execution, organizing tasks and building physical things', hi: 'व्यावहारिक काम, चीज़ें बनाना और प्रबंधन' } },
+        ]
+      },
+      {
+        id: 'q_perc_pressure',
+        section_id: 'perception',
+        type: 'single_choice',
+        prompt: {
+          en: 'How does your child typically respond during stressful exam or competition periods?',
+          hi: 'परीक्षा या तनावपूर्ण समय में आपका बच्चा आमतौर पर कैसा व्यवहार करता है?'
+        },
+        required: true,
+        options: [
+          { id: 'prs_calm', label: { en: 'Remains calm, methodical and sticks to a consistent schedule', hi: 'शांत रहता है और योजनाबद्ध तरीके से पढ़ाई करता है' } },
+          { id: 'prs_burst', label: { en: 'Works in energetic, intense bursts closer to deadlines', hi: 'आखिरी दिनों में बहुत ऊर्जा और एकाग्रता के साथ काम करता है' } },
+          { id: 'prs_anxious', label: { en: 'Experiences anxiety and thrives best with regular parent reassurance', hi: 'तनाव महसूस करता है और प्रोत्साहन से बेहतर करता है' } },
+        ]
+      },
+      {
+        id: 'q_perc_discussion',
+        section_id: 'perception',
+        type: 'single_choice',
+        prompt: {
+          en: 'How are major educational and career choices currently discussed at home?',
+          hi: 'घर पर पढ़ाई और करियर से जुड़े बड़े फैसले किस तरह लिए जाते हैं?'
+        },
+        required: true,
+        options: [
+          { id: 'disc_open', label: { en: 'Open equal discussions where everyone shares viewpoints freely', hi: 'खुली बातचीत जहाँ सभी अपनी राय खुलकर रखते हैं' } },
+          { id: 'disc_guided', label: { en: 'Parents provide structured guidance and shortlisted choices', hi: 'अभिभावक सही दिशा और विकल्प सुझाते हैं' } },
+          { id: 'disc_student', label: { en: 'Child takes full ownership and parents support their lead', hi: 'बच्चा खुद निर्णय लेता है और परिवार उसका साथ देता है' } },
+        ]
+      }
+    ]
+  }
+];
+
+// ==========================================
+// Parent Intake API Functions
+// ==========================================
+export async function getIntakeQuestions(
+  familyCode: string,
+  token: string
+): Promise<AssessmentQuestionsResponse> {
+  const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
+
+  if (isMockEnabled()) {
+    if (token.includes('student-token-invalid')) {
+      throw new ApiError('wrong_role', 'Student cannot access parent intake', 403);
+    }
+    return { sections: MOCK_INTAKE_SECTIONS };
+  }
+
+  try {
+    return await request<AssessmentQuestionsResponse>(
+      `/families/${encodeURIComponent(cleanCode)}/intake/questions`,
+      {
+        method: 'GET',
+        headers: {
+          'X-Member-Token': token,
+        },
+      }
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      return { sections: MOCK_INTAKE_SECTIONS };
+    }
+    throw err;
+  }
+}
+
+export async function getIntakeProgress(
+  familyCode: string,
+  token: string
+): Promise<AssessmentProgressResponse> {
+  const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
+
+  if (isMockEnabled()) {
+    if (token.includes('student-token-invalid')) {
+      throw new ApiError('wrong_role', 'Student cannot access parent intake', 403);
+    }
+    return getMockIntakeProgress(cleanCode);
+  }
+
+  try {
+    return await request<AssessmentProgressResponse>(
+      `/families/${encodeURIComponent(cleanCode)}/intake/progress`,
+      {
+        method: 'GET',
+        headers: {
+          'X-Member-Token': token,
+        },
+      }
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      return getMockIntakeProgress(cleanCode);
+    }
+    throw err;
+  }
+}
+
+export async function saveIntakeAnswers(
+  familyCode: string,
+  token: string,
+  answers: Record<string, AnswerValue>
+): Promise<SaveAnswersResponse> {
+  const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
+
+  if (isMockEnabled()) {
+    if (token.includes('student-token-invalid')) {
+      throw new ApiError('wrong_role', 'Student cannot access parent intake', 403);
+    }
+    const curr = getMockIntakeProgress(cleanCode);
+    const updatedAnswers = { ...curr.answers, ...answers };
+    const updated = { ...curr, answers: updatedAnswers };
+    saveMockIntakeProgress(cleanCode, updated);
+
+    return {
+      saved: true,
+      answers: updatedAnswers,
+    };
+  }
+
+  try {
+    return await request<SaveAnswersResponse>(
+      `/families/${encodeURIComponent(cleanCode)}/intake/answers`,
+      {
+        method: 'PUT',
+        headers: {
+          'X-Member-Token': token,
+        },
+        body: JSON.stringify({ answers }),
+      }
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      const curr = getMockIntakeProgress(cleanCode);
+      const updatedAnswers = { ...curr.answers, ...answers };
+      const updated = { ...curr, answers: updatedAnswers };
+      saveMockIntakeProgress(cleanCode, updated);
+
+      return {
+        saved: true,
+        answers: updatedAnswers,
+      };
+    }
+    throw err;
+  }
+}
+
+export async function submitIntake(
+  familyCode: string,
+  token: string
+): Promise<SubmitAssessmentResponse> {
+  const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
+
+  if (isMockEnabled()) {
+    if (token.includes('student-token-invalid')) {
+      throw new ApiError('wrong_role', 'Student cannot access parent intake', 403);
+    }
+
+    const prog = getMockIntakeProgress(cleanCode);
+    const allQuestions = MOCK_INTAKE_SECTIONS.flatMap((s) => s.questions);
+    const missing: string[] = [];
+
+    for (const q of allQuestions) {
+      if (q.required) {
+        const val = prog.answers[q.id];
+        if (
+          val === undefined ||
+          val === null ||
+          val === '' ||
+          (Array.isArray(val) && val.length === 0)
+        ) {
+          missing.push(q.id);
+        }
+      }
+    }
+
+    if (missing.length > 0) {
+      throw new ApiError('intake_incomplete', 'Intake incomplete', 422, missing);
+    }
+
+    prog.submitted = true;
+    saveMockIntakeProgress(cleanCode, prog);
+
+    const fams = getMockFamilies();
+    if (fams[cleanCode]) {
+      fams[cleanCode].parentSubmitted = true;
+      fams[cleanCode].parentSubmittedAt = Date.now();
+      saveMockFamily(fams[cleanCode]);
+    }
+
+    return {
+      submitted: true,
+      done: true,
+    };
+  }
+
+  try {
+    return await request<SubmitAssessmentResponse>(
+      `/families/${encodeURIComponent(cleanCode)}/intake/submit`,
+      {
+        method: 'POST',
+        headers: {
+          'X-Member-Token': token,
+        },
+        body: JSON.stringify({}),
+      }
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      const prog = getMockIntakeProgress(cleanCode);
+      const allQuestions = MOCK_INTAKE_SECTIONS.flatMap((s) => s.questions);
+      const missing: string[] = [];
+
+      for (const q of allQuestions) {
+        if (q.required) {
+          const val = prog.answers[q.id];
+          if (
+            val === undefined ||
+            val === null ||
+            val === '' ||
+            (Array.isArray(val) && val.length === 0)
+          ) {
+            missing.push(q.id);
+          }
+        }
+      }
+
+      if (missing.length > 0) {
+        throw new ApiError('intake_incomplete', 'Intake incomplete', 422, missing);
+      }
+
+      prog.submitted = true;
+      saveMockIntakeProgress(cleanCode, prog);
+
+      const fams = getMockFamilies();
+      if (fams[cleanCode]) {
+        fams[cleanCode].parentSubmitted = true;
+        fams[cleanCode].parentSubmittedAt = Date.now();
+        saveMockFamily(fams[cleanCode]);
+      }
+
+      return {
+        submitted: true,
+        done: true,
+      };
+    }
+    throw err;
+  }
 }
