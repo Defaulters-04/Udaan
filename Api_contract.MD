@@ -177,3 +177,75 @@ Merges into stored answers (partial updates, overwrites per question id).
 
 ### Status (no shape change)
 For a parent, "done" in GET /families/{family_code}/status means the intake is submitted.
+
+EDIT 1 (Assessment, Preferences Section). Replace the pref_risk_3 prompt with:
+"Imagine one more pair of starting job offers. Which would you choose?" /
+"एक और बार, मान लें कि आपके सामने नौकरी के ये दो विकल्प हैं। आप किसे चुनेंगे?"
+(Options unchanged. The parent's risk_3 prompt gets the same fix if it has the old wording.)
+
+EDIT 2 (Assessment, pref_time_to_earn). Replace the three option labels. The parent's
+time_to_earn uses the SAME shared options. Ids unchanged. The old text put B.Tech (4 years)
+in the "5 to 6 years" bucket, which is wrong.
+- within_4y: "About 4 years (e.g., a regular degree, B.Tech or a diploma)" /
+  "लगभग 4 साल (जैसे सामान्य डिग्री, बी.टेक या डिप्लोमा)"
+- five_six: "About 5 to 6 years (e.g., MBBS, 5-year law, or a degree plus a Master's)" /
+  "लगभग 5 से 6 साल (जैसे एमबीबीएस, 5 साल का लॉ, या डिग्री के बाद मास्टर्स)"
+- seven_plus: "7 years or more is fine (e.g., MD/MS or a PhD)" /
+  "7 साल या उससे ज़्यादा भी चलेगा (जैसे एमडी/एमएस या पीएचडी)"
+
+EDIT 3. Wherever the contract says answers are never returned to the other member, add:
+"The only exception is GET /families/{family_code}/mirror, which returns the derived values listed there."
+
+EDIT 4. Add mirror_not_ready to the error codes list in Conventions.
+
+NEW SECTION (append at the end):
+
+## Mirror (Page 5: family comparison). Both roles.
+
+- Both members must have submitted (status "done" true for both). Otherwise 409 mirror_not_ready.
+- Error codes: invalid_token, family_not_found, mirror_not_ready.
+- This is the one place the partner's answers show up, and only as the derived values below.
+  Never raw answers, never money bands (surplus, EMI, savings, income, loans), never free text,
+  never aptitude or interest results.
+- Computed on request. Nothing stored. Answers never logged.
+
+### GET /families/{family_code}/mirror
+Header: X-Member-Token (student or parent). Both get the identical body.
+200:
+{
+  "conflict_index": number,       // 0..100, 1 decimal, from the engine
+  "dimensions": Dimension[]       // order: risk, domain, relocation, time
+}
+
+Dimension, common fields:
+{ "id": "risk"|"domain"|"relocation"|"time",
+  "gap": number,                  // 0..1, from the engine
+  "weight": number,               // from the engine (0.25 each today)
+  "kind": "scale"|"picks" }
+
+kind "scale" (risk, relocation, time) adds:
+  "steps": [{ "id": string, "label": LocalizedText }]   // ordered low to high
+  "student_step": int, "parent_step": int               // index into steps
+  - risk: 4 steps, ids risk_0..risk_3 = number of times the person chose the gamble in the three
+    job-offer questions (amounts illustrative). Labels:
+    risk_0 "Chose the guaranteed offer every time" / "हर बार पक्की कमाई वाला विकल्प चुना"
+    risk_1 "Chose the gamble once" / "एक बार जोखिम वाला विकल्प चुना"
+    risk_2 "Chose the gamble twice" / "दो बार जोखिम वाला विकल्प चुना"
+    risk_3 "Chose the gamble every time" / "हर बार जोखिम वाला विकल्प चुना"
+  - relocation and time: steps are the question's options (same ids, labels and order as
+    pref_relocation / pref_time_to_earn).
+
+kind "picks" (domain) adds:
+  "options": [{ "id": string, "label": LocalizedText }]  // all canonical domains, engine/domains.py order
+  "student_picks": string[], "parent_picks": string[]    // canonical ids, in options order
+  "parent_guess": string | null    // parent's guess of the student's domain; null if "not sure" or unanswered
+
+Example (shortened):
+{ "conflict_index": 16.5,
+  "dimensions": [
+    { "id": "risk", "gap": 0.33, "weight": 0.25, "kind": "scale",
+      "steps": [ ...4 steps... ], "student_step": 2, "parent_step": 0 },
+    { "id": "domain", "gap": 0.0, "weight": 0.25, "kind": "picks",
+      "options": [ ...7... ], "student_picks": ["tech_engineering"],
+      "parent_picks": ["tech_engineering"], "parent_guess": "tech_engineering" },
+    ...relocation, time... ] }
