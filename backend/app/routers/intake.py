@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, Header, HTTPException, status
 
-from app.intake.bank import get_public_sections
+from app.intake.bank import QUESTION_BANK_VERSION, get_public_sections
 from app.intake.validate import validate_intake_answers_payload
 from app.schemas.intake import (
     ProgressResponse,
@@ -35,7 +35,7 @@ def get_intake_questions(
         raise_api_error(status.HTTP_403_FORBIDDEN, "wrong_role", "Only parent members may access this endpoint")
 
     return QuestionsResponse(
-        version="starter-1",
+        version=QUESTION_BANK_VERSION,
         sections=get_public_sections(),
     )
 

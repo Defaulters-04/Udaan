@@ -1,14 +1,21 @@
-# Hardcoded stand-in until the career catalogue defines domains.
+# Parent Intake Question Bank (16 questions across 5 sections, Version: starter-2).
+# All financial amounts are illustrative approximations.
 
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from app.shared_questions import (
+    CAREER_DOMAINS,
+    GUESS_DOMAIN_OPTIONS,
+    InternalOption,
+    RELOCATION_OPTIONS,
+    RISK_1_OPTIONS,
+    RISK_2_OPTIONS,
+    RISK_3_OPTIONS,
+    TIME_TO_EARN_OPTIONS,
+)
 
-@dataclass(frozen=True)
-class InternalOption:
-    id: str
-    label_en: str
-    label_hi: str
+QUESTION_BANK_VERSION = "starter-2"
 
 
 @dataclass(frozen=True)
@@ -55,35 +62,7 @@ PUBLIC_QUESTION_ALLOWED_KEYS = {
     "max_select",
 }
 
-# The 8 canonical career domains defined once
-CAREER_DOMAINS: list[InternalOption] = [
-    InternalOption("eng_tech", "Engineering & Technology", "इंजीनियरिंग और टेक्नोलॉजी"),
-    InternalOption("medicine_health", "Medicine & Healthcare", "चिकित्सा और स्वास्थ्य सेवा"),
-    InternalOption("business_finance", "Business & Finance", "बिजनेस और फाइनेंस"),
-    InternalOption("design_creative", "Design & Creative Arts", "डिज़ाइन और रचनात्मक कला"),
-    InternalOption("science_research", "Science & Research", "विज्ञान और अनुसंधान"),
-    InternalOption("law_public_service", "Law & Public Service", "कानून और प्रशासनिक सेवा"),
-    InternalOption("education", "Teaching & Education", "शिक्षण और शिक्षा"),
-    InternalOption("skilled_trades", "Vocational & Skilled Trades", "व्यावसायिक और हुनरमंद कार्य"),
-]
-
-# Guess domain adds 'not_sure'
-GUESS_DOMAIN_OPTIONS: list[InternalOption] = [
-    *CAREER_DOMAINS,
-    InternalOption("not_sure", "Not sure / Open to anything", "पक्का नहीं पता / किसी भी क्षेत्र में"),
-]
-
-RELOCATION_OPTIONS: list[InternalOption] = [
-    InternalOption("home_city", "Within our home city / town", "हमारे अपने शहर / कस्बे में"),
-    InternalOption("same_state", "Within our state", "हमारे अपने राज्य में"),
-    InternalOption("anywhere_india", "Anywhere in India", "भारत में कहीं भी"),
-    InternalOption("abroad_ok", "Abroad / International is fine too", "विदेश जाने में भी कोई आपत्ति नहीं"),
-]
-
-RISK_GAMBLE_LABEL_EN = "50% chance of ₹10 lakh a year, 50% chance of ₹2 lakh a year"
-RISK_GAMBLE_LABEL_HI = "50% संभावना ₹10 लाख प्रति वर्ष की, 50% संभावना ₹2 लाख प्रति वर्ष की"
-
-# 1. Money Section
+# 1. Money Section (5 items, all financial amounts marked illustrative)
 MONEY_QUESTIONS: list[InternalQuestion] = [
     InternalQuestion(
         id="income_band",
@@ -92,12 +71,13 @@ MONEY_QUESTIONS: list[InternalQuestion] = [
         prompt_hi="आपके परिवार की लगभग वार्षिक आय कितनी है?",
         required=True,
         tag="income",
+        # Illustrative amounts
         options=[
-            InternalOption("under_3l", "Under ₹3 lakh", "₹3 लाख से कम"),
-            InternalOption("3_6l", "₹3 lakh to ₹6 lakh", "₹3 लाख से ₹6 लाख"),
-            InternalOption("6_12l", "₹6 lakh to ₹12 lakh", "₹6 लाख से ₹12 लाख"),
-            InternalOption("12_25l", "₹12 lakh to ₹25 lakh", "₹12 लाख से ₹25 लाख"),
-            InternalOption("over_25l", "Over ₹25 lakh", "₹25 लाख से अधिक"),
+            InternalOption("under_3l", "Under ₹3 lakh (illustrative)", "₹3 लाख से कम (अनुमानित)"),
+            InternalOption("3_6l", "₹3 lakh to ₹6 lakh (illustrative)", "₹3 लाख से ₹6 लाख (अनुमानित)"),
+            InternalOption("6_12l", "₹6 lakh to ₹12 lakh (illustrative)", "₹6 लाख से ₹12 लाख (अनुमानित)"),
+            InternalOption("12_25l", "₹12 lakh to ₹25 lakh (illustrative)", "₹12 लाख से ₹25 लाख (अनुमानित)"),
+            InternalOption("over_25l", "Over ₹25 lakh (illustrative)", "₹25 लाख से अधिक (अनुमानित)"),
         ],
     ),
     InternalQuestion(
@@ -107,12 +87,13 @@ MONEY_QUESTIONS: list[InternalQuestion] = [
         prompt_hi="आपने बच्चे की उच्च शिक्षा के लिए लगभग कितनी बचत रखी है?",
         required=True,
         tag="savings",
+        # Illustrative amounts
         options=[
             InternalOption("none", "No dedicated savings yet", "अभी कोई अलग बचत नहीं है"),
-            InternalOption("under_1l", "Under ₹1 lakh", "₹1 लाख से कम"),
-            InternalOption("1_3l", "₹1 lakh to ₹3 lakh", "₹1 लाख से ₹3 लाख"),
-            InternalOption("3_8l", "₹3 lakh to ₹8 lakh", "₹3 लाख से ₹8 लाख"),
-            InternalOption("over_8l", "Over ₹8 lakh", "₹8 लाख से अधिक"),
+            InternalOption("under_1l", "Under ₹1 lakh (illustrative)", "₹1 लाख से कम (अनुमानित)"),
+            InternalOption("1_3l", "₹1 lakh to ₹3 lakh (illustrative)", "₹1 लाख से ₹3 लाख (अनुमानित)"),
+            InternalOption("3_8l", "₹3 lakh to ₹8 lakh (illustrative)", "₹3 लाख से ₹8 लाख (अनुमानित)"),
+            InternalOption("over_8l", "Over ₹8 lakh (illustrative)", "₹8 लाख से अधिक (अनुमानित)"),
         ],
     ),
     InternalQuestion(
@@ -122,17 +103,49 @@ MONEY_QUESTIONS: list[InternalQuestion] = [
         prompt_hi="आपकी पारिवारिक स्थिति के अनुसार आप कितना शिक्षा ऋण (लोन) लेने में सहज हैं?",
         required=True,
         tag="loan",
+        # Illustrative amounts
         options=[
             InternalOption("none", "Prefer no loan at all", "लोन बिल्कुल नहीं लेना चाहते"),
-            InternalOption("up_to_3l", "Up to ₹3 lakh", "₹3 लाख तक"),
-            InternalOption("3_8l", "₹3 lakh to ₹8 lakh", "₹3 लाख से ₹8 लाख"),
-            InternalOption("8_15l", "₹8 lakh to ₹15 lakh", "₹8 लाख से ₹15 लाख"),
-            InternalOption("over_15l", "Over ₹15 lakh", "₹15 लाख से अधिक"),
+            InternalOption("up_to_3l", "Up to ₹3 lakh (illustrative)", "₹3 लाख तक (अनुमानित)"),
+            InternalOption("3_8l", "₹3 lakh to ₹8 lakh (illustrative)", "₹3 लाख से ₹8 लाख (अनुमानित)"),
+            InternalOption("8_15l", "₹8 lakh to ₹15 lakh (illustrative)", "₹8 लाख से ₹15 लाख (अनुमानित)"),
+            InternalOption("over_15l", "Over ₹15 lakh (illustrative)", "₹15 लाख से अधिक (अनुमानित)"),
+        ],
+    ),
+    InternalQuestion(
+        id="surplus_band",
+        type="single_choice",
+        prompt_en="How much money is left over each month after all expenses?",
+        prompt_hi="हर महीने सारे खर्चों के बाद परिवार के पास लगभग कितनी बचत बचती है?",
+        required=True,
+        tag="surplus",
+        # All rupee amounts are illustrative
+        options=[
+            InternalOption("none", "None", "कुछ नहीं"),
+            InternalOption("under_5k", "Under ₹5,000 (illustrative)", "₹5,000 से कम (अनुमानित)"),
+            InternalOption("5k_15k", "₹5,000 to ₹15,000 (illustrative)", "₹5,000 से ₹15,000 (अनुमानित)"),
+            InternalOption("15k_30k", "₹15,000 to ₹30,000 (illustrative)", "₹15,000 से ₹30,000 (अनुमानित)"),
+            InternalOption("over_30k", "Over ₹30,000 (illustrative)", "₹30,000 से अधिक (अनुमानित)"),
+        ],
+    ),
+    InternalQuestion(
+        id="emi_band",
+        type="single_choice",
+        prompt_en="What total loan EMIs does the family already pay each month?",
+        prompt_hi="परिवार हर महीने कुल कितनी लोन ईएमआई (EMI) भरता है?",
+        required=True,
+        tag="emi",
+        # All rupee amounts are illustrative
+        options=[
+            InternalOption("none", "None", "कोई ईएमआई नहीं"),
+            InternalOption("under_5k", "Under ₹5,000 (illustrative)", "₹5,000 से कम (अनुमानित)"),
+            InternalOption("5k_15k", "₹5,000 to ₹15,000 (illustrative)", "₹5,000 से ₹15,000 (अनुमानित)"),
+            InternalOption("over_15k", "Over ₹15,000 (illustrative)", "₹15,000 से अधिक (अनुमानित)"),
         ],
     ),
 ]
 
-# 2. Risk Section
+# 2. Risk Section (3 items, shared options)
 RISK_QUESTIONS: list[InternalQuestion] = [
     InternalQuestion(
         id="risk_1",
@@ -141,10 +154,7 @@ RISK_QUESTIONS: list[InternalQuestion] = [
         prompt_hi="कल्पना करें कि कॉलेज के बाद आपके बच्चे के सामने नौकरी के दो विकल्प हैं। आप किसे प्राथमिकता देंगे?",
         required=True,
         tag="risk",
-        options=[
-            InternalOption("safe", "₹3.5 lakh a year, guaranteed", "₹3.5 लाख प्रति वर्ष, तय और सुरक्षित"),
-            InternalOption("gamble", RISK_GAMBLE_LABEL_EN, RISK_GAMBLE_LABEL_HI),
-        ],
+        options=RISK_1_OPTIONS,
     ),
     InternalQuestion(
         id="risk_2",
@@ -153,10 +163,7 @@ RISK_QUESTIONS: list[InternalQuestion] = [
         prompt_hi="अब मान लें कि आपके बच्चे के सामने ये दो विकल्प हैं। आप किसे बेहतर मानेंगे?",
         required=True,
         tag="risk",
-        options=[
-            InternalOption("safe", "₹4.5 lakh a year, guaranteed", "₹4.5 लाख प्रति वर्ष, तय और सुरक्षित"),
-            InternalOption("gamble", RISK_GAMBLE_LABEL_EN, RISK_GAMBLE_LABEL_HI),
-        ],
+        options=RISK_2_OPTIONS,
     ),
     InternalQuestion(
         id="risk_3",
@@ -165,14 +172,11 @@ RISK_QUESTIONS: list[InternalQuestion] = [
         prompt_hi="मान लें कि एक अधिक सुरक्षित विकल्प और वही अनिश्चित अवसर सामने है। आप क्या चुनेंगे?",
         required=True,
         tag="risk",
-        options=[
-            InternalOption("safe", "₹5.5 lakh a year, guaranteed", "₹5.5 लाख प्रति वर्ष, तय और सुरक्षित"),
-            InternalOption("gamble", RISK_GAMBLE_LABEL_EN, RISK_GAMBLE_LABEL_HI),
-        ],
+        options=RISK_3_OPTIONS,
     ),
 ]
 
-# 3. Plans Section
+# 3. Plans Section (2 items, shared options)
 PLANS_QUESTIONS: list[InternalQuestion] = [
     InternalQuestion(
         id="relocation",
@@ -190,15 +194,11 @@ PLANS_QUESTIONS: list[InternalQuestion] = [
         prompt_hi="स्कूल पूरा करने के बाद आप बच्चे से कब तक कमाई शुरू करने की उम्मीद करते हैं?",
         required=True,
         tag="time_to_earn",
-        options=[
-            InternalOption("within_4y", "Within 3 to 4 years (e.g., direct degree or diploma)", "3 से 4 साल के भीतर (जैसे डिग्री या डिप्लोमा के तुरंत बाद)"),
-            InternalOption("five_six", "In 5 to 6 years (e.g., professional degree like B.Tech / MBBS / Masters)", "5 से 6 साल में (जैसे बी.टेक, एमबीबीएस या मास्टर्स के बाद)"),
-            InternalOption("seven_plus", "7+ years is fine (e.g., advanced research or specialization)", "7 साल या उससे अधिक भी चलेगा (जैसे उच्च शोध या विशेषज्ञता)"),
-        ],
+        options=TIME_TO_EARN_OPTIONS,
     ),
 ]
 
-# 4. Hopes Section
+# 4. Hopes Section (3 items)
 HOPES_QUESTIONS: list[InternalQuestion] = [
     InternalQuestion(
         id="domain_wish",
@@ -237,7 +237,7 @@ HOPES_QUESTIONS: list[InternalQuestion] = [
     ),
 ]
 
-# 5. Perception Section
+# 5. Perception Section (3 items)
 PERCEPTION_QUESTIONS: list[InternalQuestion] = [
     InternalQuestion(
         id="guess_domain",

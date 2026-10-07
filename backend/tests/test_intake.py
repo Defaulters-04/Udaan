@@ -44,9 +44,9 @@ def create_linked_family():
 
 
 def test_bank_integrity():
-    assert len(ALL_INTAKE_QUESTIONS_MAP) == 14
+    assert len(ALL_INTAKE_QUESTIONS_MAP) == 16
     section_counts = [len(s.questions) for s in SECTIONS_ORDER]
-    assert section_counts == [3, 3, 2, 3, 3]
+    assert section_counts == [5, 3, 2, 3, 3]
 
     # Unique IDs
     ids = list(ALL_INTAKE_QUESTIONS_MAP.keys())
@@ -56,6 +56,18 @@ def test_bank_integrity():
     optional_ids = {q.id for q in ALL_INTAKE_QUESTIONS_MAP.values() if not q.required}
     assert optional_ids == {"non_negotiables", "hope_text"}
 
+    # Surplus and EMI band checks
+    assert ALL_INTAKE_QUESTIONS_MAP["surplus_band"].tag == "surplus"
+    assert ALL_INTAKE_QUESTIONS_MAP["surplus_band"].required is True
+    assert [opt.id for opt in ALL_INTAKE_QUESTIONS_MAP["surplus_band"].options] == [
+        "none", "under_5k", "5k_15k", "15k_30k", "over_30k"
+    ]
+    assert ALL_INTAKE_QUESTIONS_MAP["emi_band"].tag == "emi"
+    assert ALL_INTAKE_QUESTIONS_MAP["emi_band"].required is True
+    assert [opt.id for opt in ALL_INTAKE_QUESTIONS_MAP["emi_band"].options] == [
+        "none", "under_5k", "5k_15k", "over_15k"
+    ]
+
     # domain_wish and max_select
     for q in ALL_INTAKE_QUESTIONS_MAP.values():
         if q.id == "domain_wish":
@@ -63,9 +75,9 @@ def test_bank_integrity():
         else:
             assert q.max_select is None
 
-    # guess_domain options
+    # guess_domain options (7 canonical domains + not_sure)
     domain_ids = [d.id for d in CAREER_DOMAINS]
-    assert len(domain_ids) == 8
+    assert len(domain_ids) == 7
     guess_domain_opts = [opt.id for opt in ALL_INTAKE_QUESTIONS_MAP["guess_domain"].options]
     assert guess_domain_opts == [*domain_ids, "not_sure"]
 
@@ -98,7 +110,7 @@ def test_no_leaks_in_intake_endpoints():
     )
     assert res.status_code == 200
     data = res.json()
-    assert data["version"] == "starter-1"
+    assert data["version"] == "starter-2"
 
     forbidden_substrings = ["correct", "answer", "key", "dimension", "score", "tag"]
 
@@ -171,7 +183,7 @@ def test_put_answers_resume_merge_and_clear():
         json={"answers": {}},
     )
     assert res0.status_code == 200
-    assert res0.json() == {"answered": 0, "total": 14}
+    assert res0.json() == {"answered": 0, "total": 16}
 
     # 1. Partial answers
     res1 = client.put(
@@ -181,12 +193,12 @@ def test_put_answers_resume_merge_and_clear():
             "answers": {
                 "income_band": "6_12l",
                 "risk_1": "safe",
-                "domain_wish": ["eng_tech", "science_research"],
+                "domain_wish": ["tech_engineering", "sciences"],
             }
         },
     )
     assert res1.status_code == 200
-    assert res1.json() == {"answered": 3, "total": 14}
+    assert res1.json() == {"answered": 3, "total": 16}
 
     # GET progress
     prog1 = client.get(
@@ -197,7 +209,7 @@ def test_put_answers_resume_merge_and_clear():
     assert prog1.json()["answers"] == {
         "income_band": "6_12l",
         "risk_1": "safe",
-        "domain_wish": ["eng_tech", "science_research"],
+        "domain_wish": ["tech_engineering", "sciences"],
     }
     assert prog1.json()["submitted"] is False
 
@@ -213,7 +225,7 @@ def test_put_answers_resume_merge_and_clear():
         },
     )
     assert res2.status_code == 200
-    assert res2.json() == {"answered": 4, "total": 14}
+    assert res2.json() == {"answered": 4, "total": 16}
 
     prog2 = client.get(
         f"/families/{code}/intake/progress",
@@ -235,7 +247,7 @@ def test_put_answers_resume_merge_and_clear():
         },
     )
     assert res3.status_code == 200
-    assert res3.json() == {"answered": 1, "total": 14}
+    assert res3.json() == {"answered": 1, "total": 16}
 
     prog3 = client.get(
         f"/families/{code}/intake/progress",
@@ -254,7 +266,7 @@ def test_max_select_validation():
     res_ok = client.put(
         f"/families/{code}/intake/answers",
         headers={"X-Member-Token": parent_token},
-        json={"answers": {"domain_wish": ["eng_tech", "medicine_health", "business_finance"]}},
+        json={"answers": {"domain_wish": ["tech_engineering", "healthcare_medicine", "business_management"]}},
     )
     assert res_ok.status_code == 200
 
@@ -265,9 +277,9 @@ def test_max_select_validation():
         json={
             "answers": {
                 "domain_wish": [
-                    "eng_tech",
-                    "medicine_health",
-                    "business_finance",
+                    "tech_engineering",
+                    "healthcare_medicine",
+                    "business_management",
                     "design_creative",
                 ]
             }
@@ -282,9 +294,9 @@ def test_max_select_validation():
         headers={"X-Member-Token": parent_token},
     )
     assert prog.json()["answers"]["domain_wish"] == [
-        "eng_tech",
-        "medicine_health",
-        "business_finance",
+        "tech_engineering",
+        "healthcare_medicine",
+        "business_management",
     ]
 
 
@@ -305,7 +317,9 @@ def test_put_answers_validation_all_or_nothing_and_no_value_echo():
         {"income_band": sensitive_string},
         {"loan_band": 123},
         {"risk_1": "not_an_option"},
-        {"domain_wish": ["eng_tech", sensitive_string]},
+        {"surplus_band": "not_an_option"},
+        {"emi_band": "not_an_option"},
+        {"domain_wish": ["tech_engineering", sensitive_string]},
         {"domain_wish": "not_a_list"},
         {"hope_text": "C" * 601},
         {"hope_text": 123},
@@ -355,13 +369,15 @@ def test_submit_flow_incomplete_idempotent_and_status_done():
         "income_band": "6_12l",
         "savings_band": "3_8l",
         "loan_band": "up_to_3l",
+        "surplus_band": "5k_15k",
+        "emi_band": "under_5k",
         "risk_1": "safe",
         "risk_2": "gamble",
         "risk_3": "safe",
         "relocation": "same_state",
         "time_to_earn": "five_six",
-        "domain_wish": ["eng_tech", "business_finance"],
-        "guess_domain": "eng_tech",
+        "domain_wish": ["tech_engineering", "business_management"],
+        "guess_domain": "tech_engineering",
         "guess_relocation": "same_state",
         "guess_risk": "medium",
     }
@@ -372,7 +388,7 @@ def test_submit_flow_incomplete_idempotent_and_status_done():
         json={"answers": full_answers},
     )
     assert put_res.status_code == 200
-    assert put_res.json() == {"answered": 12, "total": 14}
+    assert put_res.json() == {"answered": 14, "total": 16}
 
     # Verify status done is False before submit
     status_parent_before = client.get(
@@ -429,6 +445,7 @@ def test_submit_flow_incomplete_idempotent_and_status_done():
     ).json()
     assert student_status["you"]["done"] is False
     assert student_status["partner"]["done"] is True
+
 
 
 def test_privacy_and_cross_member_isolation():

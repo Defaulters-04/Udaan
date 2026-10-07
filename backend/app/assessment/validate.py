@@ -45,6 +45,14 @@ def validate_single_answer(
             if item not in seen:
                 seen.add(item)
                 sanitized.append(item)
+
+        if question.max_select is not None and len(sanitized) > question.max_select:
+            return (
+                False,
+                None,
+                f"Question '{question.id}' allows at most {question.max_select} selections.",
+            )
+
         return True, sanitized, None
 
     elif q_type == "text":

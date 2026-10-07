@@ -44,9 +44,13 @@ def create_linked_family():
 
 
 def test_bank_integrity():
-    assert len(ALL_QUESTIONS_MAP) == 26
+    assert len(ALL_QUESTIONS_MAP) == 32
     section_counts = [len(s.questions) for s in SECTIONS_ORDER]
-    assert section_counts == [4, 12, 4, 5, 1]
+    assert section_counts == [4, 12, 4, 5, 6, 1]
+
+    # Section IDs order
+    section_ids = [s.id for s in SECTIONS_ORDER]
+    assert section_ids == ["background", "interests", "aptitude", "values", "preferences", "free_text"]
 
     # Unique IDs
     ids = list(ALL_QUESTIONS_MAP.keys())
@@ -84,6 +88,32 @@ def test_bank_integrity():
     for q in values:
         assert q.min == 0 and q.max == 10
 
+    # Check preferences questions
+    preferences = [q for q in ALL_QUESTIONS_MAP.values() if q.id.startswith("pref_")]
+    assert len(preferences) == 6
+    for q in preferences:
+        assert q.required is True
+
+    # Risk tasks options
+    for r_id in ["pref_risk_1", "pref_risk_2", "pref_risk_3"]:
+        assert [opt.id for opt in ALL_QUESTIONS_MAP[r_id].options] == ["safe", "gamble"]
+        assert ALL_QUESTIONS_MAP[r_id].tag == "risk"
+
+    # Relocation options
+    reloc_opts = [opt.id for opt in ALL_QUESTIONS_MAP["pref_relocation"].options]
+    assert reloc_opts == ["home_city", "same_state", "anywhere_india", "abroad_ok"]
+    assert ALL_QUESTIONS_MAP["pref_relocation"].tag == "relocation"
+
+    # Time-to-earn options
+    time_opts = [opt.id for opt in ALL_QUESTIONS_MAP["pref_time_to_earn"].options]
+    assert time_opts == ["within_4y", "five_six", "seven_plus"]
+    assert ALL_QUESTIONS_MAP["pref_time_to_earn"].tag == "time_to_earn"
+
+    # Domain wish options
+    assert ALL_QUESTIONS_MAP["pref_domain_wish"].max_select == 3
+    assert ALL_QUESTIONS_MAP["pref_domain_wish"].tag == "domain_wish"
+    assert len(ALL_QUESTIONS_MAP["pref_domain_wish"].options) == 7
+
     # Check free text
     ft = ALL_QUESTIONS_MAP["free_text_1"]
     assert ft.required is False
@@ -107,15 +137,17 @@ def test_no_leaks_in_questions_endpoint():
     )
     assert res.status_code == 200
     data = res.json()
-    assert data["version"] == "starter-1"
+    assert data["version"] == "starter-2"
 
-    forbidden_substrings = ["correct", "answer", "key", "dimension", "score", "riasec"]
+    forbidden_substrings = ["correct", "answer", "key", "dimension", "score", "riasec", "tag"]
 
     def inspect_object(obj):
         if isinstance(obj, dict):
             for k, v in obj.items():
                 for forbidden in forbidden_substrings:
                     assert forbidden not in k.lower(), f"Forbidden key found: {k}"
+                if isinstance(v, str):
+                    assert v not in ["domain_wish", "time_to_earn", "relocation"], f"Internal tag leaked: {v}"
                 inspect_object(v)
         elif isinstance(obj, list):
             for item in obj:
@@ -125,7 +157,7 @@ def test_no_leaks_in_questions_endpoint():
 
     # Check every question and option in response conforms strictly to contract
     for sec in data["sections"]:
-        assert sec["id"] in ["background", "interests", "aptitude", "values", "free_text"]
+        assert sec["id"] in ["background", "interests", "aptitude", "values", "preferences", "free_text"]
         assert "en" in sec["title"] and "hi" in sec["title"]
         for q in sec["questions"]:
             assert set(q.keys()).issubset(PUBLIC_QUESTION_ALLOWED_KEYS)
@@ -178,7 +210,7 @@ def test_put_answers_resume_merge_and_clear():
         json={"answers": {}},
     )
     assert res0.status_code == 200
-    assert res0.json() == {"answered": 0, "total": 26}
+    assert res0.json() == {"answered": 0, "total": 32}
 
     # 1. Partial answers
     res1 = client.put(
@@ -193,7 +225,7 @@ def test_put_answers_resume_merge_and_clear():
         },
     )
     assert res1.status_code == 200
-    assert res1.json() == {"answered": 3, "total": 26}
+    assert res1.json() == {"answered": 3, "total": 32}
 
     # GET progress
     prog1 = client.get(
@@ -220,7 +252,7 @@ def test_put_answers_resume_merge_and_clear():
         },
     )
     assert res2.status_code == 200
-    assert res2.json() == {"answered": 4, "total": 26}
+    assert res2.json() == {"answered": 4, "total": 32}
 
     prog2 = client.get(
         f"/families/{code}/assessment/progress",
@@ -241,7 +273,7 @@ def test_put_answers_resume_merge_and_clear():
         },
     )
     assert res3.status_code == 200
-    assert res3.json() == {"answered": 2, "total": 26}
+    assert res3.json() == {"answered": 2, "total": 32}
 
     prog3 = client.get(
         f"/families/{code}/assessment/progress",
@@ -274,6 +306,9 @@ def test_put_answers_validation_all_or_nothing():
         {"int_01": True},  # Boolean rejected for int (Assumption c)
         {"int_01": 3.0},  # Float rejected for int (even 3.0, Assumption c)
         {"val_security": 11},  # Slider out of range
+        {"pref_risk_1": "invalid_choice"},
+        {"pref_domain_wish": ["tech_engineering", "business_management", "healthcare_medicine", "sciences"]},  # Exceeds max_select 3
+        {"pref_domain_wish": "not_a_list"},
         {"free_text_1": "B" * 601},  # Long text exceeds max_length
     ]
 
@@ -312,7 +347,7 @@ def test_submit_flow_incomplete_idempotent_and_status_done():
     assert "missing" in err_body["error"]
     assert err_body["error"]["missing"] == REQUIRED_QUESTION_IDS  # Bank order (Assumption f)
 
-    # 2. Answer all required questions
+    # 2. Answer all required questions (25 existing + 6 preferences = 31 required)
     full_answers = {
         "bg_stream": "science_bio",
         "bg_marks_band": "75_90",
@@ -339,6 +374,12 @@ def test_submit_flow_incomplete_idempotent_and_status_done():
         "val_helping": 7,
         "val_income": 9,
         "val_creativity": 6,
+        "pref_risk_1": "safe",
+        "pref_risk_2": "gamble",
+        "pref_risk_3": "safe",
+        "pref_relocation": "anywhere_india",
+        "pref_time_to_earn": "within_4y",
+        "pref_domain_wish": ["tech_engineering", "business_management"],
     }
     # Note: free_text_1 is optional, leaving it unanswered
 
@@ -348,7 +389,7 @@ def test_submit_flow_incomplete_idempotent_and_status_done():
         json={"answers": full_answers},
     )
     assert put_res.status_code == 200
-    assert put_res.json() == {"answered": 25, "total": 26}
+    assert put_res.json() == {"answered": 31, "total": 32}
 
     # Verify status done is False before submit
     status_student_before = client.get(
@@ -436,6 +477,12 @@ def test_assessment_empty_string_and_empty_list_treated_as_unanswered_on_submit(
         "val_helping": 7,
         "val_income": 9,
         "val_creativity": 6,
+        "pref_risk_1": "safe",
+        "pref_risk_2": "gamble",
+        "pref_risk_3": "safe",
+        "pref_relocation": "anywhere_india",
+        "pref_time_to_earn": "within_4y",
+        "pref_domain_wish": ["tech_engineering"],
     }
 
     # Save full answers
@@ -461,4 +508,109 @@ def test_assessment_empty_string_and_empty_list_treated_as_unanswered_on_submit(
     data = res.json()
     assert data["error"]["code"] == "assessment_incomplete"
     assert data["error"]["missing"] == ["bg_district", "bg_languages"]
+
+
+def test_student_skipped_preferences_incomplete():
+    code, student_token, _ = create_linked_family()
+
+    answers = {
+        "bg_stream": "science_bio",
+        "bg_marks_band": "75_90",
+        "bg_district": "Lucknow",
+        "bg_languages": ["hindi", "english"],
+        "int_01": 4,
+        "int_02": 3,
+        "int_03": 5,
+        "int_04": 2,
+        "int_05": 4,
+        "int_06": 3,
+        "int_07": 4,
+        "int_08": 5,
+        "int_09": 3,
+        "int_10": 4,
+        "int_11": 2,
+        "int_12": 1,
+        "apt_spatial": "a",
+        "apt_numerical": "b",
+        "apt_verbal": "c",
+        "apt_logical": "d",
+        "val_security": 8,
+        "val_independence": 9,
+        "val_helping": 7,
+        "val_income": 9,
+        "val_creativity": 6,
+        # Answer only some preferences questions, skipping pref_risk_2 and pref_domain_wish
+        "pref_risk_1": "safe",
+        "pref_risk_3": "gamble",
+        "pref_relocation": "home_city",
+        "pref_time_to_earn": "five_six",
+    }
+
+    client.put(
+        f"/families/{code}/assessment/answers",
+        headers={"X-Member-Token": student_token},
+        json={"answers": answers},
+    )
+
+    res = client.post(
+        f"/families/{code}/assessment/submit",
+        headers={"X-Member-Token": student_token},
+    )
+    assert res.status_code == 422
+    data = res.json()
+    assert data["error"]["code"] == "assessment_incomplete"
+    assert "missing" in data["error"]
+    assert "pref_risk_2" in data["error"]["missing"]
+    assert "pref_domain_wish" in data["error"]["missing"]
+    assert data["error"]["missing"] == ["pref_risk_2", "pref_domain_wish"]
+
+
+def test_aptitude_scoring_internal():
+    from app.assessment.bank import score_aptitude_answers
+
+    # 1. All correct: spatial='a', numerical='b', verbal='c', logical='d'
+    all_correct = {
+        "apt_spatial": "a",
+        "apt_numerical": "b",
+        "apt_verbal": "c",
+        "apt_logical": "d",
+    }
+    scored = score_aptitude_answers(all_correct)
+    assert scored == {
+        "numerical": True,
+        "verbal": True,
+        "spatial": True,
+        "logical": True,
+    }
+
+    # 2. All wrong
+    all_wrong = {
+        "apt_spatial": "d",
+        "apt_numerical": "a",
+        "apt_verbal": "b",
+        "apt_logical": "c",
+    }
+    scored_wrong = score_aptitude_answers(all_wrong)
+    assert scored_wrong == {
+        "numerical": False,
+        "verbal": False,
+        "spatial": False,
+        "logical": False,
+    }
+
+    # 3. Mixed & omitted
+    mixed = {
+        "apt_numerical": "b",  # correct
+        "apt_verbal": "a",     # wrong
+        # apt_spatial omitted -> False
+        "apt_logical": "d",    # correct
+    }
+    scored_mixed = score_aptitude_answers(mixed)
+    assert scored_mixed == {
+        "numerical": True,
+        "verbal": False,
+        "spatial": False,
+        "logical": True,
+    }
+
 

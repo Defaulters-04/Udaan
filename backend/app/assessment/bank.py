@@ -3,12 +3,17 @@
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from app.shared_questions import (
+    CAREER_DOMAINS,
+    InternalOption,
+    RELOCATION_OPTIONS,
+    RISK_1_OPTIONS,
+    RISK_2_OPTIONS,
+    RISK_3_OPTIONS,
+    TIME_TO_EARN_OPTIONS,
+)
 
-@dataclass(frozen=True)
-class InternalOption:
-    id: str
-    label_en: str
-    label_hi: str
+QUESTION_BANK_VERSION = "starter-2"
 
 
 @dataclass(frozen=True)
@@ -28,7 +33,9 @@ class InternalQuestion:
     max_length: Optional[int] = None
     placeholder_en: Optional[str] = None
     placeholder_hi: Optional[str] = None
+    max_select: Optional[int] = None
     # Hidden fields (never exposed in public responses)
+    tag: Optional[str] = None
     dimension: Optional[str] = None
     correct_option_id: Optional[str] = None
 
@@ -53,6 +60,7 @@ PUBLIC_QUESTION_ALLOWED_KEYS = {
     "max_label",
     "max_length",
     "placeholder",
+    "max_select",
 }
 
 # 1. Background Section
@@ -420,7 +428,66 @@ VALUES_QUESTIONS: list[InternalQuestion] = [
     ),
 ]
 
-# 5. Free Text Section (1 item)
+# 5. Preferences Section (6 items, all required: pref_risk_1..3, pref_relocation, pref_time_to_earn, pref_domain_wish)
+PREFERENCES_QUESTIONS: list[InternalQuestion] = [
+    InternalQuestion(
+        id="pref_risk_1",
+        type="single_choice",
+        prompt_en="Imagine two starting job offers after college. Which would you choose?",
+        prompt_hi="मान लें कि कॉलेज के बाद आपके सामने नौकरी के दो विकल्प हैं। आप किसे चुनेंगे?",
+        required=True,
+        tag="risk",
+        options=RISK_1_OPTIONS,
+    ),
+    InternalQuestion(
+        id="pref_risk_2",
+        type="single_choice",
+        prompt_en="Imagine a different set of starting job offers. Which would you choose?",
+        prompt_hi="अब मान लें कि आपके सामने ये दो विकल्प हैं। आप किसे चुनेंगे?",
+        required=True,
+        tag="risk",
+        options=RISK_2_OPTIONS,
+    ),
+    InternalQuestion(
+        id="pref_risk_3",
+        type="single_choice",
+        prompt_en="Imagine a higher guaranteed offer vs the same variable opportunity. Which would you choose?",
+        prompt_hi="मान लें कि एक अधिक सुरक्षित विकल्प और वही अनिश्चित अवसर सामने है। आप क्या चुनेंगे?",
+        required=True,
+        tag="risk",
+        options=RISK_3_OPTIONS,
+    ),
+    InternalQuestion(
+        id="pref_relocation",
+        type="single_choice",
+        prompt_en="How far are you comfortable moving for higher studies or work?",
+        prompt_hi="पढ़ाई या नौकरी के लिए आप कितनी दूर जाने में सहज हैं?",
+        required=True,
+        tag="relocation",
+        options=RELOCATION_OPTIONS,
+    ),
+    InternalQuestion(
+        id="pref_time_to_earn",
+        type="single_choice",
+        prompt_en="How soon do you expect to start earning after completing school?",
+        prompt_hi="स्कूल पूरा करने के बाद आप कब तक कमाई शुरू करने की उम्मीद करते हैं?",
+        required=True,
+        tag="time_to_earn",
+        options=TIME_TO_EARN_OPTIONS,
+    ),
+    InternalQuestion(
+        id="pref_domain_wish",
+        type="multi_choice",
+        prompt_en="Which career domains are you most interested in exploring? (Select up to 3)",
+        prompt_hi="आप किन क्षेत्रों में करियर बनाने के लिए सबसे अधिक उत्सुक हैं? (अधिकतम 3 चुनें)",
+        required=True,
+        tag="domain_wish",
+        max_select=3,
+        options=CAREER_DOMAINS,
+    ),
+]
+
+# 6. Free Text Section (1 item)
 FREE_TEXT_QUESTIONS: list[InternalQuestion] = [
     InternalQuestion(
         id="free_text_1",
@@ -439,6 +506,7 @@ SECTIONS_ORDER: list[InternalSection] = [
     InternalSection("interests", "Interests", "रुचियां", INTEREST_QUESTIONS),
     InternalSection("aptitude", "Aptitude", "योग्यता", APTITUDE_QUESTIONS),
     InternalSection("values", "Values", "कार्य मूल्य", VALUES_QUESTIONS),
+    InternalSection("preferences", "Preferences", "प्राथमिकताएं", PREFERENCES_QUESTIONS),
     InternalSection("free_text", "Free Text", "आपकी राय", FREE_TEXT_QUESTIONS),
 ]
 
@@ -516,6 +584,9 @@ def build_public_question(internal: InternalQuestion) -> dict[str, Any]:
             "hi": internal.placeholder_hi,
         }
 
+    if internal.max_select is not None:
+        public_q["max_select"] = internal.max_select
+
     # Strict assertion that only allowed keys are present
     assert set(public_q.keys()).issubset(PUBLIC_QUESTION_ALLOWED_KEYS)
     return public_q
@@ -534,3 +605,42 @@ def get_public_sections() -> list[dict[str, Any]]:
             "questions": [build_public_question(q) for q in sec.questions],
         })
     return result
+
+
+# ---------------------------------------------------------------------------
+# Internal Scoring & Bridge Extraction Helpers (Never exposed in public API)
+# ---------------------------------------------------------------------------
+APTITUDE_KEY_MAP: dict[str, str] = {
+    "numerical": "apt_numerical",
+    "verbal": "apt_verbal",
+    "spatial": "apt_spatial",
+    "logical": "apt_logical",
+}
+
+
+def score_aptitude_answers(answers: dict[str, Any]) -> dict[str, bool]:
+    """Score stored student aptitude answers against hidden correct option IDs.
+
+    Returns {numerical, verbal, spatial, logical} booleans using the hidden answer key.
+    Internal function; never returned by any endpoint.
+    """
+    answers = answers or {}
+    scored: dict[str, bool] = {}
+    for trait, q_id in APTITUDE_KEY_MAP.items():
+        q = ALL_QUESTIONS_MAP.get(q_id)
+        if q is not None and q.correct_option_id is not None:
+            user_choice = answers.get(q_id)
+            scored[trait] = bool(user_choice and str(user_choice).strip() == q.correct_option_id)
+        else:
+            scored[trait] = False
+    return scored
+
+
+def get_interest_item_to_dimension() -> dict[str, str]:
+    """Extract item-to-dimension mapping from hidden interest question attributes."""
+    return {
+        q.id: q.dimension
+        for q in INTEREST_QUESTIONS
+        if q.dimension is not None
+    }
+
