@@ -290,3 +290,35 @@ Rules
   or blends is not.
 - Remedy.text.hi null => the frontend shows English with an "English only" note.
 - null means "not supplied": hide it, never default it.
+
+## Career (Page 7: career detail). Both roles.
+
+- Both members must have submitted, else 409 explorer_not_ready. Unknown career id: 404 career_not_found.
+- Scores, blocked, in_compromise and years_to_income are the SAME values the Explorer shows for that career (same best route). Neither backend nor frontend computes scores.
+- null means "not available": the frontend shows "not available yet", never a default or 0. An empty list means none found.
+- Never raw answers, money bands, savings, surplus, income or existing EMIs. Computed on request, never logged.
+
+### GET /families/{family_code}/careers/{career_id}
+Header: X-Member-Token.
+200:
+{
+  "id": string, "name": LocalizedText, "domain": string,
+  "fit": number|null, "viability": number|null, "market": number|null,
+  "years_to_income": number|null, "conflict": number, "in_compromise": boolean,
+  "blocked": (same shape as Explorer Career.blocked) | null,
+  "routes": Route[],                       // up to 5, best first
+  "entry_salary": { "min": number|null, "median": number|null, "max": number|null,
+                    "unit": "inr_per_year", "source": string } | null,
+  "demand": { "signal": "positive"|"neutral"|"negative", "source": string } | null,
+  "exams": string[],
+  "scholarships": { "name": string, "url": string|null }[] | null,
+  "growth_areas": { "id": string, "text": { "en": string, "hi": string|null } }[] | null,   // student only; null for parent
+  "family_money": { "loan_need": number|null, "monthly_emi": number|null } | null,           // parent only, best route only; null for student
+  "data_gaps": string[]
+}
+
+Route: { "id": string, "label": string, "years": number|null, "total_cost": number|null,
+         "cost_parts": { "tuition": number|null, "living": number|null, "entrance": number|null },
+         "cost_status": string, "is_best": boolean }
+- Amounts are INR. Route labels, costs and years are public data and shown to both roles.
+- cost_status is passed through from the engine. The frontend labels the values it knows and shows "unverified" for any other value.
