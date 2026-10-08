@@ -54,6 +54,7 @@ class FamilyRecord:
     expires_at: datetime
     members: list[MemberRecord] = field(default_factory=list)
     explorer_cache: Optional[dict[str, Any]] = None
+    best_routes_cache: Optional[dict[str, Optional[str]]] = None
 
     @property
     def creator(self) -> MemberRecord:

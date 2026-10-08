@@ -71,6 +71,7 @@ def compute_explorer(family: FamilyRecord) -> ExplorerResponse:
     student_profile, parent_profile = build_engine_profiles(family)
 
     scores = per_career_scores(student_profile, parent_profile)
+    family.best_routes_cache = {s["career_id"]: s.get("best_route_id") for s in scores}
     roadmap = unified_roadmap(student_profile, parent_profile)
 
     blocked_by_cid = {b.career_id: b for b in roadmap.blocked_careers}
@@ -95,6 +96,7 @@ def compute_explorer(family: FamilyRecord) -> ExplorerResponse:
 
     non_blocked_careers: list[ExplorerCareer] = []
     blocked_careers: list[ExplorerCareer] = []
+    best_routes_map: dict[str, Optional[str]] = {}
 
     for s in scores:
         cid = s["career_id"]
@@ -118,6 +120,7 @@ def compute_explorer(family: FamilyRecord) -> ExplorerResponse:
             best_rid = s.get("best_route_id")
             r = route_map.get((cid, best_rid)) if best_rid else None
             years_to_income = r.years_to_first_income if r else None
+            best_routes_map[cid] = r.route_id if r else best_rid
 
             in_compromise = cid in compromise_ids_set
             blend = blends_by_cid.get(cid, [])
@@ -174,6 +177,7 @@ def compute_explorer(family: FamilyRecord) -> ExplorerResponse:
 
             if cause == "no_route_data":
                 years_to_income = None
+                best_routes_map[cid] = None
             else:
                 best_rid = s.get("best_route_id")
                 r = route_map.get((cid, best_rid)) if best_rid else None
@@ -181,6 +185,7 @@ def compute_explorer(family: FamilyRecord) -> ExplorerResponse:
                     matching = [rt for rt in route_list if rt.career_id == cid]
                     r = matching[0] if matching else None
                 years_to_income = r.years_to_first_income if r else None
+                best_routes_map[cid] = r.route_id if r else best_rid
 
             if cause == "no_route_data":
                 remedies = []
@@ -242,6 +247,7 @@ def compute_explorer(family: FamilyRecord) -> ExplorerResponse:
         compromise = ExplorerCompromise(min_fit=min_fit, min_viability=min_viability)
 
     slider = ExplorerSlider(positions=positions, default=50)
+    family.best_routes_cache = best_routes_map
 
     return ExplorerResponse(
         slider=slider,
@@ -249,6 +255,15 @@ def compute_explorer(family: FamilyRecord) -> ExplorerResponse:
         frontier=frontier,
         compromise=compromise,
     )
+
+
+def get_or_compute_explorer(family: FamilyRecord) -> ExplorerResponse:
+    if family.explorer_cache is not None and family.best_routes_cache is not None:
+        return ExplorerResponse.model_validate(family.explorer_cache)
+
+    response = compute_explorer(family)
+    family.explorer_cache = response.model_dump()
+    return response
 
 
 @router.get("/explorer", response_model=ExplorerResponse)
@@ -279,10 +294,4 @@ def get_family_explorer(
             "Both student and parent must submit before accessing the explorer",
         )
 
-    # In-memory cached result on family record
-    if family.explorer_cache is not None:
-        return ExplorerResponse.model_validate(family.explorer_cache)
-
-    response = compute_explorer(family)
-    family.explorer_cache = response.model_dump()
-    return response
+    return get_or_compute_explorer(family)
