@@ -223,6 +223,26 @@ function CareerDetailContent() {
     }
   }, [career, t]);
 
+  // Status badge styling
+  const statusBadgeConfig = useMemo(() => {
+    if (!career) {
+      return { bg: 'bg-cloud/60', text: 'text-midnight/80', border: 'border-cloud', dot: 'bg-midnight/40' };
+    }
+    if (!career.blocked) {
+      return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' };
+    }
+    switch (career.blocked.cause) {
+      case 'cost':
+        return { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200', dot: 'bg-amber-500' };
+      case 'academic':
+        return { bg: 'bg-sky-50', text: 'text-sky-800', border: 'border-sky-200', dot: 'bg-sky-500' };
+      case 'no_route_data':
+        return { bg: 'bg-purple-50', text: 'text-purple-800', border: 'border-purple-200', dot: 'bg-purple-500' };
+      default:
+        return { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200', dot: 'bg-amber-500' };
+    }
+  }, [career]);
+
   // Loading state
   if (!hasHydrated || (loading && !career && !isWaitingPartner && !notFound && !errorMessage)) {
     return (
@@ -326,457 +346,753 @@ function CareerDetailContent() {
       <Header />
 
       <motion.main
-        initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className="flex-1 max-w-[640px] mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 space-y-7"
+        transition={{ duration: 0.25 }}
+        className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8"
       >
-        {/* Top Navigation & Mock Mode Switcher */}
-        <div className="flex items-center justify-between gap-3 text-xs">
+        {/* Top Breadcrumb & Control Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           <Link
             href="/explorer"
-            className="inline-flex items-center gap-1.5 font-semibold text-ocean hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean rounded py-0.5"
+            className="inline-flex items-center gap-1.5 font-semibold text-ocean bg-white border border-cloud px-3 py-1.5 rounded-xl hover:border-ocean hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean"
           >
             ← {t.backToExplorer}
           </Link>
 
-          {isMock && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-ocean/80 bg-cloud px-2 py-0.5 rounded">
-                {t.demoDataLabel}
-              </span>
-              <span className="text-[11px] text-midnight/50">
-                {career.id === 'sparse' ? (
-                  <Link
-                    href="/career/software_engineer"
-                    className="text-ocean hover:underline"
-                  >
-                    {t.demoToggleFull}
-                  </Link>
-                ) : (
-                  <Link
-                    href="/career/sparse"
-                    className="text-ocean hover:underline"
-                  >
-                    {t.demoToggleSparse}
-                  </Link>
-                )}
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-2.5">
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-cloud text-midnight/80 shadow-xs">
+              {storeRole === 'student'
+                ? `🎓 ${storeLang === 'hi' ? 'विद्यार्थी दृष्टिकोण' : 'Student Perspective'}`
+                : `👨‍👩‍👧 ${storeLang === 'hi' ? 'अभिभावक दृष्टिकोण' : 'Parent Perspective'}`}
+            </span>
+
+            {isMock && (
+              <div className="flex items-center gap-2 bg-white border border-cloud px-3 py-1 rounded-full shadow-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-ocean">
+                  {t.demoDataLabel}
+                </span>
+                <span className="text-midnight/30">•</span>
+                <span className="text-[11px]">
+                  {career.id === 'sparse' ? (
+                    <Link
+                      href="/career/software_engineer"
+                      className="text-ocean hover:underline font-medium"
+                    >
+                      {t.demoToggleFull}
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/career/sparse"
+                      className="text-ocean hover:underline font-medium"
+                    >
+                      {t.demoToggleSparse}
+                    </Link>
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* 1. Heading & Key Metrics */}
-        <section className="space-y-4">
-          <div>
-            <span className="text-xs font-medium text-midnight/60 block capitalize">
-              {getDomainLabel(career.domain, storeLang)}
-            </span>
-            <h1 className={`text-2xl sm:text-3xl font-bold text-midnight leading-tight ${headingFontClass}`}>
-              {career.name[storeLang] ?? career.name.en}
-            </h1>
-            <p className="text-sm font-semibold text-ocean mt-1">
-              {getStatusLine}
-            </p>
-          </div>
+        {/* 1. Hero Dashboard Banner & KPI Deck */}
+        <div className="bg-gradient-to-br from-white via-white to-sky/15 border border-cloud/90 rounded-3xl p-6 sm:p-8 lg:p-10 shadow-sm relative overflow-hidden space-y-6 sm:space-y-8">
+          {/* Subtle decorative glow */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-ocean/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
-          {/* Plain labeled numbers (hide any that are null) */}
-          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-3 pt-2 text-midnight">
-            {career.fit !== null && (
-              <div>
-                <span className="text-xs text-midnight/60 block">{t.careerFitLabel}</span>
-                <span className="text-lg font-bold font-mono text-midnight">
-                  {Math.round(career.fit)}%
-                </span>
-              </div>
-            )}
+          {/* Heading and Meta Row */}
+          <div className="space-y-3 relative z-10">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-ocean/10 text-ocean border border-ocean/20 capitalize">
+                {getDomainLabel(career.domain, storeLang)}
+              </span>
 
-            {career.viability !== null && (
-              <div>
-                <span className="text-xs text-midnight/60 block">{t.careerViabilityLabel}</span>
-                <span className="text-lg font-bold font-mono text-midnight">
-                  {Math.round(career.viability)}%
-                </span>
-              </div>
-            )}
-
-            {career.years_to_income !== null && (
-              <div>
-                <span className="text-xs text-midnight/60 block">{t.careerYearsToIncomeLabel}</span>
-                <span className="text-lg font-bold font-mono text-midnight">
-                  {career.years_to_income}{' '}
-                  <span className="text-xs font-normal text-midnight/70">
-                    {storeLang === 'hi' ? 'वर्ष' : 'yrs'}
-                  </span>
-                </span>
-              </div>
-            )}
-
-            {career.conflict !== null && (
-              <div>
-                <span className="text-xs text-midnight/60 block">{t.careerConflictLabel}</span>
-                <span className="text-lg font-bold font-mono text-midnight">
-                  {Math.round(career.conflict)}%
-                </span>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* 2. Routes */}
-        <section className="border-t border-cloud/90 pt-6 space-y-4">
-          <h2 className={`text-base font-bold text-midnight ${headingFontClass}`}>
-            {t.routesTitle}
-          </h2>
-
-          {career.routes.length === 0 ? (
-            <p className="text-xs text-midnight/60 italic">
-              {t.noRoutesAvailable}
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {career.routes.map((route: CareerRoute) => {
-                const tuition = route.cost_parts.tuition ?? 0;
-                const living = route.cost_parts.living ?? 0;
-                const entrance = route.cost_parts.entrance ?? 0;
-                const partsTotal = tuition + living + entrance;
-
-                const hasParts = partsTotal > 0;
-                const tuitionPct = hasParts ? (tuition / partsTotal) * 100 : 0;
-                const livingPct = hasParts ? (living / partsTotal) * 100 : 0;
-                const entrancePct = hasParts ? (entrance / partsTotal) * 100 : 0;
-
-                return (
-                  <div key={route.id} className="space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-semibold text-midnight">
-                            {route.label}
-                          </span>
-                          {route.is_best && (
-                            <span className="text-[11px] font-bold text-ocean">
-                              [{t.bestRouteBadge}]
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-midnight/60 flex items-center gap-2">
-                          {route.years !== null && (
-                            <span>
-                              {route.years} {storeLang === 'hi' ? 'वर्ष' : 'yrs'}
-                            </span>
-                          )}
-                          <span>•</span>
-                          <span className="capitalize">
-                            {route.cost_status === 'verified'
-                              ? t.costStatusVerified
-                              : t.costStatusUnverified}
-                          </span>
-                        </div>
-                      </div>
-
-                      {route.total_cost !== null && (
-                        <span className="text-sm font-bold font-mono text-midnight whitespace-nowrap">
-                          {formatRupees(route.total_cost, storeLang)}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Cost Parts SVG horizontal bar */}
-                    {hasParts && (
-                      <div className="space-y-1.5 pt-1">
-                        <svg
-                          width="100%"
-                          height="8"
-                          className="w-full rounded-full overflow-hidden bg-cloud/50"
-                          aria-hidden="true"
-                        >
-                          {tuitionPct > 0 && (
-                            <rect
-                              x="0%"
-                              y="0"
-                              width={`${tuitionPct}%`}
-                              height="8"
-                              fill="#2D6FB8"
-                            />
-                          )}
-                          {livingPct > 0 && (
-                            <rect
-                              x={`${tuitionPct}%`}
-                              y="0"
-                              width={`${livingPct}%`}
-                              height="8"
-                              fill="#7DBEF0"
-                            />
-                          )}
-                          {entrancePct > 0 && (
-                            <rect
-                              x={`${tuitionPct + livingPct}%`}
-                              y="0"
-                              width={`${entrancePct}%`}
-                              height="8"
-                              fill="#11284A"
-                            />
-                          )}
-                        </svg>
-
-                        {/* Cost Legend */}
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-midnight/70">
-                          {route.cost_parts.tuition !== null && (
-                            <span className="inline-flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-[#2D6FB8] inline-block" />
-                              {t.tuitionCost}: {formatRupees(route.cost_parts.tuition, storeLang)}
-                            </span>
-                          )}
-                          {route.cost_parts.living !== null && (
-                            <span className="inline-flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-[#7DBEF0] inline-block" />
-                              {t.livingCost}: {formatRupees(route.cost_parts.living, storeLang)}
-                            </span>
-                          )}
-                          {route.cost_parts.entrance !== null && (
-                            <span className="inline-flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-[#11284A] inline-block" />
-                              {t.entranceCost}: {formatRupees(route.cost_parts.entrance, storeLang)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* 3. Entry salary (only if present) */}
-        {career.entry_salary && (
-          <section className="border-t border-cloud/90 pt-6 space-y-2">
-            <h2 className={`text-base font-bold text-midnight ${headingFontClass}`}>
-              {t.salaryTitle}
-            </h2>
-            <div className="text-sm text-midnight flex flex-wrap items-baseline gap-2">
-              {career.entry_salary.min !== null && (
-                <span>
-                  {formatRupees(career.entry_salary.min, storeLang)}{' '}
-                  <span className="text-xs text-midnight/60">({t.salaryMin})</span>
-                </span>
-              )}
-              {career.entry_salary.median !== null && (
-                <>
-                  <span className="text-midnight/40">—</span>
-                  <span className="font-semibold text-ocean">
-                    {formatRupees(career.entry_salary.median, storeLang)}{' '}
-                    <span className="text-xs text-midnight/60">({t.salaryMedian})</span>
-                  </span>
-                </>
-              )}
-              {career.entry_salary.max !== null && (
-                <>
-                  <span className="text-midnight/40">—</span>
-                  <span>
-                    {formatRupees(career.entry_salary.max, storeLang)}{' '}
-                    <span className="text-xs text-midnight/60">({t.salaryMax})</span>
-                  </span>
-                </>
-              )}
-              <span className="text-xs text-midnight/60">/ {t.perYear}</span>
-            </div>
-            {career.entry_salary.source && (
-              <p className="text-[11px] text-midnight/60">
-                {t.sourceLabel}: {career.entry_salary.source}
-              </p>
-            )}
-          </section>
-        )}
-
-        {/* 4. Demand (only if present) */}
-        {career.demand && (
-          <section className="border-t border-cloud/90 pt-6 space-y-2">
-            <h2 className={`text-base font-bold text-midnight ${headingFontClass}`}>
-              {t.demandTitle}
-            </h2>
-            <p className="text-sm font-semibold text-midnight">
-              {career.demand.signal === 'positive'
-                ? t.demandPositive
-                : career.demand.signal === 'negative'
-                ? t.demandNegative
-                : t.demandNeutral}
-            </p>
-            {career.demand.source && (
-              <p className="text-[11px] text-midnight/60">
-                {t.sourceLabel}: {career.demand.source}
-              </p>
-            )}
-          </section>
-        )}
-
-        {/* 5. Exams */}
-        {career.exams && career.exams.length > 0 && (
-          <section className="border-t border-cloud/90 pt-6 space-y-2">
-            <h2 className={`text-base font-bold text-midnight ${headingFontClass}`}>
-              {t.examsTitle}
-            </h2>
-            <ul className="text-sm text-midnight/90 space-y-1">
-              {career.exams.map((exam, i) => (
-                <li key={i} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-ocean inline-block" />
-                  <span>{exam}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* 6. Scholarships */}
-        <section className="border-t border-cloud/90 pt-6 space-y-2">
-          <h2 className={`text-base font-bold text-midnight ${headingFontClass}`}>
-            {t.scholarshipsTitle}
-          </h2>
-          {career.scholarships === null || career.scholarships.length === 0 ? (
-            <p className="text-xs text-midnight/60 italic">
-              {t.scholarshipsNotAvailable}
-            </p>
-          ) : (
-            <ul className="text-sm text-midnight/90 space-y-1.5">
-              {career.scholarships.map((s, idx) => (
-                <li key={idx} className="flex items-baseline justify-between gap-2">
-                  <span>{s.name}</span>
-                  {s.url && (
-                    <a
-                      href={s.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-semibold text-ocean hover:underline whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean rounded"
-                    >
-                      {t.officialLink} ↗
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        {/* 7. Growth areas (Student only; null for parent, so show nothing) */}
-        {storeRole === 'student' && career.growth_areas && career.growth_areas.length > 0 && (
-          <section className="border-t border-cloud/90 pt-6 space-y-2">
-            <h2 className={`text-base font-bold text-midnight ${headingFontClass}`}>
-              {t.growthAreasTitle}
-            </h2>
-            <p className="text-xs text-midnight/60">
-              {t.growthAreasSubtitle}
-            </p>
-            <ul className="text-sm text-midnight/90 space-y-1.5 pt-1">
-              {career.growth_areas.map((ga) => {
-                const isEnglishOnly = storeLang === 'hi' && ga.text.hi === null;
-                const text = ga.text[storeLang] ?? ga.text.en;
-                return (
-                  <li key={ga.id} className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-ocean mt-1.5 shrink-0" />
-                    <span>
-                      {text}
-                      {isEnglishOnly && (
-                        <span className="text-[10px] text-midnight/50 italic ml-1.5">
-                          ({t.englishOnlyNote})
-                        </span>
-                      )}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
-
-        {/* 8. Money (Parent only; null for student, so show nothing) */}
-        {storeRole === 'parent' && career.family_money && (
-          <section className="border-t border-cloud/90 pt-6 space-y-2">
-            <div className="flex items-baseline justify-between gap-2">
-              <h2 className={`text-base font-bold text-midnight ${headingFontClass}`}>
-                {t.familyMoneyTitle}
-              </h2>
-              <span className="text-[11px] font-medium text-ocean/80">
-                {t.onlyYouSeeThis}
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusBadgeConfig.bg} ${statusBadgeConfig.text} ${statusBadgeConfig.border}`}
+              >
+                <span className={`w-2 h-2 rounded-full ${statusBadgeConfig.dot} animate-pulse`} />
+                {getStatusLine}
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-x-8 gap-y-2 pt-1 text-sm text-midnight">
-              {career.family_money.loan_need !== null && (
-                <div>
-                  <span className="text-xs text-midnight/60 block">{t.loanNeedLabel}</span>
-                  <span className="text-base font-bold font-mono text-midnight">
-                    {formatRupees(career.family_money.loan_need, storeLang)}
+            <h1
+              className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold text-midnight tracking-tight leading-tight ${headingFontClass}`}
+            >
+              {career.name[storeLang] ?? career.name.en}
+            </h1>
+
+            <p className="text-sm sm:text-base text-midnight/70 font-medium max-w-3xl leading-relaxed">
+              {career.blocked === null
+                ? storeLang === 'hi'
+                  ? 'यह करियर आपके परिवार के बजट और योग्यता दोनों के अनुकूल है।'
+                  : 'This career is financially and academically viable for your family profile.'
+                : career.blocked.cause === 'cost'
+                ? storeLang === 'hi'
+                  ? 'इस करियर के लिए वित्तीय योजना और छात्रवृत्ति सहायता की आवश्यकता हो सकती है।'
+                  : 'This career requires an education loan or scholarship plan to bridge the budget gap.'
+                : career.blocked.cause === 'academic'
+                ? storeLang === 'hi'
+                  ? 'इस करियर के लिए विशेष विषय या प्रवेश परीक्षा की तैयारी आवश्यक है।'
+                  : 'This career requires specific academic prerequisites or entrance examination preparation.'
+                : storeLang === 'hi'
+                  ? 'इस करियर के सत्यापित शुल्क और मार्ग के आंकड़े एकत्रित किए जा रहे हैं।'
+                  : 'Verified route tuition and institutional data is currently being benchmarked.'}
+            </p>
+          </div>
+
+          {/* KPI Stat Cards Deck (Balanced 4 to 5 cards) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 pt-2 relative z-10">
+            {/* KPI 1: Fit */}
+            {career.fit !== null && (
+              <div className="bg-white/95 backdrop-blur-sm border border-cloud rounded-2xl p-4 sm:p-5 space-y-2 shadow-xs hover:border-ocean/30 transition-all">
+                <span className="text-xs font-semibold text-midnight/60 block">
+                  {t.careerFitLabel}
+                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl sm:text-3xl font-extrabold font-mono text-ocean">
+                    {Math.round(career.fit)}%
                   </span>
+                </div>
+                <div className="w-full h-1.5 bg-cloud/70 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-ocean rounded-full transition-all duration-500"
+                    style={{ width: `${career.fit}%` }}
+                  />
+                </div>
+                <span className="text-[11px] text-midnight/60 block">
+                  {storeLang === 'hi' ? 'रुचि और क्षमता मेल' : 'Aptitude & interest match'}
+                </span>
+              </div>
+            )}
+
+            {/* KPI 2: Viability */}
+            {career.viability !== null && (
+              <div className="bg-white/95 backdrop-blur-sm border border-cloud rounded-2xl p-4 sm:p-5 space-y-2 shadow-xs hover:border-midnight/30 transition-all">
+                <span className="text-xs font-semibold text-midnight/60 block">
+                  {t.careerViabilityLabel}
+                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl sm:text-3xl font-extrabold font-mono text-midnight">
+                    {Math.round(career.viability)}%
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-cloud/70 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-midnight rounded-full transition-all duration-500"
+                    style={{ width: `${career.viability}%` }}
+                  />
+                </div>
+                <span className="text-[11px] text-midnight/60 block">
+                  {storeLang === 'hi' ? 'बजट और शुल्क अनुकूलता' : 'Budget & route feasibility'}
+                </span>
+              </div>
+            )}
+
+            {/* KPI 3: Years to Income */}
+            {career.years_to_income !== null && (
+              <div className="bg-white/95 backdrop-blur-sm border border-cloud rounded-2xl p-4 sm:p-5 space-y-2 shadow-xs hover:border-ocean/30 transition-all">
+                <span className="text-xs font-semibold text-midnight/60 block">
+                  {t.careerYearsToIncomeLabel}
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl sm:text-3xl font-extrabold font-mono text-midnight">
+                    {career.years_to_income}
+                  </span>
+                  <span className="text-xs font-semibold text-midnight/70">
+                    {storeLang === 'hi' ? 'वर्ष' : 'yrs'}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-cloud/70 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-sky rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, Math.max(10, (career.years_to_income / 8) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <span className="text-[11px] text-midnight/60 block">
+                  {storeLang === 'hi' ? 'डिग्री और प्रशिक्षण अवधि' : 'Study & training duration'}
+                </span>
+              </div>
+            )}
+
+            {/* KPI 4: Conflict / Alignment */}
+            {career.conflict !== null && (
+              <div className="bg-white/95 backdrop-blur-sm border border-cloud rounded-2xl p-4 sm:p-5 space-y-2 shadow-xs hover:border-ocean/30 transition-all">
+                <span className="text-xs font-semibold text-midnight/60 block">
+                  {t.careerConflictLabel}
+                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl sm:text-3xl font-extrabold font-mono text-midnight">
+                    {Math.round(career.conflict)}%
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-cloud/70 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                    style={{ width: `${career.conflict}%` }}
+                  />
+                </div>
+                <span className="text-[11px] text-midnight/60 block truncate">
+                  {career.conflict <= 25
+                    ? storeLang === 'hi'
+                      ? 'उच्च पारिवारिक सहमति'
+                      : 'Strong family harmony'
+                    : career.conflict <= 50
+                    ? storeLang === 'hi'
+                      ? 'सामान्य चर्चा आवश्यक'
+                      : 'Moderate discussion'
+                    : storeLang === 'hi'
+                    ? 'प्राथमिकताओं में अंतर'
+                    : 'Active negotiation'}
+                </span>
+              </div>
+            )}
+
+            {/* KPI 5: Median Starting Salary (if available) */}
+            {career.entry_salary?.median ? (
+              <div className="bg-white/95 backdrop-blur-sm border border-cloud rounded-2xl p-4 sm:p-5 space-y-2 shadow-xs col-span-2 md:col-span-4 lg:col-span-1 hover:border-ocean/30 transition-all">
+                <span className="text-xs font-semibold text-midnight/60 block">
+                  {storeLang === 'hi' ? 'प्रारंभिक वेतन (मध्यमान)' : 'Starting Salary (Median)'}
+                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl sm:text-3xl font-extrabold font-mono text-ocean">
+                    {formatRupees(career.entry_salary.median, storeLang)}
+                  </span>
+                </div>
+                <span className="text-[11px] text-midnight/60 block">
+                  / {t.perYear} ({career.entry_salary.source || 'Industry avg'})
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        {/* 2. Main Dashboard Multi-Column Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* LEFT MAIN COLUMN: Pathways, Action Plan, Exams, Growth Areas (8 Cols) */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Section A: Education Pathways (Routes) */}
+            <section className="bg-white border border-cloud/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cloud/60 pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-xl bg-ocean/10 text-ocean flex items-center justify-center text-lg font-bold">
+                    🎓
+                  </span>
+                  <div>
+                    <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
+                      {t.routesTitle}
+                    </h2>
+                    <span className="text-xs text-midnight/60">
+                      {storeLang === 'hi'
+                        ? 'विभिन्न कॉलेजों और प्रवेश मार्गों के आधार पर कुल लागत व समय'
+                        : 'Duration, verified tuition, and living costs across routes'}
+                    </span>
+                  </div>
+                </div>
+
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-cloud/50 text-midnight/80 border border-cloud">
+                  {career.routes.length}{' '}
+                  {storeLang === 'hi' ? 'रास्ते उपलब्ध' : 'Pathways Available'}
+                </span>
+              </div>
+
+              {career.routes.length === 0 ? (
+                <div className="p-8 text-center bg-paper/60 border border-cloud rounded-2xl space-y-2">
+                  <p className="text-sm text-midnight/70 font-medium">
+                    {t.noRoutesAvailable}
+                  </p>
+                  <p className="text-xs text-midnight/50">
+                    {t.pathwayResearchPending}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {career.routes.map((route: CareerRoute) => {
+                    const tuition = route.cost_parts.tuition ?? 0;
+                    const living = route.cost_parts.living ?? 0;
+                    const entrance = route.cost_parts.entrance ?? 0;
+                    const partsTotal = tuition + living + entrance;
+
+                    const hasParts = partsTotal > 0;
+                    const tuitionPct = hasParts ? (tuition / partsTotal) * 100 : 0;
+                    const livingPct = hasParts ? (living / partsTotal) * 100 : 0;
+                    const entrancePct = hasParts ? (entrance / partsTotal) * 100 : 0;
+
+                    return (
+                      <div
+                        key={route.id}
+                        className={`border rounded-2xl p-5 sm:p-6 transition-all space-y-4 ${
+                          route.is_best
+                            ? 'bg-ocean/[0.03] border-ocean/40 shadow-xs'
+                            : 'bg-paper/40 border-cloud/90 hover:border-ocean/30'
+                        }`}
+                      >
+                        {/* Route Title & Cost Header */}
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="text-base sm:text-lg font-bold text-midnight">
+                                {route.label}
+                              </h3>
+                              {route.is_best && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-ocean bg-ocean/10 px-2.5 py-0.5 rounded-full border border-ocean/20">
+                                  ★ {t.bestRouteBadge}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2.5 text-xs text-midnight/70">
+                              {route.years !== null && (
+                                <span className="font-medium">
+                                  ⏱️ {route.years} {storeLang === 'hi' ? 'वर्ष' : 'yrs'}
+                                </span>
+                              )}
+                              <span>•</span>
+                              <span
+                                className={`font-semibold ${
+                                  route.cost_status === 'verified'
+                                    ? 'text-emerald-700'
+                                    : 'text-midnight/60'
+                                }`}
+                              >
+                                {route.cost_status === 'verified'
+                                  ? `✓ ${t.costStatusVerified}`
+                                  : `~ ${t.costStatusUnverified}`}
+                              </span>
+                            </div>
+                          </div>
+
+                          {route.total_cost !== null && (
+                            <div className="text-right">
+                              <span className="text-xs text-midnight/60 block">
+                                {storeLang === 'hi' ? 'अनुमानित कुल खर्च' : 'Estimated Total Cost'}
+                              </span>
+                              <span className="text-xl sm:text-2xl font-black font-mono text-midnight">
+                                {formatRupees(route.total_cost, storeLang)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Segmented Horizontal Bar */}
+                        {hasParts && (
+                          <div className="space-y-2 pt-1">
+                            <div className="h-2.5 w-full bg-cloud/60 rounded-full overflow-hidden flex">
+                              {tuitionPct > 0 && (
+                                <div
+                                  style={{ width: `${tuitionPct}%` }}
+                                  className="h-full bg-[#2D6FB8] transition-all duration-300"
+                                  title={`${t.tuitionCost}: ${formatRupees(route.cost_parts.tuition, storeLang)}`}
+                                />
+                              )}
+                              {livingPct > 0 && (
+                                <div
+                                  style={{ width: `${livingPct}%` }}
+                                  className="h-full bg-[#7DBEF0] transition-all duration-300"
+                                  title={`${t.livingCost}: ${formatRupees(route.cost_parts.living, storeLang)}`}
+                                />
+                              )}
+                              {entrancePct > 0 && (
+                                <div
+                                  style={{ width: `${entrancePct}%` }}
+                                  className="h-full bg-[#11284A] transition-all duration-300"
+                                  title={`${t.entranceCost}: ${formatRupees(route.cost_parts.entrance, storeLang)}`}
+                                />
+                              )}
+                            </div>
+
+                            {/* Legend Details */}
+                            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-midnight/80 pt-0.5">
+                              {route.cost_parts.tuition !== null && (
+                                <span className="inline-flex items-center gap-1.5">
+                                  <span className="w-2.5 h-2.5 rounded-full bg-[#2D6FB8] inline-block shrink-0" />
+                                  <span className="text-midnight/70">{t.tuitionCost}:</span>
+                                  <span className="font-mono font-bold text-midnight">
+                                    {formatRupees(route.cost_parts.tuition, storeLang)}
+                                  </span>
+                                </span>
+                              )}
+                              {route.cost_parts.living !== null && (
+                                <span className="inline-flex items-center gap-1.5">
+                                  <span className="w-2.5 h-2.5 rounded-full bg-[#7DBEF0] inline-block shrink-0" />
+                                  <span className="text-midnight/70">{t.livingCost}:</span>
+                                  <span className="font-mono font-bold text-midnight">
+                                    {formatRupees(route.cost_parts.living, storeLang)}
+                                  </span>
+                                </span>
+                              )}
+                              {route.cost_parts.entrance !== null && (
+                                <span className="inline-flex items-center gap-1.5">
+                                  <span className="w-2.5 h-2.5 rounded-full bg-[#11284A] inline-block shrink-0" />
+                                  <span className="text-midnight/70">{t.entranceCost}:</span>
+                                  <span className="font-mono font-bold text-midnight">
+                                    {formatRupees(route.cost_parts.entrance, storeLang)}
+                                  </span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* Section B: What Would Help / Remedial Roadmap (Shown when career is blocked) */}
+            {career.blocked && (
+              <section className="bg-gradient-to-br from-amber-50/50 via-white to-ocean/5 border border-amber-200/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+                <div className="flex items-center gap-3 border-b border-amber-200/60 pb-4">
+                  <span className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-lg font-bold">
+                    💡
+                  </span>
+                  <div>
+                    <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
+                      {t.whatWouldHelpTitle}
+                    </h2>
+                    <p className="text-xs text-midnight/70">
+                      {storeLang === 'hi'
+                        ? 'इस करियर को संभव बनाने के लिए आवश्यक कदम और रणनीतियाँ'
+                        : 'Key steps and financial bridges to make this pathway feasible'}
+                    </p>
+                  </div>
+                </div>
+
+                {career.blocked.cause === 'no_route_data' ? (
+                  <p className="text-sm text-midnight/75 leading-relaxed bg-white/80 p-4 rounded-xl border border-cloud">
+                    {t.pathwayResearchPending}
+                  </p>
+                ) : career.blocked.remedies && career.blocked.remedies.length > 0 ? (
+                  <div className="space-y-3">
+                    {career.blocked.remedies.map((remedy, idx) => {
+                      const isEnglishOnly = storeLang === 'hi' && remedy.text.hi === null;
+                      const text = remedy.text[storeLang] ?? remedy.text.en;
+                      return (
+                        <div
+                          key={remedy.id}
+                          className="bg-white/95 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3.5 shadow-xs"
+                        >
+                          <span className="w-7 h-7 rounded-lg bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <div className="space-y-1">
+                            <p className="text-sm font-semibold text-midnight leading-relaxed">
+                              {text}
+                            </p>
+                            {isEnglishOnly && (
+                              <span className="text-[10px] text-midnight/50 italic block">
+                                ({t.englishOnlyNote})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-midnight/60 italic bg-white/80 p-4 rounded-xl border border-cloud">
+                    {t.neutralRemedyLine}
+                  </p>
+                )}
+              </section>
+            )}
+
+            {/* Section C: Entrance Examinations */}
+            {career.exams && career.exams.length > 0 && (
+              <section className="bg-white border border-cloud/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+                <div className="flex items-center justify-between border-b border-cloud/60 pb-4">
+                  <div className="flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-xl bg-ocean/10 text-ocean flex items-center justify-center text-lg font-bold">
+                      📝
+                    </span>
+                    <div>
+                      <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
+                        {t.examsTitle}
+                      </h2>
+                      <span className="text-xs text-midnight/60">
+                        {storeLang === 'hi'
+                          ? 'इस करियर में प्रवेश के लिए प्रमुख राष्ट्रीय व राज्य स्तरीय परीक्षाएं'
+                          : 'Major qualifying exams and competitive entrance tests'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-ocean/10 text-ocean border border-ocean/20">
+                    {career.exams.length} {storeLang === 'hi' ? 'परीक्षाएं' : 'Exams'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {career.exams.map((exam, i) => (
+                    <div
+                      key={i}
+                      className="p-4 rounded-2xl bg-paper/60 border border-cloud hover:border-ocean/40 transition-colors flex items-center gap-3"
+                    >
+                      <span className="w-8 h-8 rounded-xl bg-white border border-cloud flex items-center justify-center text-xs font-bold text-ocean shrink-0 shadow-xs">
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <span className="text-sm font-bold text-midnight block truncate">
+                          {exam}
+                        </span>
+                        <span className="text-[11px] text-midnight/50 block">
+                          {storeLang === 'hi' ? 'प्रवेश परीक्षा' : 'Entrance Examination'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Section D: Student Growth Areas (Student View Only) */}
+            {storeRole === 'student' && career.growth_areas && career.growth_areas.length > 0 && (
+              <section className="bg-white border border-cloud/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+                <div className="flex items-center gap-3 border-b border-cloud/60 pb-4">
+                  <span className="w-9 h-9 rounded-xl bg-ocean/10 text-ocean flex items-center justify-center text-lg font-bold">
+                    🚀
+                  </span>
+                  <div>
+                    <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
+                      {t.growthAreasTitle}
+                    </h2>
+                    <p className="text-xs text-midnight/60">
+                      {t.growthAreasSubtitle}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  {career.growth_areas.map((ga) => {
+                    const isEnglishOnly = storeLang === 'hi' && ga.text.hi === null;
+                    const text = ga.text[storeLang] ?? ga.text.en;
+                    return (
+                      <div
+                        key={ga.id}
+                        className="p-4 rounded-2xl bg-paper/50 border border-cloud flex items-start gap-3 hover:border-ocean/30 transition-all"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-ocean text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                          ✓
+                        </span>
+                        <div className="space-y-0.5">
+                          <p className="text-sm font-semibold text-midnight leading-relaxed">
+                            {text}
+                          </p>
+                          {isEnglishOnly && (
+                            <span className="text-[10px] text-midnight/50 italic block">
+                              ({t.englishOnlyNote})
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* RIGHT SIDEBAR COLUMN: Salary Range, Market Demand, Parent Finance, Scholarships, Gaps (4 Cols) */}
+          <div className="lg:col-span-4 space-y-8">
+            {/* Widget 1: Market & Salary Benchmarks */}
+            <div className="bg-white border border-cloud/90 rounded-3xl p-6 sm:p-7 shadow-sm space-y-6">
+              {/* Salary Section */}
+              {career.entry_salary && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2.5 border-b border-cloud/60 pb-3">
+                    <span className="text-base">💼</span>
+                    <h3 className={`text-base font-bold text-midnight ${headingFontClass}`}>
+                      {t.salaryTitle}
+                    </h3>
+                  </div>
+
+                  {/* Visual Range Display */}
+                  <div className="bg-paper/70 p-4 rounded-2xl border border-cloud/80 space-y-3">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs font-semibold text-midnight/60">
+                        {t.salaryMedian}
+                      </span>
+                      <span className="text-xl font-extrabold font-mono text-ocean">
+                        {career.entry_salary.median !== null
+                          ? formatRupees(career.entry_salary.median, storeLang)
+                          : '—'}
+                      </span>
+                    </div>
+
+                    {/* Gradient Min-Max Indicator Bar */}
+                    <div className="space-y-1.5">
+                      <div className="h-2 w-full bg-cloud rounded-full overflow-hidden relative">
+                        <div className="h-full bg-gradient-to-r from-sky via-ocean to-midnight rounded-full" />
+                      </div>
+                      <div className="flex justify-between text-[11px] font-mono text-midnight/70 font-semibold">
+                        <span>
+                          {career.entry_salary.min !== null
+                            ? formatRupees(career.entry_salary.min, storeLang)
+                            : ''}{' '}
+                          <span className="font-normal text-midnight/50">({t.salaryMin})</span>
+                        </span>
+                        <span>
+                          {career.entry_salary.max !== null
+                            ? formatRupees(career.entry_salary.max, storeLang)
+                            : ''}{' '}
+                          <span className="font-normal text-midnight/50">({t.salaryMax})</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className="text-[11px] text-midnight/50 block">
+                      / {t.perYear} • {t.sourceLabel}: {career.entry_salary.source || 'Industry database'}
+                    </span>
+                  </div>
                 </div>
               )}
 
-              {career.family_money.monthly_emi !== null && (
-                <div>
-                  <span className="text-xs text-midnight/60 block">{t.monthlyEmiLabel}</span>
-                  <span className="text-base font-bold font-mono text-midnight">
-                    {formatRupees(career.family_money.monthly_emi, storeLang)}{' '}
-                    <span className="text-xs font-normal text-midnight/70">
-                      / {t.perMonth}
-                    </span>
-                  </span>
+              {/* Demand Signal Section */}
+              {career.demand && (
+                <div className="space-y-3 pt-2 border-t border-cloud/60">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-base">📈</span>
+                    <h3 className={`text-base font-bold text-midnight ${headingFontClass}`}>
+                      {t.demandTitle}
+                    </h3>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-paper/60 border border-cloud space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full ${
+                          career.demand.signal === 'positive'
+                            ? 'bg-emerald-500 animate-pulse'
+                            : career.demand.signal === 'negative'
+                            ? 'bg-rose-500'
+                            : 'bg-cloud'
+                        }`}
+                      />
+                      <span className="text-sm font-bold text-midnight">
+                        {career.demand.signal === 'positive'
+                          ? t.demandPositive
+                          : career.demand.signal === 'negative'
+                          ? t.demandNegative
+                          : t.demandNeutral}
+                      </span>
+                    </div>
+
+                    {career.demand.source && (
+                      <p className="text-[11px] text-midnight/60">
+                        {t.sourceLabel}: {career.demand.source}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
-          </section>
-        )}
 
-        {/* 9. What would help (blocked.remedies list or pathway research pending) */}
-        {career.blocked && (
-          <section className="border-t border-cloud/90 pt-6 space-y-2">
-            <h2 className={`text-base font-bold text-midnight ${headingFontClass}`}>
-              {t.whatWouldHelpTitle}
-            </h2>
+            {/* Widget 2: Family Financial Plan (Parent View Only) */}
+            {storeRole === 'parent' && career.family_money && (
+              <div className="bg-gradient-to-br from-[#0F223D] via-[#11284A] to-[#183968] text-white border border-ocean/30 rounded-3xl p-6 sm:p-7 shadow-lg space-y-5">
+                <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">💰</span>
+                    <h3 className={`text-base font-bold text-white ${headingFontClass}`}>
+                      {t.familyMoneyTitle}
+                    </h3>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-sky border border-white/15">
+                    🔒 {t.onlyYouSeeThis}
+                  </span>
+                </div>
 
-            {career.blocked.cause === 'no_route_data' ? (
-              <p className="text-xs text-midnight/70">
-                {t.pathwayResearchPending}
-              </p>
-            ) : career.blocked.remedies && career.blocked.remedies.length > 0 ? (
-              <ul className="text-sm text-midnight/90 space-y-1.5">
-                {career.blocked.remedies.map((remedy) => {
-                  const isEnglishOnly = storeLang === 'hi' && remedy.text.hi === null;
-                  const text = remedy.text[storeLang] ?? remedy.text.en;
-                  return (
-                    <li key={remedy.id} className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-ocean mt-1.5 shrink-0" />
-                      <span>
-                        {text}
-                        {isEnglishOnly && (
-                          <span className="text-[10px] text-midnight/50 italic ml-1.5">
-                            ({t.englishOnlyNote})
-                          </span>
-                        )}
+                <div className="grid grid-cols-1 gap-3.5">
+                  {career.family_money.loan_need !== null && (
+                    <div className="bg-white/10 backdrop-blur-xs p-4 rounded-2xl border border-white/10 space-y-1">
+                      <span className="text-xs text-white/70 block">
+                        {t.loanNeedLabel}
                       </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="text-xs text-midnight/60 italic">
-                {t.neutralRemedyLine}
-              </p>
-            )}
-          </section>
-        )}
+                      <span className="text-2xl font-black font-mono text-sky block">
+                        {formatRupees(career.family_money.loan_need, storeLang)}
+                      </span>
+                    </div>
+                  )}
 
-        {/* 10. Footnote (Data gaps) */}
-        {career.data_gaps && career.data_gaps.length > 0 && (
-          <section className="border-t border-cloud/90 pt-4 text-[11px] text-midnight/60">
-            <p>
-              {t.dataGapsFootnote.replace(
-                '{gaps}',
-                career.data_gaps.map((g) => getDataGapLabel(g, t)).join(', ')
+                  {career.family_money.monthly_emi !== null && (
+                    <div className="bg-white/10 backdrop-blur-xs p-4 rounded-2xl border border-white/10 space-y-1">
+                      <span className="text-xs text-white/70 block">
+                        {t.monthlyEmiLabel}
+                      </span>
+                      <span className="text-2xl font-black font-mono text-white block">
+                        {formatRupees(career.family_money.monthly_emi, storeLang)}{' '}
+                        <span className="text-xs font-normal text-white/60">/ {t.perMonth}</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-white/60 leading-relaxed">
+                  {storeLang === 'hi'
+                    ? 'यह आकलन आपके द्वारा चुने गए बजट और शिक्षा ऋण वरीयताओं पर आधारित है।'
+                    : 'Estimated financing scenario calculated from your intake budget tolerance.'}
+                </p>
+              </div>
+            )}
+
+            {/* Widget 3: Scholarships & Aid Opportunities */}
+            <div className="bg-white border border-cloud/90 rounded-3xl p-6 sm:p-7 shadow-sm space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-cloud/60 pb-3">
+                <span className="text-base">🎁</span>
+                <h3 className={`text-base font-bold text-midnight ${headingFontClass}`}>
+                  {t.scholarshipsTitle}
+                </h3>
+              </div>
+
+              {career.scholarships === null || career.scholarships.length === 0 ? (
+                <p className="text-xs text-midnight/60 italic p-3 bg-paper/60 rounded-xl border border-cloud">
+                  {t.scholarshipsNotAvailable}
+                </p>
+              ) : (
+                <div className="space-y-2.5">
+                  {career.scholarships.map((s, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-2xl bg-paper/60 border border-cloud hover:border-ocean/40 transition-all flex items-center justify-between gap-2"
+                    >
+                      <span className="text-xs font-semibold text-midnight truncate">
+                        {s.name}
+                      </span>
+                      {s.url && (
+                        <a
+                          href={s.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] font-bold text-ocean hover:underline whitespace-nowrap px-2.5 py-1 rounded-lg bg-white border border-ocean/30 hover:bg-ocean hover:text-white transition-colors shrink-0"
+                        >
+                          {t.officialLink} ↗
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
-            </p>
-          </section>
-        )}
+            </div>
+
+            {/* Widget 4: Data Quality & Gaps Transparency */}
+            {career.data_gaps && career.data_gaps.length > 0 && (
+              <div className="bg-paper/80 border border-cloud rounded-3xl p-5 space-y-2 text-xs text-midnight/70">
+                <div className="flex items-center gap-1.5 font-bold text-midnight text-xs">
+                  <span>ℹ️</span>
+                  <span>{storeLang === 'hi' ? 'डेटा पारदर्शिता' : 'Data Transparency'}</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-midnight/60">
+                  {t.dataGapsFootnote.replace(
+                    '{gaps}',
+                    career.data_gaps.map((g) => getDataGapLabel(g, t)).join(', ')
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </motion.main>
     </div>
   );
