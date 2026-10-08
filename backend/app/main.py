@@ -6,6 +6,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import settings
 from app.routers.assessment import router as assessment_router
+from app.routers.career import router as career_router
 from app.routers.explorer import router as explorer_router
 from app.routers.families import router as families_router
 from app.routers.health import router as health_router
@@ -105,6 +106,7 @@ def create_app() -> FastAPI:
     app.include_router(intake_router)
     app.include_router(mirror_router)
     app.include_router(explorer_router)
+    app.include_router(career_router)
 
     return app
 
