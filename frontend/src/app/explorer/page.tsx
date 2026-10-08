@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useSessionStore } from '@/store/session';
@@ -1836,8 +1837,16 @@ export default function NegotiationExplorerPage() {
                         </div>
                       )}
 
-                      <div className="text-[10px] text-midnight/40 text-right">
-                        PRISM Snapshot v0.1
+                      <div className="pt-2 border-t border-cloud/60 flex items-center justify-between">
+                        <Link
+                          href={`/career/${selectedCareer.id}`}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-ocean hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean rounded"
+                        >
+                          {t.openCareer} →
+                        </Link>
+                        <div className="text-[10px] text-midnight/40">
+                          PRISM Snapshot v0.1
+                        </div>
                       </div>
                     </motion.div>
                   )}

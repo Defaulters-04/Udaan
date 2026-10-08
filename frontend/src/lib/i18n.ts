@@ -213,6 +213,75 @@ export interface Translations {
   gap_verified_entry_salary: string;
   gap_regional_hiring: string;
   gap_exam_pattern: string;
+  gap_pathway_cost: string;
+  gap_market_demand: string;
+  gap_salary_benchmarks: string;
+
+  // Page 7 Career detail strings
+  backToExplorer: string;
+  openCareer: string;
+  careerNotFound: string;
+  careerNotFoundDesc: string;
+  careerWaitingTitle: string;
+  careerWaitingDesc: string;
+  careerErrorTitle: string;
+  careerErrorDesc: string;
+  demoDataLabel: string;
+  demoToggleSparse: string;
+  demoToggleFull: string;
+
+  statusWorkable: string;
+  statusNeedsPlan: string;
+  statusNeedsAcademic: string;
+  statusNotEnoughData: string;
+
+  careerFitLabel: string;
+  careerViabilityLabel: string;
+  careerYearsToIncomeLabel: string;
+  careerConflictLabel: string;
+
+  routesTitle: string;
+  bestRouteBadge: string;
+  tuitionCost: string;
+  livingCost: string;
+  entranceCost: string;
+  costStatusVerified: string;
+  costStatusUnverified: string;
+  noRoutesAvailable: string;
+
+  salaryTitle: string;
+  salaryMin: string;
+  salaryMedian: string;
+  salaryMax: string;
+  perYear: string;
+  sourceLabel: string;
+
+  demandTitle: string;
+  demandPositive: string;
+  demandNeutral: string;
+  demandNegative: string;
+
+  examsTitle: string;
+  noExamsListed: string;
+
+  scholarshipsTitle: string;
+  scholarshipsNotAvailable: string;
+  officialLink: string;
+
+  growthAreasTitle: string;
+  growthAreasSubtitle: string;
+
+  familyMoneyTitle: string;
+  onlyYouSeeThis: string;
+  loanNeedLabel: string;
+  monthlyEmiLabel: string;
+  perMonth: string;
+
+  whatWouldHelpTitle: string;
+  pathwayResearchPending: string;
+
+  dataGapsFootnote: string;
+  dataGapsNone: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -429,6 +498,75 @@ export const translations: Record<Language, Translations> = {
     gap_verified_entry_salary: "Starting entry-level salary",
     gap_regional_hiring: "Regional hiring trends",
     gap_exam_pattern: "Entrance exam eligibility",
+    gap_pathway_cost: "Course and pathway fees",
+    gap_market_demand: "Job market demand",
+    gap_salary_benchmarks: "Salary benchmarks",
+
+    // Page 7 Career detail
+    backToExplorer: "Back to options",
+    openCareer: "Open career",
+    careerNotFound: "Career not found",
+    careerNotFoundDesc: "This career could not be found or has been removed.",
+    careerWaitingTitle: "Waiting for family",
+    careerWaitingDesc: "Both members must complete the questionnaire before exploring career details.",
+    careerErrorTitle: "Could not load career details",
+    careerErrorDesc: "Please check your connection and try again.",
+    demoDataLabel: "Demo data",
+    demoToggleSparse: "View sparse example",
+    demoToggleFull: "View full example",
+
+    statusWorkable: "Workable with your family's plan",
+    statusNeedsPlan: "Needs a plan",
+    statusNeedsAcademic: "Needs academic preparation",
+    statusNotEnoughData: "Not enough data yet",
+
+    careerFitLabel: "Student fit",
+    careerViabilityLabel: "Family viability",
+    careerYearsToIncomeLabel: "Years to first income",
+    careerConflictLabel: "Conflict index",
+
+    routesTitle: "Education pathways",
+    bestRouteBadge: "Best route",
+    tuitionCost: "Tuition",
+    livingCost: "Living",
+    entranceCost: "Entrance",
+    costStatusVerified: "Verified",
+    costStatusUnverified: "Unverified",
+    noRoutesAvailable: "No educational pathways mapped yet.",
+
+    salaryTitle: "Entry salary",
+    salaryMin: "Min",
+    salaryMedian: "Median",
+    salaryMax: "Max",
+    perYear: "per year",
+    sourceLabel: "Source",
+
+    demandTitle: "Market demand",
+    demandPositive: "Positive outlook",
+    demandNeutral: "Steady outlook",
+    demandNegative: "Slowed hiring",
+
+    examsTitle: "Entrance exams",
+    noExamsListed: "No specific entrance exams listed.",
+
+    scholarshipsTitle: "Scholarships",
+    scholarshipsNotAvailable: "Scholarship data isn't available yet.",
+    officialLink: "Official portal",
+
+    growthAreasTitle: "Growth areas",
+    growthAreasSubtitle: "Skill preparation based on your assessment answers.",
+
+    familyMoneyTitle: "Family financing",
+    onlyYouSeeThis: "Only you see this.",
+    loanNeedLabel: "Estimated loan needed",
+    monthlyEmiLabel: "Estimated monthly EMI",
+    perMonth: "per month",
+
+    whatWouldHelpTitle: "What would help",
+    pathwayResearchPending: "Pathway research is pending for this career.",
+
+    dataGapsFootnote: "Not available yet: {gaps}",
+    dataGapsNone: "All data verified for this career.",
   },
   hi: {
     tagline: "ऐसा करियर, जिस पर पूरा परिवार सहमत हो।",
@@ -643,6 +781,75 @@ export const translations: Record<Language, Translations> = {
     gap_verified_entry_salary: "शुरुआती वेतन",
     gap_regional_hiring: "क्षेत्रीय नौकरियों के रुझान",
     gap_exam_pattern: "प्रवेश परीक्षा के नियम",
+    gap_pathway_cost: "कोर्स व कॉलेज की फ़ीस",
+    gap_market_demand: "नौकरियों की मांग",
+    gap_salary_benchmarks: "वेतन के मानक",
+
+    // Page 7 Career detail
+    backToExplorer: "विकल्पों पर वापस",
+    openCareer: "करियर देखें",
+    careerNotFound: "करियर नहीं मिला",
+    careerNotFoundDesc: "यह करियर नहीं मिला या हटा दिया गया है।",
+    careerWaitingTitle: "परिवार का इंतज़ार है",
+    careerWaitingDesc: "करियर की जानकारी देखने से पहले दोनों सदस्यों का प्रश्नावली पूरा करना आवश्यक है।",
+    careerErrorTitle: "करियर की जानकारी लोड नहीं हो सकी",
+    careerErrorDesc: "कृपया अपना कनेक्शन जांचें और दोबारा कोशिश करें।",
+    demoDataLabel: "डेमो डेटा",
+    demoToggleSparse: "अपूर्ण डेटा उदाहरण देखें",
+    demoToggleFull: "पूर्ण डेटा उदाहरण देखें",
+
+    statusWorkable: "आपके परिवार की योजना के अनुसार संभव",
+    statusNeedsPlan: "एक योजना की आवश्यकता है",
+    statusNeedsAcademic: "अकादमिक तैयारी की आवश्यकता है",
+    statusNotEnoughData: "अभी पर्याप्त डेटा नहीं है",
+
+    careerFitLabel: "विद्यार्थी की पसंद",
+    careerViabilityLabel: "परिवार की क्षमता",
+    careerYearsToIncomeLabel: "कमाई शुरू होने में साल",
+    careerConflictLabel: "सहमति अंतर",
+
+    routesTitle: "शिक्षा के रास्ते",
+    bestRouteBadge: "सबसे उपयुक्त रास्ता",
+    tuitionCost: "ट्यूशन फ़ीस",
+    livingCost: "रहने का ख़र्च",
+    entranceCost: "प्रवेश परीक्षा",
+    costStatusVerified: "सत्यापित",
+    costStatusUnverified: "अनुमानित",
+    noRoutesAvailable: "अभी कोई मार्ग दर्ज नहीं है।",
+
+    salaryTitle: "शुरुआती वेतन",
+    salaryMin: "न्यूनतम",
+    salaryMedian: "औसत",
+    salaryMax: "अधिकतम",
+    perYear: "प्रति वर्ष",
+    sourceLabel: "स्रोत",
+
+    demandTitle: "मार्केट में मांग",
+    demandPositive: "सकारात्मक रुझान",
+    demandNeutral: "स्थिर रुझान",
+    demandNegative: "धीमा रुझान",
+
+    examsTitle: "प्रमुख प्रवेश परीक्षाएं",
+    noExamsListed: "कोई विशिष्ट प्रवेश परीक्षा सूचीबद्ध नहीं है।",
+
+    scholarshipsTitle: "छात्रवृत्तियां",
+    scholarshipsNotAvailable: "छात्रवृत्ति डेटा अभी उपलब्ध नहीं है।",
+    officialLink: "आधिकारिक पोर्टल",
+
+    growthAreasTitle: "सुधार के क्षेत्र",
+    growthAreasSubtitle: "आपके मूल्यांकन के आधार पर सुझाई गई तैयारी।",
+
+    familyMoneyTitle: "परिवार का वित्तीय प्रबंधन",
+    onlyYouSeeThis: "यह केवल आपको दिखाई देता है।",
+    loanNeedLabel: "अनुमानित आवश्यक लोन",
+    monthlyEmiLabel: "अनुमानित मासिक EMI",
+    perMonth: "प्रति माह",
+
+    whatWouldHelpTitle: "क्या मदद कर सकता है",
+    pathwayResearchPending: "इस करियर के लिए मार्ग अनुसंधान अभी लंबित है।",
+
+    dataGapsFootnote: "अभी यह डेटा उपलब्ध नहीं है: {gaps}",
+    dataGapsNone: "इस करियर के लिए सभी आवश्यक डेटा उपलब्ध है।",
   },
 };
 
