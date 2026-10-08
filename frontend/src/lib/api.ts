@@ -2600,4 +2600,227 @@ export async function getExplorer(
   );
 }
 
+// ==========================================
+// Career Detail (Page 7) Types & APIs
+// ==========================================
+
+export interface RouteCostParts {
+  tuition: number | null;
+  living: number | null;
+  entrance: number | null;
+}
+
+export interface CareerRoute {
+  id: string;
+  label: string;
+  years: number | null;
+  total_cost: number | null;
+  cost_parts: RouteCostParts;
+  cost_status: string;
+  is_best: boolean;
+}
+
+export interface EntrySalary {
+  min: number | null;
+  median: number | null;
+  max: number | null;
+  unit: 'inr_per_year';
+  source: string;
+}
+
+export interface CareerDemand {
+  signal: 'positive' | 'neutral' | 'negative';
+  source: string;
+}
+
+export interface CareerScholarship {
+  name: string;
+  url: string | null;
+}
+
+export interface GrowthArea {
+  id: string;
+  text: {
+    en: string;
+    hi: string | null;
+  };
+}
+
+export interface FamilyMoney {
+  loan_need: number | null;
+  monthly_emi: number | null;
+}
+
+export interface CareerDetailResponse {
+  id: string;
+  name: LocalizedText;
+  domain: string;
+  fit: number | null;
+  viability: number | null;
+  market: number | null;
+  years_to_income: number | null;
+  conflict: number;
+  in_compromise: boolean;
+  blocked: CareerBlocked | null;
+  routes: CareerRoute[];
+  entry_salary: EntrySalary | null;
+  demand: CareerDemand | null;
+  exams: string[];
+  scholarships: CareerScholarship[] | null;
+  growth_areas: GrowthArea[] | null;
+  family_money: FamilyMoney | null;
+  data_gaps: string[];
+}
+
+function generateMockCareerResponse(
+  careerId: string,
+  token: string,
+  familyRecord?: MockFamilyRecord
+): CareerDetailResponse {
+  const isParent = token.includes('parent') || (familyRecord && familyRecord.creatorRole === 'parent');
+  const isSparse = careerId === 'sparse' || careerId.includes('sparse') || careerId === 'wildlife_biologist';
+
+  if (isSparse) {
+    return {
+      id: careerId,
+      name: { en: 'Wildlife Biologist', hi: 'वन्यजीव जीवविज्ञानी' },
+      domain: 'science_research',
+      fit: 72.0,
+      viability: null,
+      market: null,
+      years_to_income: null,
+      conflict: 28.0,
+      in_compromise: false,
+      blocked: {
+        gates: ['money'],
+        cause: 'no_route_data',
+        remedies: [],
+      },
+      routes: [],
+      entry_salary: null,
+      demand: null,
+      exams: [],
+      scholarships: null,
+      growth_areas: null,
+      family_money: null,
+      data_gaps: ['pathway_cost', 'market_demand', 'salary_benchmarks'],
+    };
+  }
+
+  // Full mock career
+  return {
+    id: careerId,
+    name: { en: 'Software Engineer', hi: 'सॉफ्टवेयर इंजीनियर' },
+    domain: 'tech_engineering',
+    fit: 88.0,
+    viability: 84.0,
+    market: 78.0,
+    years_to_income: 4,
+    conflict: 12.0,
+    in_compromise: true,
+    blocked: null,
+    routes: [
+      {
+        id: 'r_btech_cs',
+        label: 'B.Tech Computer Science (State Govt College)',
+        years: 4,
+        total_cost: 450000,
+        cost_parts: { tuition: 280000, living: 150000, entrance: 20000 },
+        cost_status: 'verified',
+        is_best: true,
+      },
+      {
+        id: 'r_bca_mca',
+        label: 'BCA + MCA (Private / Regional)',
+        years: 5,
+        total_cost: 720000,
+        cost_parts: { tuition: 420000, living: 270000, entrance: 30000 },
+        cost_status: 'verified',
+        is_best: false,
+      },
+    ],
+    entry_salary: {
+      min: 400000,
+      median: 750000,
+      max: 1600000,
+      unit: 'inr_per_year',
+      source: 'NASSCOM Technical Hiring Report 2024',
+    },
+    demand: {
+      signal: 'positive',
+      source: 'TeamLease Digital Employment Outlook',
+    },
+    exams: ['JEE Main', 'State CET', 'BITSAT'],
+    scholarships: [
+      {
+        name: 'National Merit Scholarship Scheme (Central Sector)',
+        url: 'https://scholarships.gov.in',
+      },
+      {
+        name: 'State Post-Matric STEM Grant',
+        url: null,
+      },
+    ],
+    growth_areas: !isParent
+      ? [
+          {
+            id: 'ga_algos',
+            text: {
+              en: 'Data structures, algorithms and discrete mathematics foundations',
+              hi: 'डेटा संरचनाएं, एल्गोरिदम और गणितीय आधार',
+            },
+          },
+          {
+            id: 'ga_sys_design',
+            text: {
+              en: 'Distributed backend architectures and system debugging',
+              hi: null,
+            },
+          },
+        ]
+      : null,
+    family_money: isParent
+      ? {
+          loan_need: 350000,
+          monthly_emi: 4200,
+        }
+      : null,
+    data_gaps: [],
+  };
+}
+
+export async function getCareer(
+  familyCode: string,
+  token: string,
+  careerId: string
+): Promise<CareerDetailResponse> {
+  const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
+
+  if (isMockEnabled() || isMockToken(token)) {
+    if (cleanCode === 'NOTFND') {
+      throw new ApiError('family_not_found', 'Family not found', 404);
+    }
+    const map = getMockFamilies();
+    const existing = map[cleanCode];
+    if (existing && (!existing.studentSubmitted || !existing.parentSubmitted)) {
+      throw new ApiError('explorer_not_ready', 'Both members must submit before viewing career', 409);
+    }
+    if (careerId === 'NOTFND' || careerId === 'unknown') {
+      throw new ApiError('career_not_found', 'Career not found', 404);
+    }
+    return generateMockCareerResponse(careerId, token, existing);
+  }
+
+  return await request<CareerDetailResponse>(
+    `/families/${encodeURIComponent(cleanCode)}/careers/${encodeURIComponent(careerId)}`,
+    {
+      method: 'GET',
+      headers: {
+        'X-Member-Token': token,
+      },
+    }
+  );
+}
+
+
 
