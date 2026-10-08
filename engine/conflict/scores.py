@@ -474,19 +474,25 @@ def compute_composite_score(
     family_viability: float,
     market_score: Any = 0.50,
     career_conflict: float = 0.0,
-    config: ConflictConfig = DEFAULT_CONFIG,
-    w_student: float = 0.50,
-    w_family: float = 0.50,
-    w_market: float = 0.0,
+    config: Optional[ConflictConfig] = None,
+    w_student: float = 0.40,
+    w_family: float = 0.35,
+    w_market: float = 0.25,
 ) -> float:
-    """Fix 1 & 8: Deleted composite conflict multiplier. Scoring uses two scores (Fit & Family). Unrounded."""
+    """Blend student fit, family viability, and market score with optional conflict penalty."""
     s = _clamp(student_fit)
     f = _clamp(family_viability)
-    w_total = w_student + w_family
+    m = _clamp(market_score) if isinstance(market_score, (int, float)) else 0.5
+    c = _clamp(career_conflict)
+
+    w_total = w_student + w_family + w_market
     if w_total <= 0:
         w_total = 1.0
-    base = (w_student * s + w_family * f) / w_total
-    return _clamp(base)
+
+    base = (w_student * s + w_family * f + w_market * m) / w_total
+    penalty_weight = config.conflict_penalty_weight if config is not None else 0.15
+    penalty = penalty_weight * c * base
+    return _clamp(base - penalty)
 
 
 def _compute_pareto_optimality(

@@ -488,3 +488,27 @@ def unified_roadmap(
         student_region=student_region,
         alpha=alpha,
     )
+
+
+# ---------------------------------------------------------------------------
+# 5. Clean Single Function: evaluate_family Facade (DataQuest 3.0)
+# ---------------------------------------------------------------------------
+from engine.evaluation import (
+    evaluate_family,
+    payback_range,
+    match_scholarships,
+    CORE_CAREERS,
+)
+
+__all__ = [
+    "overall_conflict",
+    "per_career_scores",
+    "negotiate",
+    "unified_roadmap",
+    "evaluate_family",
+    "payback_range",
+    "match_scholarships",
+    "CORE_CAREERS",
+    "get_default_student_careers",
+    "get_default_routes",
+]
