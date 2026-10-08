@@ -97,6 +97,7 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
   const storeName = useSessionStore((state) => state.name);
   const storeLang = useSessionStore((state) => state.lang);
   const storeFamily = useSessionStore((state) => state.family);
+  const setFamily = useSessionStore((state) => state.setFamily);
   const hasHydrated = useSessionStore((state) => state.hasHydrated);
 
   // Flow phases
@@ -221,6 +222,20 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
             router.replace(config.wrongRoleRedirect);
             return;
           }
+          if (
+            err instanceof ApiError &&
+            (err.status === 404 ||
+              err.code === 'family_not_found' ||
+              err.status === 401 ||
+              err.code === 'invalid_token')
+          ) {
+            if (retryBackoffTimerRef.current) {
+              clearTimeout(retryBackoffTimerRef.current);
+            }
+            setFamily(null);
+            router.replace('/');
+            return;
+          }
           setSaveStatus('failed');
 
           // Exponential backoff
@@ -236,7 +251,7 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
         }
       }, 400);
     },
-    [storeFamily, router, config]
+    [storeFamily, router, config, setFamily]
   );
 
   useEffect(() => {
@@ -295,9 +310,20 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
           router.replace(config.wrongRoleRedirect);
           return;
         }
+        if (
+          err instanceof ApiError &&
+          (err.status === 404 ||
+            err.code === 'family_not_found' ||
+            err.status === 401 ||
+            err.code === 'invalid_token')
+        ) {
+          setFamily(null);
+          router.replace('/');
+          return;
+        }
         setPhase('error');
       });
-  }, [storeFamily, router, config]);
+  }, [storeFamily, router, config, setFamily]);
 
   useEffect(() => {
     if (hasHydrated && storeFamily && storeRole === config.role) {
@@ -609,6 +635,16 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
       if (err instanceof ApiError) {
         if (err.code === 'wrong_role') {
           router.replace(config.wrongRoleRedirect);
+          return;
+        }
+        if (
+          err.status === 404 ||
+          err.code === 'family_not_found' ||
+          err.status === 401 ||
+          err.code === 'invalid_token'
+        ) {
+          setFamily(null);
+          router.replace('/');
           return;
         }
         if (

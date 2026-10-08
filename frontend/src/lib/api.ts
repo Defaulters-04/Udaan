@@ -197,6 +197,10 @@ export const isMockEnabled = (): boolean => {
   return process.env.NEXT_PUBLIC_USE_MOCK === 'true';
 };
 
+export const isMockToken = (token?: string): boolean => {
+  return typeof token === 'string' && token.startsWith('mock-');
+};
+
 // ==========================================
 // Mock Storage Helper
 // ==========================================
@@ -460,7 +464,7 @@ export async function getStatus(
 ): Promise<FamilyStatusResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(memberToken)) {
     const map = getMockFamilies();
     const existing = map[cleanCode];
 
@@ -1156,29 +1160,22 @@ export async function getQuestions(
 ): Promise<AssessmentQuestionsResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(token)) {
     if (token.includes('parent-token-invalid')) {
       throw new ApiError('wrong_role', 'Parent cannot access student assessment', 403);
     }
     return { version: 'starter-2', sections: MOCK_ASSESSMENT_SECTIONS };
   }
 
-  try {
-    return await request<AssessmentQuestionsResponse>(
-      `/families/${encodeURIComponent(cleanCode)}/assessment/questions`,
-      {
-        method: 'GET',
-        headers: {
-          'X-Member-Token': token,
-        },
-      }
-    );
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      return { version: 'starter-2', sections: MOCK_ASSESSMENT_SECTIONS };
+  return await request<AssessmentQuestionsResponse>(
+    `/families/${encodeURIComponent(cleanCode)}/assessment/questions`,
+    {
+      method: 'GET',
+      headers: {
+        'X-Member-Token': token,
+      },
     }
-    throw err;
-  }
+  );
 }
 
 export async function getProgress(
@@ -1187,29 +1184,22 @@ export async function getProgress(
 ): Promise<AssessmentProgressResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(token)) {
     if (token.includes('parent-token-invalid')) {
       throw new ApiError('wrong_role', 'Parent cannot access student assessment', 403);
     }
     return getMockProgress(cleanCode);
   }
 
-  try {
-    return await request<AssessmentProgressResponse>(
-      `/families/${encodeURIComponent(cleanCode)}/assessment/progress`,
-      {
-        method: 'GET',
-        headers: {
-          'X-Member-Token': token,
-        },
-      }
-    );
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      return getMockProgress(cleanCode);
+  return await request<AssessmentProgressResponse>(
+    `/families/${encodeURIComponent(cleanCode)}/assessment/progress`,
+    {
+      method: 'GET',
+      headers: {
+        'X-Member-Token': token,
+      },
     }
-    throw err;
-  }
+  );
 }
 
 export async function saveAnswers(
@@ -1219,7 +1209,7 @@ export async function saveAnswers(
 ): Promise<SaveAnswersResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(token)) {
     if (token.includes('parent-token-invalid')) {
       throw new ApiError('wrong_role', 'Parent cannot access student assessment', 403);
     }
@@ -1234,31 +1224,16 @@ export async function saveAnswers(
     };
   }
 
-  try {
-    return await request<SaveAnswersResponse>(
-      `/families/${encodeURIComponent(cleanCode)}/assessment/answers`,
-      {
-        method: 'PUT',
-        headers: {
-          'X-Member-Token': token,
-        },
-        body: JSON.stringify({ answers }),
-      }
-    );
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      const curr = getMockProgress(cleanCode);
-      const updatedAnswers = { ...curr.answers, ...answers };
-      const updated = { ...curr, answers: updatedAnswers };
-      saveMockProgress(cleanCode, updated);
-
-      return {
-        saved: true,
-        answers: updatedAnswers,
-      };
+  return await request<SaveAnswersResponse>(
+    `/families/${encodeURIComponent(cleanCode)}/assessment/answers`,
+    {
+      method: 'PUT',
+      headers: {
+        'X-Member-Token': token,
+      },
+      body: JSON.stringify({ answers }),
     }
-    throw err;
-  }
+  );
 }
 
 export async function submitAssessment(
@@ -1267,7 +1242,7 @@ export async function submitAssessment(
 ): Promise<SubmitAssessmentResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(token)) {
     if (token.includes('parent-token-invalid')) {
       throw new ApiError('wrong_role', 'Parent cannot access student assessment', 403);
     }
@@ -1684,29 +1659,22 @@ export async function getIntakeQuestions(
 ): Promise<AssessmentQuestionsResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(token)) {
     if (token.includes('student-token-invalid')) {
       throw new ApiError('wrong_role', 'Student cannot access parent intake', 403);
     }
     return { version: 'starter-2', sections: MOCK_INTAKE_SECTIONS };
   }
 
-  try {
-    return await request<AssessmentQuestionsResponse>(
-      `/families/${encodeURIComponent(cleanCode)}/intake/questions`,
-      {
-        method: 'GET',
-        headers: {
-          'X-Member-Token': token,
-        },
-      }
-    );
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      return { version: 'starter-2', sections: MOCK_INTAKE_SECTIONS };
+  return await request<AssessmentQuestionsResponse>(
+    `/families/${encodeURIComponent(cleanCode)}/intake/questions`,
+    {
+      method: 'GET',
+      headers: {
+        'X-Member-Token': token,
+      },
     }
-    throw err;
-  }
+  );
 }
 
 export async function getIntakeProgress(
@@ -1715,29 +1683,22 @@ export async function getIntakeProgress(
 ): Promise<AssessmentProgressResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(token)) {
     if (token.includes('student-token-invalid')) {
       throw new ApiError('wrong_role', 'Student cannot access parent intake', 403);
     }
     return getMockIntakeProgress(cleanCode);
   }
 
-  try {
-    return await request<AssessmentProgressResponse>(
-      `/families/${encodeURIComponent(cleanCode)}/intake/progress`,
-      {
-        method: 'GET',
-        headers: {
-          'X-Member-Token': token,
-        },
-      }
-    );
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      return getMockIntakeProgress(cleanCode);
+  return await request<AssessmentProgressResponse>(
+    `/families/${encodeURIComponent(cleanCode)}/intake/progress`,
+    {
+      method: 'GET',
+      headers: {
+        'X-Member-Token': token,
+      },
     }
-    throw err;
-  }
+  );
 }
 
 export async function saveIntakeAnswers(
@@ -1747,7 +1708,7 @@ export async function saveIntakeAnswers(
 ): Promise<SaveAnswersResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(token)) {
     if (token.includes('student-token-invalid')) {
       throw new ApiError('wrong_role', 'Student cannot access parent intake', 403);
     }
@@ -1762,31 +1723,16 @@ export async function saveIntakeAnswers(
     };
   }
 
-  try {
-    return await request<SaveAnswersResponse>(
-      `/families/${encodeURIComponent(cleanCode)}/intake/answers`,
-      {
-        method: 'PUT',
-        headers: {
-          'X-Member-Token': token,
-        },
-        body: JSON.stringify({ answers }),
-      }
-    );
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      const curr = getMockIntakeProgress(cleanCode);
-      const updatedAnswers = { ...curr.answers, ...answers };
-      const updated = { ...curr, answers: updatedAnswers };
-      saveMockIntakeProgress(cleanCode, updated);
-
-      return {
-        saved: true,
-        answers: updatedAnswers,
-      };
+  return await request<SaveAnswersResponse>(
+    `/families/${encodeURIComponent(cleanCode)}/intake/answers`,
+    {
+      method: 'PUT',
+      headers: {
+        'X-Member-Token': token,
+      },
+      body: JSON.stringify({ answers }),
     }
-    throw err;
-  }
+  );
 }
 
 export async function submitIntake(
@@ -1795,7 +1741,7 @@ export async function submitIntake(
 ): Promise<SubmitAssessmentResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(token)) {
     if (token.includes('student-token-invalid')) {
       throw new ApiError('wrong_role', 'Student cannot access parent intake', 403);
     }
@@ -2027,7 +1973,7 @@ export async function getMirror(
 ): Promise<MirrorResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(token)) {
     if (cleanCode === 'NOTFND') {
       throw new ApiError('family_not_found', 'Family not found', 404);
     }
@@ -2039,22 +1985,15 @@ export async function getMirror(
     return MOCK_MIRROR_RESPONSE;
   }
 
-  try {
-    return await request<MirrorResponse>(
-      `/families/${encodeURIComponent(cleanCode)}/mirror`,
-      {
-        method: 'GET',
-        headers: {
-          'X-Member-Token': token,
-        },
-      }
-    );
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      return MOCK_MIRROR_RESPONSE;
+  return await request<MirrorResponse>(
+    `/families/${encodeURIComponent(cleanCode)}/mirror`,
+    {
+      method: 'GET',
+      headers: {
+        'X-Member-Token': token,
+      },
     }
-    throw err;
-  }
+  );
 }
 
 // ==========================================
@@ -2637,7 +2576,7 @@ export async function getExplorer(
 ): Promise<ExplorerResponse> {
   const cleanCode = familyCode.trim().toUpperCase().replace(/[\s-]/g, '');
 
-  if (isMockEnabled()) {
+  if (isMockEnabled() || isMockToken(token)) {
     if (cleanCode === 'NOTFND') {
       throw new ApiError('family_not_found', 'Family not found', 404);
     }
