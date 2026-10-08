@@ -690,21 +690,29 @@ export default function NegotiationExplorerPage() {
                       key={c.id}
                       className="border border-cloud rounded-xl p-4 bg-cloud/10 space-y-3 transition-colors"
                     >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = new Set(expandedBlockedIds);
-                          if (next.has(c.id)) next.delete(c.id);
-                          else next.add(c.id);
-                          setExpandedBlockedIds(next);
-                        }}
-                        className="w-full flex items-center justify-between text-left font-semibold text-midnight hover:text-ocean cursor-pointer"
-                      >
-                        <span className="text-base">{c.name[storeLang] ?? c.name.en}</span>
-                        <span className="text-xs text-ocean font-medium">
-                          {isExpanded ? '▲' : '▼'}
-                        </span>
-                      </button>
+                      <div className="flex items-center justify-between gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = new Set(expandedBlockedIds);
+                            if (next.has(c.id)) next.delete(c.id);
+                            else next.add(c.id);
+                            setExpandedBlockedIds(next);
+                          }}
+                          className="flex-1 flex items-center justify-between text-left font-semibold text-midnight hover:text-ocean cursor-pointer"
+                        >
+                          <span className="text-base">{c.name[storeLang] ?? c.name.en}</span>
+                          <span className="text-xs text-ocean font-medium mr-2">
+                            {isExpanded ? '▲' : '▼'}
+                          </span>
+                        </button>
+                        <Link
+                          href={`/career/${c.id}`}
+                          className="shrink-0 px-3 py-1.5 rounded-lg bg-white border border-ocean/40 text-xs font-semibold text-ocean hover:bg-ocean hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean"
+                        >
+                          {t.openCareer} →
+                        </Link>
+                      </div>
 
                       {isExpanded && (
                         <div className="pt-2 border-t border-cloud/60 space-y-2 text-sm text-midnight/80">
@@ -748,6 +756,18 @@ export default function NegotiationExplorerPage() {
                               {t.neutralRemedyLine}
                             </p>
                           )}
+
+                          <div className="pt-2 border-t border-cloud/60 flex items-center justify-between">
+                            <span className="text-xs text-midnight/60 capitalize">
+                              {c.domain.replace(/_/g, ' ')}
+                            </span>
+                            <Link
+                              href={`/career/${c.id}`}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ocean hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean rounded"
+                            >
+                              {t.openCareer} →
+                            </Link>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -755,6 +775,42 @@ export default function NegotiationExplorerPage() {
                 })}
               </div>
             </div>
+
+            {/* Not Enough Data Yet in Empty State */}
+            {noRouteDataBlocked.length > 0 && (
+              <div className="bg-white border border-cloud rounded-2xl p-6 sm:p-8 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className={`text-base font-bold text-midnight/90 ${headingFontClass}`}>
+                    {t.notEnoughDataTitle} ({noRouteDataBlocked.length})
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowNoRouteDataSection(!showNoRouteDataSection)}
+                    className="text-xs text-ocean font-medium cursor-pointer"
+                  >
+                    {showNoRouteDataSection ? '▲' : '▼'}
+                  </button>
+                </div>
+                <p className="text-xs text-midnight/70 leading-relaxed">
+                  {t.notEnoughDataIntro}
+                </p>
+                {showNoRouteDataSection && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex flex-wrap gap-1.5">
+                      {noRouteDataBlocked.map((c) => (
+                        <Link
+                          key={c.id}
+                          href={`/career/${c.id}`}
+                          className="px-2.5 py-1 rounded-lg bg-paper border border-cloud hover:border-ocean text-xs font-medium text-midnight/80 hover:text-ocean transition-colors"
+                        >
+                          {c.name[storeLang] ?? c.name.en} →
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           /* Main Explorer Balanced Layout */
@@ -1655,8 +1711,16 @@ export default function NegotiationExplorerPage() {
                         </p>
                       )}
 
-                      <div className="pt-1 border-t border-cloud/60 text-[11px] text-midnight/60">
-                        {t.sliderDisagreementNote}
+                      <div className="pt-2 border-t border-cloud/60 flex items-center justify-between text-[11px]">
+                        <span className="text-midnight/60">
+                          {t.sliderDisagreementNote}
+                        </span>
+                        <Link
+                          href={`/career/${currentWinner.id}`}
+                          className="font-semibold text-ocean hover:underline inline-flex items-center gap-1 shrink-0 ml-2"
+                        >
+                          {t.openCareer} →
+                        </Link>
                       </div>
                     </div>
                   )}
@@ -1840,7 +1904,7 @@ export default function NegotiationExplorerPage() {
                       <div className="pt-2 border-t border-cloud/60 flex items-center justify-between">
                         <Link
                           href={`/career/${selectedCareer.id}`}
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-ocean hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean rounded"
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-ocean text-white text-xs font-semibold hover:bg-ocean/90 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean"
                         >
                           {t.openCareer} →
                         </Link>
@@ -1961,23 +2025,32 @@ export default function NegotiationExplorerPage() {
                               </div>
                             </div>
 
-                            {/* Chips */}
-                            <div className="flex flex-wrap gap-1 mt-1.5">
-                              {isFrontier && (
-                                <span className="px-1.5 py-0.5 bg-ocean/10 text-ocean rounded text-[9.5px] font-semibold">
-                                  {t.chipBestTradeOff}
-                                </span>
-                              )}
-                              {isComp && (
-                                <span className="px-1.5 py-0.5 bg-sky/30 text-midnight rounded text-[9.5px] font-semibold">
-                                  {t.chipCompromiseZone}
-                                </span>
-                              )}
-                              {hasGaps && (
-                                <span className="px-1.5 py-0.5 bg-cloud text-midnight/70 rounded text-[9.5px] font-medium border border-cloud">
-                                  {t.chipEstimatedFigures}
-                                </span>
-                              )}
+                            {/* Chips and Direct Career Link */}
+                            <div className="flex items-center justify-between gap-2 mt-1.5 pt-1.5 border-t border-cloud/30">
+                              <div className="flex flex-wrap gap-1">
+                                {isFrontier && (
+                                  <span className="px-1.5 py-0.5 bg-ocean/10 text-ocean rounded text-[9.5px] font-semibold">
+                                    {t.chipBestTradeOff}
+                                  </span>
+                                )}
+                                {isComp && (
+                                  <span className="px-1.5 py-0.5 bg-sky/30 text-midnight rounded text-[9.5px] font-semibold">
+                                    {t.chipCompromiseZone}
+                                  </span>
+                                )}
+                                {hasGaps && (
+                                  <span className="px-1.5 py-0.5 bg-cloud text-midnight/70 rounded text-[9.5px] font-medium border border-cloud">
+                                    {t.chipEstimatedFigures}
+                                  </span>
+                                )}
+                              </div>
+                              <Link
+                                href={`/career/${c.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-[11px] font-semibold text-ocean hover:underline inline-flex items-center gap-0.5 shrink-0 ml-auto"
+                              >
+                                {t.openCareer} →
+                              </Link>
                             </div>
                           </motion.div>
                         );
@@ -2015,21 +2088,29 @@ export default function NegotiationExplorerPage() {
                           key={c.id}
                           className="border border-cloud rounded-xl p-3 bg-cloud/10 space-y-2 transition-colors"
                         >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const next = new Set(expandedBlockedIds);
-                              if (next.has(c.id)) next.delete(c.id);
-                              else next.add(c.id);
-                              setExpandedBlockedIds(next);
-                            }}
-                            className="w-full flex items-center justify-between text-left font-semibold text-xs sm:text-sm text-midnight hover:text-ocean cursor-pointer"
-                          >
-                            <span>{c.name[storeLang] ?? c.name.en}</span>
-                            <span className="text-xs text-ocean font-medium">
-                              {isExpanded ? '▲' : '▼'}
-                            </span>
-                          </button>
+                          <div className="flex items-center justify-between gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = new Set(expandedBlockedIds);
+                                if (next.has(c.id)) next.delete(c.id);
+                                else next.add(c.id);
+                                setExpandedBlockedIds(next);
+                              }}
+                              className="flex-1 flex items-center justify-between text-left font-semibold text-xs sm:text-sm text-midnight hover:text-ocean cursor-pointer"
+                            >
+                              <span>{c.name[storeLang] ?? c.name.en}</span>
+                              <span className="text-xs text-ocean font-medium mr-2">
+                                {isExpanded ? '▲' : '▼'}
+                              </span>
+                            </button>
+                            <Link
+                              href={`/career/${c.id}`}
+                              className="shrink-0 px-2.5 py-1 rounded-lg bg-white border border-ocean/40 text-[11px] font-semibold text-ocean hover:bg-ocean hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean"
+                            >
+                              {t.openCareer} →
+                            </Link>
+                          </div>
 
                           {isExpanded && (
                             <div className="pt-2 border-t border-cloud/60 space-y-2 text-xs text-midnight/80">
@@ -2078,6 +2159,18 @@ export default function NegotiationExplorerPage() {
                                   {t.neutralRemedyLine}
                                 </p>
                               )}
+
+                              <div className="pt-2 border-t border-cloud/60 flex items-center justify-between">
+                                <span className="text-[11px] text-midnight/60 capitalize">
+                                  {c.domain.replace(/_/g, ' ')}
+                                </span>
+                                <Link
+                                  href={`/career/${c.id}`}
+                                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-ocean hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean rounded"
+                                >
+                                  {t.openCareer} →
+                                </Link>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -2112,12 +2205,13 @@ export default function NegotiationExplorerPage() {
                   <div className="space-y-2 pt-1">
                     <div className="flex flex-wrap gap-1.5">
                       {noRouteDataBlocked.map((c) => (
-                        <span
+                        <Link
                           key={c.id}
-                          className="px-2.5 py-1 rounded-lg bg-paper border border-cloud text-xs font-medium text-midnight/80"
+                          href={`/career/${c.id}`}
+                          className="px-2.5 py-1 rounded-lg bg-paper border border-cloud hover:border-ocean text-xs font-medium text-midnight/80 hover:text-ocean transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean"
                         >
-                          {c.name[storeLang] ?? c.name.en}
-                        </span>
+                          {c.name[storeLang] ?? c.name.en} →
+                        </Link>
                       ))}
                     </div>
                   </div>
