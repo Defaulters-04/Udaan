@@ -223,6 +223,50 @@ class MissingDataConfig:
 
 
 # ---------------------------------------------------------------------------
+# 6. Core Careers & Payback Simulation Configuration
+# ---------------------------------------------------------------------------
+# 18 Core Careers covering all 7 canonical domains, weighted toward demo family aspirations
+CORE_CAREERS: tuple[str, ...] = (
+    # Technology & Engineering
+    "software_developer",
+    "cybersecurity_analyst",
+    "mechanical_engineer",
+    "civil_engineer",
+    # Healthcare & Medicine
+    "doctor_mbbs",
+    "nursing_officer",
+    "biomedical_engineer",
+    # Business & Management
+    "chartered_accountant",
+    "financial_analyst",
+    "management_consultant",
+    # Design & Creative Arts
+    "industrial_designer",
+    "ux_designer",
+    # Humanities, Law & Social Sciences
+    "lawyer_corporate",
+    "economist",
+    "historian",
+    # Sciences & Research
+    "data_scientist",
+    "environmental_scientist",
+    # Media & Content Creation
+    "journalist",
+)
+
+
+@dataclass(frozen=True)
+class PaybackSimulationConfig:
+    """Monte Carlo simulation parameters for career repayment horizon."""
+    mc_samples: int = 5000
+    mc_seed: int = 0
+    z_lognormal: float = 1.2816  # z-score for 10th and 90th percentiles
+    salary_growth_rate: float = 0.08  # placeholder: annual nominal wage escalation
+    repayment_share: float = 0.20  # placeholder: fraction of net income dedicated to debt service
+    payback_horizon_years: float = 8.0  # placeholder: target repayment duration horizon
+
+
+# ---------------------------------------------------------------------------
 # Master Engine Config Dataclass
 # ---------------------------------------------------------------------------
 @dataclass(frozen=True)
@@ -232,6 +276,10 @@ class EngineConfig:
     market: MarketTiersConfig = field(default_factory=MarketTiersConfig)
     conflict: ConflictConfig = field(default_factory=ConflictConfig)
     missing_data: MissingDataConfig = field(default_factory=MissingDataConfig)
+    payback: PaybackSimulationConfig = field(default_factory=PaybackSimulationConfig)
+    core_careers: tuple[str, ...] = CORE_CAREERS
+    high_conflict_threshold: float = 60.0  # placeholder: overall conflict index threshold (0-100)
 
 
 DEFAULT_CONFIG = EngineConfig()
+

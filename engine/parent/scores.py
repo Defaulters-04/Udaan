@@ -259,17 +259,40 @@ def score_family(
 def evaluate_route(
     profile: ParentProfile, route: Route, config: ParentSolverConfig = DEFAULT_CONFIG
 ) -> ViabilityReport:
-    """Evaluate full financial viability, sub-scores, and composite family fit for a route."""
+    """Evaluate full financial viability, sub-scores, and composite family fit for a route (Rule B)."""
     warnings: List[str] = []
 
-    # Check for missing salary or route cost (Fix 4)
-    sal_raw = getattr(route, "starting_salary", None)
-    cost_raw = getattr(route, "tuition", None)
-    is_missing_financial_data = (
-        sal_raw is None or sal_raw == "NOT FOUND"
-        or cost_raw is None or cost_raw == "NOT FOUND"
-    )
-    if is_missing_financial_data:
+    def _parse_num(val: Any) -> Optional[float]:
+        if val is None or val == "NOT FOUND" or str(val).strip() == "":
+            return None
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return None
+
+    # Required fields to score a route: tuition, duration, starting salary
+    tuition_num = _parse_num(route.tuition)
+    duration_num = _parse_num(route.duration_years)
+    salary_num = _parse_num(route.starting_salary)
+
+    missing_req: List[str] = []
+    if tuition_num is None:
+        missing_req.append("tuition")
+    if duration_num is None:
+        missing_req.append("duration_years")
+    if salary_num is None:
+        missing_req.append("starting_salary")
+
+    # If any required field is missing -> blocked with cause "not_enough_data"
+    if missing_req:
+        missing_all = list(missing_req)
+        if _parse_num(route.hostel) is None and _parse_num(route.living) is None:
+            missing_all.append("hostel")
+        if _parse_num(route.mess) is None and _parse_num(route.living) is None:
+            missing_all.append("mess")
+        if _parse_num(route.exam_equipment) is None:
+            missing_all.append("exam_equipment")
+
         sub = SubScores(
             f_budget=0.0, f_repay_p=0.0, f_dsr=0.0, f_payback=0.0,
             f_domain=0.0, f_sector=0.0, f_salary=0.0, f_time=0.0, f_location=0.0
@@ -295,14 +318,58 @@ def evaluate_route(
             funding_gap=0.0,
             status="insufficient_data",
             data_confidence="low",
-            block_reasons=["insufficient_data: missing starting salary or route cost"],
-            warnings=["Financial solver returned status 'insufficient_data' due to missing salary or route cost."],
+            cost_status="missing",
+            total_cost_known=None,
+            missing_fields=missing_all,
+            is_lower_bound=False,
+            provisional_pass=False,
+            blocked_cause="not_enough_data",
+            block_reasons=[f"not_enough_data: missing required fields ({', '.join(missing_req)})"],
+            warnings=[f"Route blocked due to missing required fields: {', '.join(missing_req)}."],
         )
 
-    # 1. Financial Solver
-    net_cost = calculate_net_cost(route.tuition, route.living, route.exam_equipment, route.grant)
+    # Required fields exist. Check optional cost components (hostel, mess/living, exam_equipment)
+    missing_opt: List[str] = []
+    living_known = 0.0
+    has_explicit_living = False
+
+    living_num = _parse_num(route.living)
+    hostel_num = _parse_num(route.hostel)
+    mess_num = _parse_num(route.mess)
+
+    if living_num is not None:
+        living_known = living_num
+        has_explicit_living = True
+    else:
+        if hostel_num is not None:
+            living_known += hostel_num
+        else:
+            missing_opt.append("hostel")
+
+        if mess_num is not None:
+            living_known += mess_num
+        else:
+            missing_opt.append("mess")
+
+    exam_num = _parse_num(route.exam_equipment)
+    exam_known = 0.0
+    if exam_num is not None:
+        exam_known = exam_num
+    else:
+        missing_opt.append("exam_equipment")
+
+    grant_num = _parse_num(route.grant) or 0.0
+    net_cost = max(0.0, tuition_num + living_known + exam_known - grant_num)
+
+    is_partial = len(missing_opt) > 0
+    cost_status = "partial" if is_partial else "complete"
+    is_lower_bound = is_partial
+    total_cost_known = net_cost
+
+    # 1. Financial Solver using known costs
+    duration_val = duration_num
     cash_available = calculate_cash_available(
-        profile.savings, profile.monthly_surplus, route.duration_years, config
+        profile.savings, profile.monthly_surplus, duration_val, config
     )
     loan_needed = calculate_loan_needed(net_cost, cash_available)
     emi = calculate_emi(loan_needed, config)
@@ -311,19 +378,39 @@ def evaluate_route(
     if w_rb:
         warnings.append(w_rb)
 
-    dsr, w_dsr = calculate_debt_service_ratio(emi, route.starting_salary)
+    dsr, w_dsr = calculate_debt_service_ratio(emi, salary_num)
     if w_dsr:
         warnings.append(w_dsr)
 
     family_affordability = calculate_family_affordability(cash_available, profile.loan_max)
     g_fin, block_reasons = check_financial_gate(loan_needed, profile.loan_max, rb, dsr, config)
 
-    # Academic gate and combined gate G = G_fin * g_acad
+    # Gate determination & Provisional Pass rule
     g_acad = route.g_acad
     if g_acad == 0:
         block_reasons.append("Academic gate failed (g_acad=0)")
-    gate_cleared = 1 if (g_fin == 1 and g_acad == 1) else 0
 
+    provisional_pass = False
+    blocked_cause: Optional[str] = None
+
+    if g_fin == 1:
+        if is_partial:
+            provisional_pass = True
+    else:
+        # Blocked with certainty: lower bound already failed capacity
+        if loan_needed > profile.loan_max:
+            blocked_cause = "loan_exceeds_cap"
+        elif rb > config.rb_gate_max:
+            blocked_cause = "household_emi_too_high"
+        elif dsr > config.dsr_gate_max:
+            blocked_cause = "graduate_dsr_too_high"
+        else:
+            blocked_cause = "financial_ineligible"
+
+    if g_acad == 0 and blocked_cause is None:
+        blocked_cause = "academic_ineligible"
+
+    gate_cleared = 1 if (g_fin == 1 and g_acad == 1) else 0
     funding_gap = max(0.0, loan_needed - profile.loan_max)
 
     # 2. Financial Sub-scores
@@ -334,7 +421,7 @@ def evaluate_route(
     f_repay_p = score_repayment_burden(rb, config)
     f_dsr = score_debt_service_ratio(dsr, config)
 
-    payback_years, w_pb = calculate_payback(net_cost, route.starting_salary, config)
+    payback_years, w_pb = calculate_payback(net_cost, salary_num, config)
     if w_pb:
         warnings.append(w_pb)
     f_payback = score_payback(payback_years, config)
@@ -358,7 +445,7 @@ def evaluate_route(
     if w_sec:
         warnings.append(w_sec)
 
-    f_salary, w_sal = score_salary(route.starting_salary, profile.min_salary)
+    f_salary, w_sal = score_salary(salary_num, profile.min_salary)
     if w_sal:
         warnings.append(w_sal)
 
@@ -422,6 +509,12 @@ def evaluate_route(
         funding_gap=round(funding_gap, 2),
         status="ok",
         data_confidence=data_confidence,
+        cost_status=cost_status,
+        total_cost_known=round(total_cost_known, 2),
+        missing_fields=missing_opt,
+        is_lower_bound=is_lower_bound,
+        provisional_pass=provisional_pass,
+        blocked_cause=blocked_cause,
         block_reasons=block_reasons,
         warnings=warnings,
     )

@@ -1,0 +1,10 @@
+exam_id,exam_name,conducting_body,frequency,official_url,retrieved_on,linked_careers
+EXAM_JEE_MAIN,Joint Entrance Examination (Main) - JEE Main,National Testing Agency (NTA),Twice a year (Jan & April),https://jeemain.nta.ac.in/,2026-10-08,"software_developer,cybersecurity_analyst,mechanical_engineer,civil_engineer,electrical_engineer,chemical_engineer,biomedical_engineer"
+EXAM_NEET_UG,National Eligibility cum Entrance Test (UG) - NEET UG,National Testing Agency (NTA),Annual (May),https://exams.nta.ac.in/NEET/,2026-10-08,"doctor_mbbs,nursing_officer"
+EXAM_UCEED,Undergraduate Common Entrance Examination for Design - UCEED,IIT Bombay (UCEED-CEED Office),Annual (January),https://www.uceed.iitb.ac.in/,2026-10-08,"industrial_designer,ux_designer"
+EXAM_ISI_ADMISSION,Indian Statistical Institute Admission Test,Indian Statistical Institute (ISI),Annual (May),https://admission.isical.ac.in/,2026-10-08,data_scientist
+EXAM_MHCET_LAW_5YR,Maharashtra Common Entrance Test Law (5-Year Integrated),"State Common Entrance Test Cell, Maharashtra",Annual (May),https://cetcell.mahacet.org/,2026-10-08,lawyer_corporate
+EXAM_AIIMS_NURSING,AIIMS B.Sc (Hons) Nursing Entrance Examination,"Examination Section, AIIMS New Delhi",Annual (June),https://aiimsexams.ac.in/,2026-10-08,nursing_officer
+EXAM_CUET_UG,Common University Entrance Test (UG) - CUET UG,National Testing Agency (NTA),Annual (May-June),https://exams.nta.ac.in/CUET-UG/,2026-10-08,"data_analyst,economist,historian,journalist"
+EXAM_TNEA,Tamil Nadu Engineering Admissions (TNEA) Counselling,Directorate of Technical Education (DoTE) Tamil Nadu,Annual (July-August),https://www.tneaonline.org/,2026-10-08,"software_developer,cybersecurity_analyst,mechanical_engineer,electrical_engineer,civil_engineer,biomedical_engineer"
+EXAM_WBJEE,West Bengal Joint Entrance Examination - WBJEE,West Bengal Joint Entrance Examinations Board,Annual (April-May),https://wbjeeb.nic.in/,2026-10-08,"software_developer,electrical_engineer,chemical_engineer"

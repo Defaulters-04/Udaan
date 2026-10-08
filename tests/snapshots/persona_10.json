@@ -1,0 +1,227 @@
+{
+  "persona_id": "persona_10_scholarship_flips_financial_gate",
+  "conflict_index": 6.2,
+  "is_high_conflict": false,
+  "top_3_careers": [
+    {
+      "career_id": "geographer",
+      "composite_score": 82.8,
+      "student_fit": 75.7,
+      "family_viability": 89.8
+    },
+    {
+      "career_id": "historian",
+      "composite_score": 82.8,
+      "student_fit": 75.7,
+      "family_viability": 89.8
+    },
+    {
+      "career_id": "linguist",
+      "composite_score": 82.8,
+      "student_fit": 75.7,
+      "family_viability": 89.8
+    }
+  ],
+  "blocked_set": [
+    {
+      "career_id": "freelance_creative",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "mechanical_engineer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "commercial_pilot",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "human_resources_specialist",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "physiotherapist",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "independent_musician",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "international_relations_specialist",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "civil_engineer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "lawyer_corporate",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "aerospace_engineer",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "digital_marketing_specialist",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "devops_engineer",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "chemical_engineer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "translator_interpreter",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "software_developer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "electronics_engineer",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "video_editor",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "management_consultant",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "cloud_solutions_architect",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "chartered_accountant",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "pharmacist",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "dentist_bds",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "operations_manager",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "nursing_officer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "fashion_designer",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "data_analyst",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "archaeologist",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "architect",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "streamer_esports_player",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "biomedical_engineer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "biotechnologist",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "marketing_manager",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "graphic_designer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "game_developer",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "cybersecurity_analyst",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "animator_vfx_artist",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "doctor_mbbs",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "fine_artist",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "electrical_engineer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "financial_analyst",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "investment_banker",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "political_scientist",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "data_scientist",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "gis_analyst",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "ux_designer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "industrial_designer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "video_creator",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "environmental_scientist",
+      "block_cause": "no_route_data"
+    },
+    {
+      "career_id": "ai_ml_engineer",
+      "block_cause": "cost"
+    },
+    {
+      "career_id": "product_manager",
+      "block_cause": "no_route_data"
+    }
+  ]
+}
