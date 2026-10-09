@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useSessionStore } from '@/store/session';
 import { getTranslation, type Language, type Translations } from '@/lib/i18n';
-import { Header } from '@/components/Header';
+import { PageShell } from '@/components/PageShell';
 import {
   getCareer,
   isMockEnabled,
@@ -229,45 +229,43 @@ function CareerDetailContent() {
       return { bg: 'bg-cloud/60', text: 'text-midnight/80', border: 'border-cloud', dot: 'bg-midnight/40' };
     }
     if (!career.blocked) {
-      return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' };
+      return { bg: 'bg-cloud', text: 'text-midnight', border: 'border-cloud', dot: 'bg-ocean' };
     }
     switch (career.blocked.cause) {
       case 'cost':
-        return { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200', dot: 'bg-amber-500' };
+        return { bg: 'bg-cloud', text: 'text-midnight', border: 'border-cloud', dot: 'bg-ocean' };
       case 'academic':
-        return { bg: 'bg-sky-50', text: 'text-sky-800', border: 'border-sky-200', dot: 'bg-sky-500' };
+        return { bg: 'bg-sky/20', text: 'text-midnight', border: 'border-cloud', dot: 'bg-ocean' };
       case 'no_route_data':
-        return { bg: 'bg-purple-50', text: 'text-purple-800', border: 'border-purple-200', dot: 'bg-purple-500' };
+        return { bg: 'bg-cloud', text: 'text-midnight', border: 'border-cloud', dot: 'bg-ocean' };
       default:
-        return { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200', dot: 'bg-amber-500' };
+        return { bg: 'bg-cloud', text: 'text-midnight', border: 'border-cloud', dot: 'bg-ocean' };
     }
   }, [career]);
 
   // Loading state
   if (!hasHydrated || (loading && !career && !isWaitingPartner && !notFound && !errorMessage)) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col font-hind text-midnight">
-        <Header />
-        <div className="flex-1 flex items-center justify-center p-6 text-sm text-midnight/60">
+      <PageShell width="narrow">
+        <div className="flex-1 flex items-center justify-center p-6 text-sm text-midnight/60 my-12">
           <span className="inline-block animate-pulse">{t.waiting}</span>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   // 409 Explorer not ready / waiting state
   if (isWaitingPartner) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col font-hind text-midnight">
-        <Header />
-        <main
-          className="flex-1 max-w-[640px] mx-auto w-full px-4 sm:px-6 py-12 flex flex-col items-center justify-center text-center space-y-4"
+      <PageShell width="narrow">
+        <div
+          className="flex-1 w-full py-12 flex flex-col items-center justify-center text-center space-y-4"
           aria-live="polite"
         >
-          <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
+          <h2 className={`font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight ${headingFontClass}`}>
             {t.careerWaitingTitle}
           </h2>
-          <p className="text-sm text-midnight/70 max-w-md">
+          <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470] max-w-md">
             {t.careerWaitingDesc}
           </p>
           <div className="pt-4 flex items-center gap-3">
@@ -278,21 +276,20 @@ function CareerDetailContent() {
               ← {t.backToExplorer}
             </Link>
           </div>
-        </main>
-      </div>
+        </div>
+      </PageShell>
     );
   }
 
   // 404 Career not found state
   if (notFound) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col font-hind text-midnight">
-        <Header />
-        <main className="flex-1 max-w-[640px] mx-auto w-full px-4 sm:px-6 py-12 flex flex-col items-center justify-center text-center space-y-4">
-          <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
+      <PageShell width="narrow">
+        <div className="flex-1 w-full py-12 flex flex-col items-center justify-center text-center space-y-4">
+          <h2 className={`font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight ${headingFontClass}`}>
             {t.careerNotFound}
           </h2>
-          <p className="text-sm text-midnight/70 max-w-md">
+          <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470] max-w-md">
             {t.careerNotFoundDesc}
           </p>
           <div className="pt-4">
@@ -303,21 +300,20 @@ function CareerDetailContent() {
               ← {t.backToExplorer}
             </Link>
           </div>
-        </main>
-      </div>
+        </div>
+      </PageShell>
     );
   }
 
   // General error state (USE_MOCK=false failure)
   if (errorMessage || !career) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col font-hind text-midnight">
-        <Header />
-        <main className="flex-1 max-w-[640px] mx-auto w-full px-4 sm:px-6 py-12 flex flex-col items-center justify-center text-center space-y-4">
-          <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
+      <PageShell width="narrow">
+        <div className="flex-1 w-full py-12 flex flex-col items-center justify-center text-center space-y-4">
+          <h2 className={`font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight ${headingFontClass}`}>
             {t.careerErrorTitle}
           </h2>
-          <p className="text-sm text-midnight/70 max-w-md">
+          <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470] max-w-md">
             {errorMessage || t.careerErrorDesc}
           </p>
           <div className="pt-4 flex items-center gap-4">
@@ -335,27 +331,25 @@ function CareerDetailContent() {
               ← {t.backToExplorer}
             </Link>
           </div>
-        </main>
-      </div>
+        </div>
+      </PageShell>
     );
   }
 
   // Main Career Details Screen
   return (
-    <div className="min-h-screen bg-paper flex flex-col font-hind text-midnight antialiased">
-      <Header />
-
-      <motion.main
+    <PageShell width="wide">
+      <motion.div
         initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8"
+        className="w-full flex-1 flex flex-col py-6 sm:py-8 space-y-8 pb-16"
       >
         {/* Top Breadcrumb & Control Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="w-full flex flex-wrap items-center justify-between gap-3 text-xs">
           <Link
             href="/explorer"
-            className="inline-flex items-center gap-1.5 font-semibold text-ocean bg-white border border-cloud px-3 py-1.5 rounded-xl hover:border-ocean hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean"
+            className="inline-flex items-center gap-1.5 font-semibold text-ocean bg-white border border-cloud px-3 py-1.5 rounded-xl hover:border-ocean hover:shadow-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean"
           >
             ← {t.backToExplorer}
           </Link>
@@ -363,8 +357,8 @@ function CareerDetailContent() {
           <div className="flex items-center gap-2.5">
             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-cloud text-midnight/80 shadow-xs">
               {storeRole === 'student'
-                ? `🎓 ${storeLang === 'hi' ? 'विद्यार्थी दृष्टिकोण' : 'Student Perspective'}`
-                : `👨‍👩‍👧 ${storeLang === 'hi' ? 'अभिभावक दृष्टिकोण' : 'Parent Perspective'}`}
+                ? (storeLang === 'hi' ? 'विद्यार्थी दृष्टिकोण' : 'Student Perspective')
+                : (storeLang === 'hi' ? 'अभिभावक दृष्टिकोण' : 'Parent Perspective')}
             </span>
 
             {isMock && (
@@ -396,14 +390,11 @@ function CareerDetailContent() {
         </div>
 
         {/* 1. Hero Dashboard Banner & KPI Deck */}
-        <div className="bg-gradient-to-br from-white via-white to-sky/15 border border-cloud/90 rounded-3xl p-6 sm:p-8 lg:p-10 shadow-sm relative overflow-hidden space-y-6 sm:space-y-8">
-          {/* Subtle decorative glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-ocean/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-
+        <div className="bg-white border border-cloud rounded-3xl p-6 sm:p-8 lg:p-10 relative overflow-hidden space-y-6 sm:space-y-8">
           {/* Heading and Meta Row */}
           <div className="space-y-3 relative z-10">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-ocean/10 text-ocean border border-ocean/20 capitalize">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cloud text-midnight border border-cloud capitalize">
                 {getDomainLabel(career.domain, storeLang)}
               </span>
 
@@ -415,11 +406,11 @@ function CareerDetailContent() {
               </span>
             </div>
 
-            <h1
+            <h2
               className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold text-midnight tracking-tight leading-tight ${headingFontClass}`}
             >
               {career.name[storeLang] ?? career.name.en}
-            </h1>
+            </h2>
 
             <p className="text-sm sm:text-base text-midnight/70 font-medium max-w-3xl leading-relaxed">
               {career.blocked === null
@@ -529,7 +520,7 @@ function CareerDetailContent() {
                 </div>
                 <div className="w-full h-1.5 bg-cloud/70 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                    className="h-full bg-ocean rounded-full transition-all duration-500"
                     style={{ width: `${career.conflict}%` }}
                   />
                 </div>
@@ -576,8 +567,11 @@ function CareerDetailContent() {
             <section className="bg-white border border-cloud/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cloud/60 pb-4">
                 <div className="flex items-center gap-3">
-                  <span className="w-9 h-9 rounded-xl bg-ocean/10 text-ocean flex items-center justify-center text-lg font-bold">
-                    🎓
+                  <span className="w-8 h-8 rounded-lg bg-cloud flex items-center justify-center text-midnight shrink-0">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                      <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                    </svg>
                   </span>
                   <div>
                     <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
@@ -645,7 +639,7 @@ function CareerDetailContent() {
                             <div className="flex items-center gap-2.5 text-xs text-midnight/70">
                               {route.years !== null && (
                                 <span className="font-medium">
-                                  ⏱️ {route.years} {storeLang === 'hi' ? 'वर्ष' : 'yrs'}
+                                  {route.years} {storeLang === 'hi' ? 'वर्ष' : 'yrs'}
                                 </span>
                               )}
                               <span>•</span>
@@ -743,10 +737,12 @@ function CareerDetailContent() {
 
             {/* Section B: What Would Help / Remedial Roadmap (Shown when career is blocked) */}
             {career.blocked && (
-              <section className="bg-gradient-to-br from-amber-50/50 via-white to-ocean/5 border border-amber-200/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
-                <div className="flex items-center gap-3 border-b border-amber-200/60 pb-4">
-                  <span className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-lg font-bold">
-                    💡
+              <section className="bg-cloud/20 border border-cloud rounded-3xl p-6 sm:p-8 space-y-5">
+                <div className="flex items-center gap-3 border-b border-cloud/60 pb-4">
+                  <span className="w-8 h-8 rounded-lg bg-cloud flex items-center justify-center text-midnight shrink-0">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
                   </span>
                   <div>
                     <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
@@ -772,9 +768,9 @@ function CareerDetailContent() {
                       return (
                         <div
                           key={remedy.id}
-                          className="bg-white/95 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3.5 shadow-xs"
+                          className="bg-white border border-cloud rounded-2xl p-4 flex items-start gap-3.5"
                         >
-                          <span className="w-7 h-7 rounded-lg bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="w-7 h-7 rounded-lg bg-cloud text-midnight font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                             {idx + 1}
                           </span>
                           <div className="space-y-1">
@@ -804,8 +800,10 @@ function CareerDetailContent() {
               <section className="bg-white border border-cloud/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
                 <div className="flex items-center justify-between border-b border-cloud/60 pb-4">
                   <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-xl bg-ocean/10 text-ocean flex items-center justify-center text-lg font-bold">
-                      📝
+                    <span className="w-8 h-8 rounded-lg bg-cloud flex items-center justify-center text-midnight shrink-0">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
                     </span>
                     <div>
                       <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
@@ -851,8 +849,10 @@ function CareerDetailContent() {
             {storeRole === 'student' && career.growth_areas && career.growth_areas.length > 0 && (
               <section className="bg-white border border-cloud/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
                 <div className="flex items-center gap-3 border-b border-cloud/60 pb-4">
-                  <span className="w-9 h-9 rounded-xl bg-ocean/10 text-ocean flex items-center justify-center text-lg font-bold">
-                    🚀
+                  <span className="w-8 h-8 rounded-lg bg-cloud flex items-center justify-center text-midnight shrink-0">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
                   </span>
                   <div>
                     <h2 className={`text-xl font-bold text-midnight ${headingFontClass}`}>
@@ -902,7 +902,11 @@ function CareerDetailContent() {
               {career.entry_salary && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2.5 border-b border-cloud/60 pb-3">
-                    <span className="text-base">💼</span>
+                    <span className="w-6 h-6 rounded-md bg-cloud flex items-center justify-center text-midnight shrink-0">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </span>
                     <h3 className={`text-base font-bold text-midnight ${headingFontClass}`}>
                       {t.salaryTitle}
                     </h3>
@@ -921,10 +925,10 @@ function CareerDetailContent() {
                       </span>
                     </div>
 
-                    {/* Gradient Min-Max Indicator Bar */}
+                    {/* Indicator Bar */}
                     <div className="space-y-1.5">
                       <div className="h-2 w-full bg-cloud rounded-full overflow-hidden relative">
-                        <div className="h-full bg-gradient-to-r from-sky via-ocean to-midnight rounded-full" />
+                        <div className="h-full bg-ocean rounded-full" />
                       </div>
                       <div className="flex justify-between text-[11px] font-mono text-midnight/70 font-semibold">
                         <span>
@@ -953,7 +957,11 @@ function CareerDetailContent() {
               {career.demand && (
                 <div className="space-y-3 pt-2 border-t border-cloud/60">
                   <div className="flex items-center gap-2.5">
-                    <span className="text-base">📈</span>
+                    <span className="w-6 h-6 rounded-md bg-cloud flex items-center justify-center text-midnight shrink-0">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                      </svg>
+                    </span>
                     <h3 className={`text-base font-bold text-midnight ${headingFontClass}`}>
                       {t.demandTitle}
                     </h3>
@@ -964,9 +972,9 @@ function CareerDetailContent() {
                       <span
                         className={`w-2.5 h-2.5 rounded-full ${
                           career.demand.signal === 'positive'
-                            ? 'bg-emerald-500 animate-pulse'
+                            ? 'bg-ocean animate-pulse'
                             : career.demand.signal === 'negative'
-                            ? 'bg-rose-500'
+                            ? 'bg-midnight'
                             : 'bg-cloud'
                         }`}
                       />
@@ -991,16 +999,20 @@ function CareerDetailContent() {
 
             {/* Widget 2: Family Financial Plan (Parent View Only) */}
             {storeRole === 'parent' && career.family_money && (
-              <div className="bg-gradient-to-br from-[#0F223D] via-[#11284A] to-[#183968] text-white border border-ocean/30 rounded-3xl p-6 sm:p-7 shadow-lg space-y-5">
+              <div className="bg-midnight text-white border border-cloud rounded-3xl p-6 sm:p-7 space-y-5">
                 <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">💰</span>
+                    <span className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center text-white shrink-0">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </span>
                     <h3 className={`text-base font-bold text-white ${headingFontClass}`}>
                       {t.familyMoneyTitle}
                     </h3>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-sky border border-white/15">
-                    🔒 {t.onlyYouSeeThis}
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-white border border-white/15">
+                    {t.onlyYouSeeThis}
                   </span>
                 </div>
 
@@ -1040,7 +1052,11 @@ function CareerDetailContent() {
             {/* Widget 3: Scholarships & Aid Opportunities */}
             <div className="bg-white border border-cloud/90 rounded-3xl p-6 sm:p-7 shadow-sm space-y-4">
               <div className="flex items-center gap-2.5 border-b border-cloud/60 pb-3">
-                <span className="text-base">🎁</span>
+                <span className="w-6 h-6 rounded-md bg-cloud flex items-center justify-center text-midnight shrink-0">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                  </svg>
+                </span>
                 <h3 className={`text-base font-bold text-midnight ${headingFontClass}`}>
                   {t.scholarshipsTitle}
                 </h3>
@@ -1080,7 +1096,7 @@ function CareerDetailContent() {
             {career.data_gaps && career.data_gaps.length > 0 && (
               <div className="bg-paper/80 border border-cloud rounded-3xl p-5 space-y-2 text-xs text-midnight/70">
                 <div className="flex items-center gap-1.5 font-bold text-midnight text-xs">
-                  <span>ℹ️</span>
+                  <span className="w-4 h-4 rounded-full bg-cloud flex items-center justify-center text-midnight shrink-0 text-[10px] font-bold">i</span>
                   <span>{storeLang === 'hi' ? 'डेटा पारदर्शिता' : 'Data Transparency'}</span>
                 </div>
                 <p className="text-[11px] leading-relaxed text-midnight/60">
@@ -1093,8 +1109,8 @@ function CareerDetailContent() {
             )}
           </div>
         </div>
-      </motion.main>
-    </div>
+      </motion.div>
+    </PageShell>
   );
 }
 

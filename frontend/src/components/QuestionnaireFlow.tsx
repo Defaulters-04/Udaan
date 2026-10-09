@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, MotionConfig } from 'motion/react';
 import { useSessionStore, type Role } from '@/store/session';
 import { getTranslation, type Language } from '@/lib/i18n';
-import { Header } from '@/components/Header';
+import { PageShell } from '@/components/PageShell';
 import {
   getStatus,
   ApiError,
@@ -728,33 +728,27 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
 
   if (phase === 'error') {
     return (
-      <div className="min-h-screen bg-paper text-midnight flex flex-col justify-between">
-        <main className="w-full max-w-[600px] mx-auto px-5 sm:px-6 pt-10 sm:pt-16 pb-12 flex-1 flex flex-col">
-          <Header />
-          <div className="p-6 bg-white border-2 border-cloud rounded-2xl space-y-4 my-auto text-center">
-            <p className="text-base font-medium text-midnight">{t.loadFailed}</p>
-            <button
-              type="button"
-              onClick={() => {
-                setPhase('loading');
-                loadData();
-              }}
-              className="px-6 py-2.5 bg-ocean text-white font-medium rounded-xl hover:bg-ocean/90 focus-visible:outline-2 focus-visible:outline-ocean cursor-pointer"
-            >
-              {t.retry}
-            </button>
-          </div>
-        </main>
-      </div>
+      <PageShell width="narrow">
+        <div className="p-6 bg-white border-2 border-cloud rounded-2xl space-y-4 my-auto text-center mt-8">
+          <p className="text-base font-medium text-midnight">{t.loadFailed}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setPhase('loading');
+              loadData();
+            }}
+            className="px-6 py-2.5 bg-ocean text-white font-medium rounded-xl hover:bg-ocean/90 focus-visible:outline-2 focus-visible:outline-ocean cursor-pointer"
+          >
+            {t.retry}
+          </button>
+        </div>
+      </PageShell>
     );
   }
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="min-h-screen bg-paper text-midnight selection:bg-sky/20 flex flex-col justify-between">
-        <main className="w-full max-w-[600px] mx-auto px-5 sm:px-6 pt-6 sm:pt-10 pb-12 flex-1 flex flex-col">
-          {/* Header */}
-          <Header />
+      <PageShell width="narrow" className="pb-12">
 
           {/* ======================================================== */}
           {/* PHASE: INTERSTITIAL (Calm Section Completion)             */}
@@ -765,10 +759,10 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
               className="flex-1 flex flex-col items-center justify-center text-center py-16 cursor-pointer select-none"
             >
               <div className="space-y-4 w-full max-w-sm">
-                <h2 className={`${headingFontClass} text-2xl sm:text-3xl font-bold text-midnight`}>
+                <h2 className={`${headingFontClass} font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight`}>
                   {getLocalizedText(interstitialInfo.prevSectionTitle, storeLang)}
                 </h2>
-                <p className="text-base text-midnight/70 font-normal">
+                <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470]">
                   {getLocalizedText(interstitialInfo.nextSectionTitle, storeLang)}
                 </p>
 
@@ -791,7 +785,7 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
           {phase === 'question' && currentQ && (
             <div className="flex-1 flex flex-col">
               {/* Progress Rail Header */}
-              <div className="mb-8 space-y-2.5">
+              <div className="mt-8 mb-8 space-y-2.5">
                 <div className="flex items-center justify-between text-xs text-midnight/70 font-medium">
                   <div className="flex items-center gap-2">
                     <span>{sectionInfo ? getLocalizedText(sectionInfo.section.title, storeLang) : ''}</span>
@@ -1243,13 +1237,13 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
               {config.reviewType === 'student' ? (
                 <>
                   <div className="space-y-6">
-                    <div className="space-y-2">
+                    <div className="mt-8 mb-8">
                       <h2
-                        className={`${headingFontClass} text-2xl sm:text-3xl font-bold text-midnight tracking-tight`}
+                        className={`${headingFontClass} font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight`}
                       >
                         {t.reviewTitle}
                       </h2>
-                      <p className="text-sm sm:text-base text-midnight/70">
+                      <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470]">
                         {t.reviewBody}
                       </p>
                     </div>
@@ -1366,13 +1360,13 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
                 /* PARENT CONFIRMATION SCREEN */
                 <>
                   <div className="space-y-8">
-                    <div className="space-y-2">
+                    <div className="mt-8 mb-8">
                       <h2
-                        className={`${headingFontClass} text-2xl sm:text-3xl font-bold text-midnight tracking-tight`}
+                        className={`${headingFontClass} font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight`}
                       >
                         {t.intakeReviewTitle}
                       </h2>
-                      <p className="text-sm sm:text-base text-midnight/70">
+                      <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470]">
                         {t.intakeReviewBody}
                       </p>
                     </div>
@@ -1468,14 +1462,14 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
                 ✓
               </div>
 
-              <div className="space-y-2 max-w-md">
+              <div className="max-w-md mt-4 mb-4">
                 <h2
-                  className={`${headingFontClass} text-2xl sm:text-3xl font-bold text-midnight tracking-tight`}
+                  className={`${headingFontClass} font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight`}
                 >
                   {t.doneTitle.replace('{name}', storeName || t[config.role])}
                 </h2>
 
-                <p className="text-base text-midnight/70">
+                <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470]">
                   {isPartnerDone ? t.bothDone : t[config.partnerWaitingTextKey]}
                 </p>
               </div>
@@ -1498,8 +1492,7 @@ export function QuestionnaireFlow({ config }: QuestionnaireFlowProps) {
               )}
             </div>
           )}
-        </main>
-      </div>
+        </PageShell>
     </MotionConfig>
   );
 }

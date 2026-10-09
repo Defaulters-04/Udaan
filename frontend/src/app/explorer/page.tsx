@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useSessionStore } from '@/store/session';
 import { getTranslation } from '@/lib/i18n';
-import { Header } from '@/components/Header';
+import { PageShell } from '@/components/PageShell';
 import {
   getExplorer,
   getStatus,
@@ -553,108 +553,111 @@ export default function NegotiationExplorerPage() {
   // Render Waiting State (409)
   if (isWaitingPartner) {
     return (
-      <div className="min-h-screen bg-paper text-midnight flex flex-col justify-between p-4 sm:p-6 lg:p-8">
-        <div className="max-w-2xl mx-auto w-full">
-          <Header
-            tagline={t.explorerSubtitle.replace('{student}', studentName)}
-            backHref="/mirror"
-            backLabel={t.back}
-          />
-          <div
-            role="status"
-            aria-live="polite"
-            className="bg-cloud/30 border border-cloud rounded-2xl p-6 sm:p-8 text-center space-y-4 my-8"
-          >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-cloud text-ocean mb-2">
-              <span className="w-4 h-4 rounded-full bg-ocean animate-pulse" />
-            </div>
-            <h2 className={`text-xl sm:text-2xl font-bold text-midnight ${headingFontClass}`}>
-              {t.explorerWaitingTitle}
-            </h2>
-            <p className="text-sm sm:text-base text-midnight/80 max-w-md mx-auto leading-relaxed">
-              {t.explorerWaitingDesc}
-            </p>
-            <div className="inline-block px-3 py-1 bg-white border border-cloud rounded-full text-xs font-medium text-ocean">
-              {t.explorerWaitingBadge}
-            </div>
+      <PageShell width="narrow">
+        <div
+          role="status"
+          aria-live="polite"
+          className="bg-cloud/30 border border-cloud rounded-2xl p-6 sm:p-8 text-center space-y-4 my-8"
+        >
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-cloud text-ocean mb-2">
+            <span className="w-4 h-4 rounded-full bg-ocean animate-pulse" />
+          </div>
+          <h2 className={`font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight ${headingFontClass}`}>
+            {t.explorerWaitingTitle}
+          </h2>
+          <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470] max-w-md mx-auto">
+            {t.explorerWaitingDesc}
+          </p>
+          <div className="inline-block px-3 py-1 bg-white border border-cloud rounded-full text-xs font-medium text-ocean">
+            {t.explorerWaitingBadge}
           </div>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   // Render Error State
   if (errorMessage) {
     return (
-      <div className="min-h-screen bg-paper text-midnight flex flex-col justify-between p-4 sm:p-6 lg:p-8">
-        <div className="max-w-xl mx-auto w-full">
-          <Header
-            tagline={t.explorerSubtitle.replace('{student}', studentName)}
-            backHref="/mirror"
-            backLabel={t.back}
-          />
-          <div
-            role="alert"
-            className="bg-cloud/30 border border-ocean/30 rounded-2xl p-6 sm:p-8 text-center space-y-4 my-8"
+      <PageShell width="narrow">
+        <div
+          role="alert"
+          className="bg-cloud/30 border border-ocean/30 rounded-2xl p-6 sm:p-8 text-center space-y-4 my-8"
+        >
+          <h2 className={`font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight ${headingFontClass}`}>
+            {t.explorerErrorTitle}
+          </h2>
+          <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470]">{t.explorerErrorDesc}</p>
+          <button
+            type="button"
+            onClick={() => fetchExplorer()}
+            className="mt-4 px-6 py-2.5 rounded-xl bg-ocean text-white font-medium text-sm hover:bg-ocean/90 focus-visible:outline-2 focus-visible:outline-ocean transition-all cursor-pointer"
           >
-            <h2 className={`text-lg sm:text-xl font-bold text-midnight ${headingFontClass}`}>
-              {t.explorerErrorTitle}
-            </h2>
-            <p className="text-sm text-midnight/70">{t.explorerErrorDesc}</p>
-            <button
-              type="button"
-              onClick={() => fetchExplorer()}
-              className="mt-4 px-6 py-2.5 rounded-xl bg-ocean text-white font-medium text-sm hover:bg-ocean/90 focus-visible:outline-2 focus-visible:outline-ocean transition-all cursor-pointer"
-            >
-              {t.retry}
-            </button>
-          </div>
+            {t.retry}
+          </button>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   // Render Loading Skeleton
   if (loading || !data) {
     return (
-      <div className="min-h-screen bg-paper text-midnight flex flex-col justify-between p-4 sm:p-6 lg:p-8">
-        <div className="max-w-5xl mx-auto w-full">
-          <Header
-            tagline={t.explorerSubtitle.replace('{student}', studentName)}
-            backHref="/mirror"
-            backLabel={t.back}
-          />
-          <div className="animate-pulse space-y-6 my-8">
-            <div className="h-10 bg-cloud/40 rounded-xl w-3/4 mx-auto" />
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              <div className="lg:col-span-7 h-96 bg-cloud/30 rounded-2xl" />
-              <div className="lg:col-span-5 h-96 bg-cloud/30 rounded-2xl" />
-            </div>
-            <div className="h-24 bg-cloud/30 rounded-2xl" />
+      <PageShell width="wide">
+        <div className="animate-pulse space-y-6 my-8">
+          <div className="h-10 bg-cloud/40 rounded-xl w-3/4 mx-auto" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7 h-96 bg-cloud/30 rounded-2xl" />
+            <div className="lg:col-span-5 h-96 bg-cloud/30 rounded-2xl" />
           </div>
+          <div className="h-24 bg-cloud/30 rounded-2xl" />
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-paper text-midnight flex flex-col justify-between p-4 sm:p-6 lg:p-8 selection:bg-sky/40">
+    <PageShell
+      width="wide"
+      footer={
+        <footer className="mt-12 pt-6 border-t border-cloud/60 text-center pb-12">
+          <p className="text-xs text-midnight/60 leading-relaxed max-w-lg mx-auto">
+            {t.explorerFooterNote}
+          </p>
+        </footer>
+      }
+    >
       {/* Screen Reader Live Region */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {announcedLiveText}
       </div>
 
-      <div className="max-w-7xl mx-auto w-full">
-        {/* Navigation Header */}
-        <Header
-          tagline={t.explorerSubtitle.replace('{student}', studentName)}
-          backHref="/mirror"
-          backLabel={t.back}
-        />
+      <div className="w-full flex-1 flex flex-col pb-16">
+        {/* Navigation / Back */}
+        <div className="mt-6 mb-2">
+          <Link
+            href="/mirror"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-ocean hover:underline py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean"
+          >
+            ← {t.back}
+          </Link>
+        </div>
+
+        {/* Page Heading Rhythm */}
+        <div className="mt-2 mb-8">
+          <h2
+            className={`font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight ${headingFontClass}`}
+          >
+            {t.explorerTitle}
+          </h2>
+          <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470]">
+            {t.explorerSubtitle.replace('{student}', studentName)}
+          </p>
+        </div>
 
         {/* Demo Data Label (when mock data is shown) */}
         {isMockEnabled() && (
-          <div className="flex items-center gap-2 mt-2 mb-3">
+          <div className="flex items-center gap-2 mb-4">
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-cloud text-midnight/80 border border-cloud">
               {t.demoData}
             </span>
@@ -2221,13 +2224,7 @@ export default function NegotiationExplorerPage() {
           </div>
         )}
 
-        {/* Screening Footer Note (Rule 12) */}
-        <footer className="mt-12 pt-6 border-t border-cloud/60 text-center">
-          <p className="text-xs text-midnight/60 leading-relaxed max-w-lg mx-auto">
-            {t.explorerFooterNote}
-          </p>
-        </footer>
       </div>
-    </div>
+    </PageShell>
   );
 }

@@ -1,60 +1,60 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { useSessionStore } from '@/store/session';
 import { LanguageToggle } from '@/components/LanguageToggle';
 
-interface HeaderProps {
+export interface SiteHeaderProps {
+  variant?: 'standard' | 'hero';
   tagline?: string;
-  backHref?: string;
-  backLabel?: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const SiteHeader: React.FC<SiteHeaderProps> = ({
+  variant = 'standard',
   tagline,
-  backHref,
-  backLabel,
 }) => {
   const storeLang = useSessionStore((state) => state.lang);
   const setLang = useSessionStore((state) => state.setLang);
 
   return (
-    <header className="w-full mb-8 sm:mb-12">
-      {/* Top action row */}
-      <div className="flex items-center justify-between mb-6 sm:mb-8">
-        <div>
-          {backHref ? (
-            <Link
-              href={backHref}
-              className="text-ocean hover:underline text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ocean rounded px-1 transition-colors"
-            >
-              ← {backLabel || 'Back'}
-            </Link>
-          ) : (
-            <div aria-hidden="true" className="w-12" />
+    <header className="w-full border-b border-cloud">
+      <div
+        className={`flex items-center justify-between ${
+          variant === 'hero' ? 'py-8 sm:py-10' : 'py-5 sm:py-6'
+        }`}
+      >
+        <div className="flex flex-col">
+          <h1
+            className={`font-bricolage font-extrabold text-midnight tracking-[-0.035em] leading-[0.9] select-none [font-optical-sizing:auto] ${
+              variant === 'hero'
+                ? 'text-[clamp(64px,9vw,96px)]'
+                : 'text-[clamp(36px,4.5vw,48px)]'
+            }`}
+            style={{
+              fontFamily: 'var(--font-bricolage), sans-serif',
+              fontWeight: 800,
+              fontOpticalSizing: 'auto',
+            }}
+          >
+            Udaan
+          </h1>
+          {variant === 'hero' && tagline && (
+            <p className="mt-3 text-base sm:text-lg text-[#3E5470] font-normal leading-relaxed">
+              {tagline}
+            </p>
           )}
         </div>
-        <LanguageToggle
-          currentLang={storeLang}
-          onLanguageChange={(lang) => setLang(lang)}
-        />
-      </div>
 
-      {/* Udaan wordmark */}
-      <div>
-        <h1
-          className="font-bricolage text-[clamp(3.5rem,8vw,6rem)] leading-[0.92] tracking-tight font-extrabold text-midnight select-none"
-          style={{ fontFamily: 'var(--font-bricolage), sans-serif' }}
-        >
-          Udaan
-        </h1>
-        {tagline && (
-          <p className="mt-3 sm:mt-4 text-base sm:text-lg text-midnight/80 font-normal leading-relaxed">
-            {tagline}
-          </p>
-        )}
+        <div className="shrink-0 flex items-center justify-end">
+          <LanguageToggle
+            currentLang={storeLang}
+            onLanguageChange={(lang) => setLang(lang)}
+          />
+        </div>
       </div>
     </header>
   );
 };
+
+// Backwards-compatible alias
+export const Header = SiteHeader;

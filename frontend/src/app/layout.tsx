@@ -6,6 +6,7 @@ const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-bricolage",
   display: "swap",
+  axes: ["opsz"],
 });
 
 const hind = Hind({

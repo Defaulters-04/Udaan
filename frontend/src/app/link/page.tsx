@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSessionStore } from '@/store/session';
 import { getTranslation } from '@/lib/i18n';
-import { Header } from '@/components/Header';
+import { PageShell } from '@/components/PageShell';
 import {
   createFamily,
   getStatus,
@@ -47,7 +47,6 @@ export default function LinkFamilyPage() {
   }, [storeLang]);
 
   const t = getTranslation(storeLang);
-  const headingFontClass = storeLang === 'hi' ? 'font-hind' : 'font-bricolage';
 
   // Redirect if role or name missing after hydration
   useEffect(() => {
@@ -319,21 +318,17 @@ export default function LinkFamilyPage() {
   const partnerName = storeFamily?.partner?.name || '';
 
   return (
-    <div className="min-h-screen bg-paper text-midnight selection:bg-sky/20 flex flex-col justify-between">
-      {/* Centered single column, max 480px per design spec */}
-      <main className="w-full max-w-[480px] mx-auto px-5 sm:px-6 pt-8 sm:pt-14 pb-12 flex-1 flex flex-col text-left">
-        {/* Shared Udaan Header */}
-        <Header backHref="/" backLabel={t.linkTitle} />
-
-        <div className="space-y-8 flex-1">
-          {/* Page Heading */}
-          <div className="space-y-1.5">
-            <h2
-              className={`${headingFontClass} text-2xl sm:text-3xl font-bold text-midnight tracking-tight`}
-            >
-              {t.linkTitle}
-            </h2>
-          </div>
+    <PageShell
+      width="narrow"
+      title={t.linkTitle}
+      subtitle={storeRole === 'student' ? t.instrToParent : t.instrToStudent}
+      footer={
+        <footer className="mt-14 sm:mt-16 pt-6 border-t border-cloud/70 text-xs sm:text-sm text-midnight/65 leading-relaxed">
+          <p>{t.consent}</p>
+        </footer>
+      }
+    >
+      <div className="space-y-8 flex-1 pb-12">
 
           {/* QR Code and Family Code Container */}
           <div className="flex flex-col items-center text-center space-y-6">
@@ -375,11 +370,8 @@ export default function LinkFamilyPage() {
               </div>
             </div>
 
-            {/* Instructions */}
+            {/* Privacy Note */}
             <div className="space-y-2 max-w-sm text-center">
-              <p className="text-sm sm:text-base text-midnight/85 leading-relaxed font-normal">
-                {storeRole === 'student' ? t.instrToParent : t.instrToStudent}
-              </p>
               <p className="text-xs text-midnight/60 font-normal">
                 {t.privacyNote}
               </p>
@@ -475,12 +467,6 @@ export default function LinkFamilyPage() {
             </section>
           )}
         </div>
-
-        {/* Consent Footnote */}
-        <footer className="mt-14 sm:mt-16 pt-6 border-t border-cloud/70 text-xs sm:text-sm text-midnight/65 leading-relaxed">
-          <p>{t.consent}</p>
-        </footer>
-      </main>
-    </div>
-  );
+      </PageShell>
+    );
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSessionStore, type Role } from '@/store/session';
 import { getTranslation, type Language } from '@/lib/i18n';
-import { Header } from '@/components/Header';
+import { PageShell } from '@/components/PageShell';
 import { previewFamily, joinFamily, ApiError } from '@/lib/api';
 
 function WelcomeContent() {
@@ -198,7 +198,16 @@ function WelcomeContent() {
   const isStep3Revealed = !!storeRole && !!storeName && !isStep2Editing;
 
   return (
-    <div className="min-h-screen bg-paper text-midnight selection:bg-sky/20 flex flex-col justify-between">
+    <PageShell
+      width="narrow"
+      variant="hero"
+      tagline={t.tagline}
+      footer={
+        <footer className="mt-14 sm:mt-20 pt-6 border-t border-cloud/70 text-xs sm:text-sm text-midnight/65 leading-relaxed">
+          <p>{t.consent}</p>
+        </footer>
+      }
+    >
       {/* Screen reader live announcement */}
       <div
         ref={announcementRef}
@@ -207,9 +216,7 @@ function WelcomeContent() {
         className="sr-only"
       />
 
-      <main className="w-full max-w-[560px] mx-auto px-5 sm:px-6 pt-8 sm:pt-16 pb-12 flex-1 flex flex-col">
-        {/* Shared Udaan Header */}
-        <Header tagline={t.tagline} />
+      <div className="pt-8 sm:pt-10 pb-12 flex-1 flex flex-col">
 
         {/* Invite Loading or Error */}
         {inviteState.loading && (
@@ -479,13 +486,8 @@ function WelcomeContent() {
             )}
           </div>
         )}
-
-        {/* Footnote */}
-        <footer className="mt-14 sm:mt-20 pt-6 border-t border-cloud/70 text-xs sm:text-sm text-midnight/65 leading-relaxed">
-          <p>{t.consent}</p>
-        </footer>
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 }
 

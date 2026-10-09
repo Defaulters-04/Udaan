@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useSessionStore } from '@/store/session';
 import { getTranslation } from '@/lib/i18n';
-import { Header } from '@/components/Header';
+import { PageShell } from '@/components/PageShell';
 import {
   getMirror,
   getStatus,
@@ -259,10 +259,17 @@ export default function FamilyMirrorPage() {
   const strokeDashoffset = arcTotal * (1 - clampedIndex / 100);
 
   return (
-    <div className="min-h-screen bg-paper text-midnight selection:bg-sky/20 flex flex-col justify-between">
-      <main className="w-full max-w-2xl mx-auto px-5 sm:px-6 pt-6 sm:pt-10 pb-16 flex-1 flex flex-col">
-        {/* Header with Wordmark and Language Toggle */}
-        <Header tagline={t.mirrorSubtitle} />
+    <PageShell
+      width="wide"
+      footer={
+        <footer className="mt-12 pt-6 border-t border-cloud/60 text-center pb-12">
+          <p className="text-xs text-midnight/60 leading-relaxed max-w-lg mx-auto">
+            {t.mirrorFooterNote}
+          </p>
+        </footer>
+      }
+    >
+      <div className="w-full flex-1 flex flex-col pb-16">
 
         {/* LOADING STATE */}
         {loading && !mirrorData && !isWaitingPartner && (
@@ -283,10 +290,10 @@ export default function FamilyMirrorPage() {
             <div className="w-14 h-14 rounded-full bg-cloud flex items-center justify-center mx-auto text-ocean">
               <span className="w-4 h-4 rounded-full bg-ocean animate-pulse" />
             </div>
-            <h2 className={`${headingFontClass} text-2xl font-bold text-midnight`}>
+            <h2 className={`${headingFontClass} font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight`}>
               {t.mirrorWaitingTitle.replace('{partner}', parentDisplayName)}
             </h2>
-            <p className="text-base text-midnight/70 max-w-md mx-auto leading-relaxed">
+            <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470] max-w-md mx-auto">
               {t.mirrorWaitingDesc.replace('{partner}', parentDisplayName)}
             </p>
             <div className="flex items-center justify-center gap-2 pt-2 text-xs text-midnight/55 font-medium">
@@ -302,10 +309,10 @@ export default function FamilyMirrorPage() {
             role="alert"
             className="w-full bg-white rounded-2xl p-8 sm:p-10 border border-cloud shadow-sm text-center space-y-4 my-8"
           >
-            <h2 className={`${headingFontClass} text-2xl font-bold text-midnight`}>
+            <h2 className={`${headingFontClass} font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight`}>
               {t.mirrorErrorTitle}
             </h2>
-            <p className="text-base text-midnight/70 max-w-md mx-auto leading-relaxed">
+            <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470] max-w-md mx-auto">
               {errorMessage}
             </p>
             <div className="pt-2">
@@ -324,12 +331,15 @@ export default function FamilyMirrorPage() {
         {!loading && mirrorData && (
           <div className="space-y-10">
             {/* Title */}
-            <div>
+            <div className="mt-8 mb-8">
               <h2
-                className={`${headingFontClass} text-2xl sm:text-3xl font-bold text-midnight`}
+                className={`${headingFontClass} font-semibold text-[clamp(24px,3vw,32px)] tracking-[-0.02em] text-midnight leading-tight`}
               >
                 {t.mirrorTitle}
               </h2>
+              <p className="mt-2 font-hind text-[16.5px] leading-relaxed text-[#3E5470]">
+                {t.mirrorSubtitle}
+              </p>
             </div>
 
             {/* Semicircular Meter (Conflict Gauge) */}
@@ -603,13 +613,7 @@ export default function FamilyMirrorPage() {
           </button>
         </div>
 
-        {/* Footer Note */}
-        <footer className="mt-12 pt-6 border-t border-cloud/60 text-center">
-          <p className="text-xs text-midnight/60 leading-relaxed max-w-lg mx-auto">
-            {t.mirrorFooterNote}
-          </p>
-        </footer>
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 }
